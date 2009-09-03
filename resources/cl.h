@@ -361,6 +361,7 @@ typedef struct _cl_image_format {
 // cl_kernel_work_group_info
 #define CL_KERNEL_WORK_GROUP_SIZE                   0x11B0
 #define CL_KERNEL_COMPILE_WORK_GROUP_SIZE           0x11B1
+#define CL_KERNEL_LOCAL_MEM_SIZE                    0x11B2
 
 // cl_event_info
 #define CL_EVENT_COMMAND_QUEUE                      0x11D0

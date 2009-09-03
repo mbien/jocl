@@ -8,9 +8,14 @@
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
 <project name="JOCL" default="default" basedir=".">
+
     <description>Builds, tests, and runs the project JOCL.</description>
+
     <import file="nbproject/build-impl.xml"/>
 
+    <!-- Pull in GlueGen cpptasks build file -->
+    <property name="gluegen.root" value="../gluegen" />
+    <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
 
     <target name="-pre-compile">
 
@@ -24,34 +29,100 @@
             <include name="resources/CL"/>
         </dirset>
 
-        <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
-
         <!--OpenCL-->
-        <echo message=" - - - generate JOCL - - - "/>
+        <echo message=" - - - generate JOCL java files - - - "/>
+        <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
         <gluegen src="resources/cl.h"
                  config="resources/OpenCL.cfg"
                  includeRefid="include.path"
                  emitter="com.sun.gluegen.JavaEmitter">
             <classpath refid="gluegen.classpath" />
         </gluegen>
+        <echo message=" - - - JOCL java files generated - - - "/>
 
-        <!--OpenCL - OpenGL interoperability
-        <echo message=" - - - generate JOCL-GL - - - "/>
+        <!-- TODO OpenCL - OpenGL interoperability
+        <echo message=" - - - generate CL-GL java files - - - "/>
         <gluegen src="resources/cl_gl.h"
                  config="resources/OpenCLGL.cfg"
                  includeRefid="include.path"
                  emitter="com.sun.gluegen.JavaEmitter">
             <classpath refid="gluegen.classpath" />
         </gluegen>
+        <echo message=" - - - CL-GL java files generated - - - "/>
         -->
 
     </target>
 
-    <target name="-post-clean">
-        <delete dir="gensrc">
+    <target name="-post-compile" depends="c.configure.linux.amd64">
 
-        </delete>
+        <property name="output.lib.name" value="jocl"/>
+        <property name="obj" value="${build.dir}/obj"/>
+        <property name="obj.jocl" value="${obj}/${output.lib.name}"/>
+
+        <property name="c.compiler.optimise" value="none"/>
+        <property name="c.compiler.debug" value="false"/>
+
+        <mkdir dir="${obj.jocl}" />
+
+        <echo message=" - - - compiling JOCL natives - - - "/>
+
+        <cc outtype="shared"
+            objdir="${obj.jocl}"
+            outfile="${obj}/${output.lib.name}"
+            optimize="${c.compiler.optimise}"
+            debug="${c.compiler.debug}"
+            multithreaded="true"
+            exceptions="false"
+            rtti="false">
+
+            <fileset dir="gensrc/native" includes="*.c"/>
+
+            <compiler extends="${compiler.cfg.id}" >
+
+                <sysincludepath path="${basedir}/resources/jvm_stubs"/>
+
+                <includepath path="${basedir}/resources"/>
+                <includepath path="${basedir}/resources/CL"/>
+
+            <!-- This is for the generated headers for handwritten C code -->
+            <!--
+                <sysincludepath path="${java.includes.dir}"/>
+                <sysincludepath path="${java.includes.dir.platform}"/>
+                
+                <includepath path="${src.generated.c}" />
+                <includepath path="${src.generated.c}/X11" if="isX11"/>
+                <includepath path="${src.generated.c}/MacOSX" if="isOSX"/>
+                <includepath path="${src.generated.c}/Windows" if="isWindows"/>
+            -->
+
+            <!-- This must come last to not override real include paths -->
+            <!-- includepath path="stub_includes/macosx" if="isOSX" / -->
+            </compiler>
+
+            <linker extends="${linker.cfg.id}">
+                <syslibset dir="${java.lib.dir.platform}/server" libs="jvm" if="${output.lib.name}.useLibJVM"/>
+            </linker>
+        </cc>
+
+        <echo message=" - - - JOCL natives compiled - - - "/>
+
     </target>
+
+    <target name="c.configure.linux.amd64" depends="gluegen.cpptasks.detect.os,gluegen.cpptasks.setup.compiler">
+        <echo message="configure for Linux.AMD64 build" />
+
+        <linker id="linker.cfg.linux.amd64.jocl" extends="linker.cfg.linux.amd64">
+            <syslibset dir="/home/mbien/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64" libs="OpenCL"/>
+        </linker>
+
+        <property name="compiler.cfg.id" value="compiler.cfg.linux" />
+        <property name="linker.cfg.id"   value="linker.cfg.linux.amd64.jocl" />
+    </target>
+
+    <target name="-post-clean">
+        <delete dir="gensrc"/>
+    </target>
+
     <!--
 
     There exist several targets which are by default empty and which can be 

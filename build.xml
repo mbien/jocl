@@ -56,18 +56,18 @@
     <target name="-post-compile" depends="c.configure.linux.amd64">
 
         <property name="output.lib.name" value="jocl"/>
-        <property name="obj" value="${build.dir}/obj"/>
-        <property name="obj.jocl" value="${obj}/${output.lib.name}"/>
+        <property name="obj.dir" value="${build.dir}/obj"/>
+        <property name="obj.jocl.dir" value="${obj.dir}/${output.lib.name}"/>
 
         <property name="c.compiler.optimise" value="none"/>
         <property name="c.compiler.debug" value="false"/>
 
-        <mkdir dir="${obj.jocl}" />
+        <mkdir dir="${obj.jocl.dir}" />
 
         <echo message=" - - - compiling JOCL natives - - - "/>
 
         <cc outtype="shared"
-            objdir="${obj.jocl}"
+            objdir="${obj.jocl.dir}"
             outfile="${obj}/${output.lib.name}"
             optimize="${c.compiler.optimise}"
             debug="${c.compiler.debug}"
@@ -79,7 +79,7 @@
 
             <compiler extends="${compiler.cfg.id}" >
 
-                <sysincludepath path="${basedir}/resources/jvm_stubs"/>
+                <includepath path="${basedir}/resources/jvm_stubs"/>
 
                 <includepath path="${basedir}/resources"/>
                 <includepath path="${basedir}/resources/CL"/>

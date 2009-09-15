@@ -5,3 +5,8 @@
 #else
     typedef int ptrdiff_t;
 #endif
+
+#define NULL ((void *)0)
+    typedef int wchar_t;
+
+#include <inttypes.h>

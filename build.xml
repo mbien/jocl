@@ -24,9 +24,10 @@
             <pathelement location="../gluegen/build/antlr-2.7.7.jar" />
         </path>
 
-        <dirset id="include.path" dir="${basedir}">
+        <dirset id="jocl.include.path" dir="${basedir}">
             <include name="resources"/>
             <include name="resources/CL"/>
+            <include name="resources/jvm_stubs"/>
         </dirset>
 
         <!--OpenCL-->
@@ -34,7 +35,7 @@
         <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
         <gluegen src="resources/cl.h"
                  config="resources/OpenCL.cfg"
-                 includeRefid="include.path"
+                 includeRefid="jocl.include.path"
                  emitter="com.sun.gluegen.JavaEmitter">
             <classpath refid="gluegen.classpath" />
         </gluegen>
@@ -79,10 +80,9 @@
 
             <compiler extends="${compiler.cfg.id}" >
 
-                <includepath path="${basedir}/resources/jvm_stubs"/>
-
                 <includepath path="${basedir}/resources"/>
                 <includepath path="${basedir}/resources/CL"/>
+                <includepath path="${basedir}/resources/jvm_stubs"/>
 
             <!-- This is for the generated headers for handwritten C code -->
             <!--
@@ -111,8 +111,10 @@
     <target name="c.configure.linux.amd64" depends="gluegen.cpptasks.detect.os,gluegen.cpptasks.setup.compiler">
         <echo message="configure for Linux.AMD64 build" />
 
+        <property name="c.linker.ext.path" value="/home/mbien/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64"/>
+
         <linker id="linker.cfg.linux.amd64.jocl" extends="linker.cfg.linux.amd64">
-            <syslibset dir="/home/mbien/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64" libs="OpenCL"/>
+            <syslibset dir="${c.linker.ext.path}" libs="OpenCL"/>
         </linker>
 
         <property name="compiler.cfg.id" value="compiler.cfg.linux" />

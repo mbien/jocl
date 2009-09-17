@@ -56,20 +56,24 @@
 
     <target name="-post-compile" depends="c.configure.linux.amd64">
 
-        <property name="output.lib.name" value="jocl"/>
         <property name="obj.dir" value="${build.dir}/obj"/>
+        <property name="natives.dir" value="${build.dir}/natives"/>
+
+        <property name="output.lib.name" value="jocl"/>
         <property name="obj.jocl.dir" value="${obj.dir}/${output.lib.name}"/>
+        <property name="natives.jocl.dir" value="${build.dir}/natives/${output.lib.name}"/>
 
         <property name="c.compiler.optimise" value="none"/>
         <property name="c.compiler.debug" value="false"/>
 
         <mkdir dir="${obj.jocl.dir}" />
+        <mkdir dir="${natives.jocl.dir}" />
 
         <echo message=" - - - compiling JOCL natives - - - "/>
 
         <cc outtype="shared"
             objdir="${obj.jocl.dir}"
-            outfile="${obj}/${output.lib.name}"
+            outfile="${natives.jocl.dir}/${output.lib.name}"
             optimize="${c.compiler.optimise}"
             debug="${c.compiler.debug}"
             multithreaded="true"
@@ -80,28 +84,26 @@
 
             <compiler extends="${compiler.cfg.id}" >
 
+                <includepath path="${java.includes.dir}"/>
+                <includepath path="${java.includes.dir.platform}"/>
+
                 <includepath path="${basedir}/resources"/>
                 <includepath path="${basedir}/resources/CL"/>
-                <includepath path="${basedir}/resources/jvm_stubs"/>
 
-            <!-- This is for the generated headers for handwritten C code -->
             <!--
-                <sysincludepath path="${java.includes.dir}"/>
-                <sysincludepath path="${java.includes.dir.platform}"/>
-                
                 <includepath path="${src.generated.c}" />
                 <includepath path="${src.generated.c}/X11" if="isX11"/>
                 <includepath path="${src.generated.c}/MacOSX" if="isOSX"/>
                 <includepath path="${src.generated.c}/Windows" if="isWindows"/>
             -->
 
-            <!-- This must come last to not override real include paths -->
-            <!-- includepath path="stub_includes/macosx" if="isOSX" / -->
             </compiler>
 
+            <!--
             <linker extends="${linker.cfg.id}">
                 <syslibset dir="${java.lib.dir.platform}/server" libs="jvm" if="${output.lib.name}.useLibJVM"/>
             </linker>
+            -->
         </cc>
 
         <echo message=" - - - JOCL natives compiled - - - "/>

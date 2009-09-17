@@ -7,7 +7,6 @@
     // typedef unsigned __int64 uint64_t;
 #else
 
-// only needed for src generation, not later at compile time
     typedef signed   char     int8_t;
     typedef unsigned short    int16_t;
     typedef          int      int32_t;
@@ -20,6 +19,8 @@
     typedef unsigned int      uintptr_t;
 
     typedef unsigned int      size_t;
+
+    // FIXME workaround prevent re-defininition of int16_t in types.h
     #  define __int8_t_defined
 
     /* Greatest-width integer types */

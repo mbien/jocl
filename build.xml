@@ -24,16 +24,17 @@
             <pathelement location="../gluegen/build/antlr-2.7.7.jar" />
         </path>
 
+        <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
+
+        <!--OpenCL Impl including GL interoperability-->
         <dirset id="jocl.include.path" dir="${basedir}">
             <include name="resources"/>
             <include name="resources/CL"/>
             <include name="resources/jvm_stubs"/>
         </dirset>
 
-        <!--OpenCL-->
         <echo message=" - - - generate JOCL java files - - - "/>
-        <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
-        <gluegen src="resources/cl.h"
+        <gluegen src="resources/opencl.h"
                  config="resources/OpenCL.cfg"
                  includeRefid="jocl.include.path"
                  emitter="com.sun.gluegen.JavaEmitter">
@@ -41,16 +42,8 @@
         </gluegen>
         <echo message=" - - - JOCL java files generated - - - "/>
 
-        <!-- TODO OpenCL - OpenGL interoperability
-        <echo message=" - - - generate CL-GL java files - - - "/>
-        <gluegen src="resources/cl_gl.h"
-                 config="resources/OpenCLGL.cfg"
-                 includeRefid="include.path"
-                 emitter="com.sun.gluegen.JavaEmitter">
-            <classpath refid="gluegen.classpath" />
-        </gluegen>
-        <echo message=" - - - CL-GL java files generated - - - "/>
-        -->
+        <!-- TODO   1. generate CLGLimpl
+                    2. split interfaces into CL and CLGL -->
 
     </target>
 
@@ -87,6 +80,8 @@
                 <includepath path="${java.includes.dir}"/>
                 <includepath path="${java.includes.dir.platform}"/>
 
+                <includepath path="${basedir}/../jogl/make/stub_includes/opengl/GL3"/>
+                <includepath path="${basedir}/../jogl/make/stub_includes/opengl"/>
                 <includepath path="${basedir}/resources"/>
                 <includepath path="${basedir}/resources/CL"/>
 

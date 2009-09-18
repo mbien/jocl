@@ -24,15 +24,18 @@ public class JOCLTest {
     }
 
     @Test
-    public void test() {
+    public void basicTest() {
         System.out.println(0xFFFFFFFF);
         System.out.println(0xFFFFFFFE);
         System.out.println(0xFFFFFFFD);
-//        System.out.println(CL.CL_DEVICE_TYPE_ALL);
+
+        System.loadLibrary("jocl");
+
         CLImpl impl = new CLImpl();
         long ctx = impl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, null);
 
-//        impl.clgetp
+        System.out.println("context handle: "+ctx);
+
     }
 
 

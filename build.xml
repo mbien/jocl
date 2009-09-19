@@ -13,15 +13,17 @@
 
     <import file="nbproject/build-impl.xml"/>
 
+    <property name="gluegen.root" value="${basedir}/../gluegen" />
+    <property name="jogl.root" value="${basedir}/../jogl" />
+
     <!-- Pull in GlueGen cpptasks build file -->
-    <property name="gluegen.root" value="../gluegen" />
     <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
 
     <target name="-pre-compile">
 
         <path id="gluegen.classpath">
-            <pathelement location="../gluegen/build/gluegen.jar" />
-            <pathelement location="../gluegen/build/antlr-2.7.7.jar" />
+            <pathelement location="${gluegen.root}/build/gluegen.jar" />
+            <pathelement location="${gluegen.root}/build/antlr-2.7.7.jar" />
         </path>
 
         <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
@@ -45,7 +47,7 @@
 
         <echo message="generate GLImpl..."/>
         <gluegen src="resources/opencl.h"
-                 config="resources/OpenCL.cfg"
+                 config="resources/cl-impl.cfg"
                  includeRefid="jocl.include.path"
                  emitter="com.sun.gluegen.JavaEmitter">
             <classpath refid="gluegen.classpath" />
@@ -90,17 +92,10 @@
                 <includepath path="${java.includes.dir}"/>
                 <includepath path="${java.includes.dir.platform}"/>
 
-                <includepath path="${basedir}/../jogl/make/stub_includes/opengl/GL3"/>
-                <includepath path="${basedir}/../jogl/make/stub_includes/opengl"/>
+                <includepath path="${jogl.root}/make/stub_includes/opengl/GL3"/>
+                <includepath path="${jogl.root}/make/stub_includes/opengl"/>
                 <includepath path="${basedir}/resources"/>
                 <includepath path="${basedir}/resources/CL"/>
-
-            <!--
-                <includepath path="${src.generated.c}" />
-                <includepath path="${src.generated.c}/X11" if="isX11"/>
-                <includepath path="${src.generated.c}/MacOSX" if="isOSX"/>
-                <includepath path="${src.generated.c}/Windows" if="isWindows"/>
-            -->
 
             </compiler>
 
@@ -130,6 +125,10 @@
 
     <target name="-post-clean">
         <delete dir="gensrc"/>
+    </target>
+
+
+    <target name="-post-jar" depends="javadoc">
     </target>
 
     <!--

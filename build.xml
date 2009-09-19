@@ -34,6 +34,16 @@
         </dirset>
 
         <echo message=" - - - generate JOCL java files - - - "/>
+
+        <echo message="generate CLGL interface..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/clgl-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.sun.gluegen.JavaEmitter">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="generate GLImpl..."/>
         <gluegen src="resources/opencl.h"
                  config="resources/OpenCL.cfg"
                  includeRefid="jocl.include.path"

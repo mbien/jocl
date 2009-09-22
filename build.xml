@@ -28,16 +28,24 @@
 
         <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
 
-        <!--OpenCL Impl including GL interoperability-->
+        <!--OpenCL Impl including OpenGL interoperability-->
         <dirset id="jocl.include.path" dir="${basedir}">
             <include name="resources"/>
             <include name="resources/CL"/>
             <include name="resources/jvm_stubs"/>
         </dirset>
 
-        <echo message=" - - - generate JOCL java files - - - "/>
+        <echo message=" - - - generate JOCL binding files - - - "/>
 
-        <echo message="generate CLGL interface..."/>
+        <echo message="generate CL interface..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.sun.gluegen.JavaEmitter">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="generate CLGLI interface..."/>
         <gluegen src="resources/opencl.h"
                  config="resources/clgl-if.cfg"
                  includeRefid="jocl.include.path"
@@ -52,10 +60,7 @@
                  emitter="com.sun.gluegen.JavaEmitter">
             <classpath refid="gluegen.classpath" />
         </gluegen>
-        <echo message=" - - - JOCL java files generated - - - "/>
-
-        <!-- TODO   1. generate CLGLimpl
-                    2. split interfaces into CL and CLGL -->
+        <echo message=" - - - JOCL binding files generated - - - "/>
 
     </target>
 
@@ -107,6 +112,12 @@
         </cc>
 
         <echo message=" - - - JOCL natives compiled - - - "/>
+
+        <copy todir="${natives.jocl.dir}">
+            <fileset dir="${gluegen.root}/build/obj">
+                <include name="*.so"/>
+            </fileset>
+        </copy>
 
     </target>
 

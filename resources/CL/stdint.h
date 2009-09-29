@@ -15,10 +15,10 @@
     typedef unsigned short    uint16_t;
     typedef unsigned int      uint32_t;
 
-    typedef          int      intptr_t;
-    typedef unsigned int      uintptr_t;
+    typedef          long     intptr_t;
+    typedef unsigned long     uintptr_t;
 
-    typedef unsigned int      size_t;
+    typedef unsigned long     size_t;
 
     // FIXME workaround prevent re-defininition of int16_t in types.h
     #  define __int8_t_defined

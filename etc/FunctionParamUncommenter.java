@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import static java.util.regex.Pattern.*;
 
 /**
- * Build setup utility. Uncomments funcion param names in header files.
+ * Build setup utility. Uncomments funcion parameter names in header files.
  *
  * before:
  * foo(int /x bar x/ )
@@ -21,15 +21,13 @@ import static java.util.regex.Pattern.*;
  * @author Michael Bien
  */
 public class FunctionParamUncommenter {
-//(\(.*\))*   cl\w+\(([^\)]+)\)
-
-//    final static String x = "\\s*(const)?\\w+\\s* \\**\\s+ (/\\*) \\s+[^\\*]+ (\\*/)";
 
     final static Pattern PARAMS_PATTERN
-            = compile("cl\\w+ \\(   (  \\s* [^\\)]+  )  \\)", MULTILINE|COMMENTS);
+            = compile("cl\\w+ \\(   (  \\s* [^;]+  )  \\)", MULTILINE|COMMENTS);
 
     final static Pattern COMMENT_PATTERN
-            = compile("\\s*(const)?\\w+\\s* \\**\\s+ (/\\*) \\s+[^\\*]+ (\\*/)", MULTILINE|COMMENTS);
+            = compile("\\s*(const)?\\w+\\s* \\**\\s+ (/\\*) \\s+[^\\*\\[]+ (\\*/)", MULTILINE|COMMENTS);
+                                                                     //^ array size in param name causes some problems
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
         uncomment("/home/mbien/NetBeansProjects/JOGL/jocl/resources/CL/cl.h", false);

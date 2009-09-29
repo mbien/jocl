@@ -97,18 +97,24 @@
                 <includepath path="${java.includes.dir}"/>
                 <includepath path="${java.includes.dir.platform}"/>
 
+            <!-- TODO should we use our own or jogl's GL headers?  -->
+                <includepath path="${basedir}/resources/includes"/>
+                <includepath path="${basedir}/resources/includes/GL3"/>
+            <!--
                 <includepath path="${jogl.root}/make/stub_includes/opengl/GL3"/>
                 <includepath path="${jogl.root}/make/stub_includes/opengl"/>
+
+                -L/usr/X11R6/lib64 -lGL -L/usr/X11R6/lib64 -lX11 -L/usr/X11R6/lib64 -lXxf86vm
+
+            -->
                 <includepath path="${basedir}/resources"/>
                 <includepath path="${basedir}/resources/CL"/>
 
             </compiler>
 
-            <!--
             <linker extends="${linker.cfg.id}">
-                <syslibset dir="${java.lib.dir.platform}/server" libs="jvm" if="${output.lib.name}.useLibJVM"/>
+                
             </linker>
-            -->
         </cc>
 
         <echo message=" - - - JOCL natives compiled - - - "/>
@@ -124,10 +130,12 @@
     <target name="c.configure.linux.amd64" depends="gluegen.cpptasks.detect.os,gluegen.cpptasks.setup.compiler">
         <echo message="configure for Linux.AMD64 build" />
 
+<!--
         <property name="c.linker.ext.path" value="/home/mbien/NVIDIA_GPU_Computing_SDK/OpenCL/common/lib/Linux64"/>
+-->
 
-        <linker id="linker.cfg.linux.amd64.jocl" extends="linker.cfg.linux.amd64">
-            <syslibset dir="${c.linker.ext.path}" libs="OpenCL"/>
+        <linker id="linker.cfg.linux.amd64.jocl">
+            <syslibset dir="/usr/lib" libs="OpenCL"/>
         </linker>
 
         <property name="compiler.cfg.id" value="compiler.cfg.linux" />

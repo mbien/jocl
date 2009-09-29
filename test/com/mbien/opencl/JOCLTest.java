@@ -26,12 +26,14 @@ public class JOCLTest {
 
     @Test
     public void basicTest() {
-        System.out.println(0xFFFFFFFF);
-        System.out.println(0xFFFFFFFE);
-        System.out.println(0xFFFFFFFD);
+//        System.out.println(0xFFFFFFFF);
+//        System.out.println(0xFFFFFFFE);
+//        System.out.println(0xFFFFFFFD);
 
+        System.out.print("loading native libs...");
         System.loadLibrary("gluegen-rt");
         System.loadLibrary("jocl");
+        System.out.println("done");
 
         CreateContextCallback cb = new CreateContextCallback() {
             @Override
@@ -40,14 +42,17 @@ public class JOCLTest {
             }
         };
 
+        System.out.println("creating OpenCL context");
+
         CLImpl impl = new CLImpl();
 
-        System.out.println("test call1: "+impl.clFinish(1));
-        System.out.println("test call2: "+impl.clUnloadCompiler());
+        long context = impl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, cb, null, null);
+        System.out.println("context handle: "+context);
 
-        long ctx = impl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, cb, null, null);
+        int[] buffer = new int[1];
+        impl.clGetContextInfo(context, CL.CL_CONTEXT_NUM_DEVICES, 0, null, buffer, 0);
+        System.out.println("CL_CONTEXT_NUM_DEVICES result: "+buffer[0]);
 
-        System.out.println("context handle: "+ctx);
 
     }
 

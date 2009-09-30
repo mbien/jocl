@@ -1,15 +1,71 @@
 package com.mbien.opencl;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
 
 /**
- *
+ * 
  * @author Michael Bien
  */
-public class CLDevice {
+public final class CLDevice {
+
+    //FIXME gluegen does not generate CL_DEVICE_TYPE_* remove hardcoded values ASAP
+
+    /**
+     * Enumeration for the type of a device.
+     */
+    public enum Type {
+        /**
+         * CL_DEVICE_TYPE_CPU
+         */
+        CPU(1 << 1),
+        /**
+         * CL_DEVICE_TYPE_GPU
+         */
+        GPU(1 << 2),
+        /**
+         * CL_DEVICE_TYPE_ACCELERATOR
+         */
+        ACCELERATOR(1 << 3),
+        /**
+         * CL_DEVICE_TYPE_DEFAULT
+         */
+        DEFAULT(1 << 0);
+
+         /**
+         * Value of wrapped OpenCL device type.
+         */
+        public final int CL_TYPE;
+
+        private Type(int CL_TYPE) {
+            this.CL_TYPE = CL_TYPE;
+        }
+
+        public static Type valueOf(int clDeviceType) {
+            switch(clDeviceType) {
+                case(1 << 0):
+                    return DEFAULT;
+                case(1 << 1):
+                    return CPU;
+                case(1 << 2):
+                    return GPU;
+                case(1 << 3):
+                    return ACCELERATOR;
+            }
+            return null;
+        }
+    }
     
     private final CL cl;
-    private final long deviceID;
+
+    /**
+     * OpenCL device id for this device.
+     */
+    public final long deviceID;
 
     CLDevice(CL cl, long id) {
         this.cl = cl;
@@ -23,7 +79,96 @@ public class CLDevice {
         return getInfoString(CL.CL_DEVICE_NAME);
     }
 
-    public String getInfoString(int key) {
+    /**
+     * Returns the OpenCL profile of this device.
+     */
+    public String getProfile() {
+        return getInfoString(CL.CL_DEVICE_PROFILE);
+    }
+
+    /**
+     * Returns the vendor of this device.
+     */
+    public String getVendor() {
+        return getInfoString(CL.CL_DEVICE_VENDOR);
+    }
+
+    /**
+     * Returns the type of this device.
+     */
+    public Type getType() {
+        return Type.valueOf((int)getInfoLong(CL.CL_DEVICE_TYPE));
+    }
+
+    /**
+     * Returns the maximal number of compute units.
+     */
+    public int getMaxComputeUnits() {
+        return (int) getInfoLong(CL.CL_DEVICE_MAX_COMPUTE_UNITS);
+    }
+
+    /**
+     * Returns the maximal work group size.
+     */
+    public int getMaxWorkGroupSize() {
+        return (int) getInfoLong(CL.CL_DEVICE_MAX_WORK_GROUP_SIZE);
+    }
+
+    /**
+     * Returns the max clock frequency in Hz.
+     */
+    public int getMaxClockFrequency() {
+        return (int) (getInfoLong(CL.CL_DEVICE_MAX_CLOCK_FREQUENCY));
+    }
+
+    /**
+     * Returns the global memory size in Bytes.
+     */
+    public long getGlobalMemSize() {
+        return getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_SIZE);
+    }
+
+    /**
+     * Returns the local memory size in Bytes.
+     */
+    public long getLocalMemSize() {
+        return getInfoLong(CL.CL_DEVICE_LOCAL_MEM_SIZE);
+    }
+
+    /**
+     * Returns all device extension names as unmodifiable Set.
+     */
+    public Set<String> getExtensions() {
+
+        String ext = getInfoString(CL.CL_DEVICE_EXTENSIONS);
+
+        Scanner scanner = new Scanner(ext);
+        Set<String> extSet = new HashSet<String>();
+
+        while(scanner.hasNext())
+            extSet.add(scanner.next());
+
+        return Collections.unmodifiableSet(extSet);
+    }
+
+    //TODO CL_DEVICE_IMAGE_SUPPORT
+    //TODO CL_DEVICE_MAX_WORK_ITEM_SIZES
+
+
+    private final long getInfoLong(int key) {
+
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        bb.order(ByteOrder.nativeOrder());
+
+        int ret = cl.clGetDeviceInfo(deviceID, key, bb.capacity(), bb, null, 0);
+
+        if(CL.CL_SUCCESS != ret)
+            throw new CLException(ret, "can not receive device info");
+
+        return bb.getLong();
+    }
+
+    public final String getInfoString(int key) {
 
         long[] longBuffer = new long[1];
         ByteBuffer bb = ByteBuffer.allocate(512);
@@ -31,12 +176,32 @@ public class CLDevice {
         int ret = cl.clGetDeviceInfo(deviceID, key, bb.capacity(), bb, longBuffer, 0);
         
         if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "can not receive info string");
+            throw new CLException(ret, "can not receive device info string");
 
         return new String(bb.array(), 0, (int)longBuffer[0]);
         
     }
 
-//   ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, bb.capacity(), bb, longBuffer, 0);
-//   assertEquals(CL.CL_SUCCESS, ret);
+
+    @Override
+    public String toString() {
+        return "CLPlatform [name:" + getName()
+                        + " type:" + getType()
+                        + " profile: " + getProfile()+"]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj != null && obj instanceof CLDevice)
+            return ((CLDevice)obj).deviceID == deviceID;
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 79 * hash + (int) (this.deviceID ^ (this.deviceID >>> 32));
+        return hash;
+    }
+
 }

@@ -23,6 +23,12 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject 
     intptr_t * _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
 
+/*
+    printf("jlong: %zu \n", sizeof(jlong)   );
+    printf("intptr_t: %zu \n", sizeof(intptr_t));
+    printf("size_t: %zu \n", sizeof(size_t));
+*/
+
     cl_context _res;
 
     if (props != NULL) {
@@ -38,14 +44,34 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject 
     return (jlong) (intptr_t) _res;
 }
 
-//clCreateContext0(IntBuffer properties, int size, long[] devices, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret, int size2)
+
 /*
 JNIEXPORT jlong JNICALL
 Java_com_mbien_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
         jobject props, jint props_byte_offset, jlong device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
+    intptr_t * _props_ptr  = NULL;
+    int32_t * _errcode_ptr = NULL;
+    void * _device_ptr = NULL;
 
+    cl_context _res;
 
+    if (props != NULL) {
+        _props_ptr = (intptr_t *) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
+    }
+
+   if (device_type != NULL) {
+       _device_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, device_type, NULL)));
+   }
+
+   _res = clCreateContext();
+
+   if (device_type != NULL) {
+    (*env)->ReleasePrimitiveArrayCritical(env, device_type, _device_ptr, 0);
+   }
+   return (jlong) (intptr_t) _res;
 }
 */
+
+
 

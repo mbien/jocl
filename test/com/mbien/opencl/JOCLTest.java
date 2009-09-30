@@ -1,9 +1,8 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
@@ -27,27 +26,41 @@ public class JOCLTest {
     public void tearDownClass() throws Exception {
     }
 
-    @Test
+//    @Test
     public void highLevelTest() {
         System.out.println(" - - - highLevelTest - - - ");
 
         CLPlatform[] clPlatforms = CLContext.listCLPlatforms();
 
         for (CLPlatform platform : clPlatforms) {
-            
+
             System.out.println("platform info:");
-            System.out.println(platform.getName());
-            System.out.println(platform.getProfile());
-            System.out.println(platform.getVersion());
-            System.out.println(platform.getVendor());
+            System.out.println("name: "+platform.getName());
+            System.out.println("profile: "+platform.getProfile());
+            System.out.println("version: "+platform.getVersion());
+            System.out.println("vendor: "+platform.getVendor());
 
             CLDevice[] clDevices = platform.listCLDevices();
             for (CLDevice device : clDevices) {
                 System.out.println("device info:");
-                System.out.println(device.getName());
+                System.out.println("name: "+device.getName());
+                System.out.println("profile: "+device.getProfile());
+                System.out.println("vendor: "+device.getVendor());
+                System.out.println("type: "+device.getType());
+                System.out.println("global mem: "+device.getGlobalMemSize()/(1024*1024)+" MB");
+                System.out.println("local mem: "+device.getLocalMemSize()/1024+" KB");
+                System.out.println("clock: "+device.getMaxClockFrequency()+" MHz");
+                System.out.println("max work group size: "+device.getMaxWorkGroupSize());
+                System.out.println("max compute units: "+device.getMaxComputeUnits());
+                System.out.println("extensions: "+device.getExtensions());
             }
         }
 
+
+        CLContext ctx = CLContext.create();
+        CLDevice device = ctx.getMaxFlopsDevice();
+        System.out.println("max FLOPS device: " + device);
+        ctx.release();
     }
 
     @Test
@@ -55,10 +68,10 @@ public class JOCLTest {
         System.out.println(" - - - lowLevelTest - - - ");
 
         // already loaded
-//        System.out.print("loading native libs...");
-//        System.loadLibrary("gluegen-rt");
-//        System.loadLibrary("jocl");
-//        System.out.println("done");
+        System.out.print("loading native libs...");
+        System.loadLibrary("gluegen-rt");
+        System.loadLibrary("jocl");
+        System.out.println("done");
 
         CreateContextCallback cb = new CreateContextCallback() {
             @Override
@@ -86,6 +99,7 @@ public class JOCLTest {
         // print platform info
         long[] longBuffer = new long[1];
         ByteBuffer bb = ByteBuffer.allocate(128);
+        bb.order(ByteOrder.nativeOrder());
 
         for (int i = 0; i < platformId.length; i++)  {
 
@@ -123,9 +137,10 @@ public class JOCLTest {
                 assertEquals(CL.CL_SUCCESS, ret);
                 System.out.println("    device: "+new String(bb.array(), 0, (int)longBuffer[0]));
 
-//                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, bb.capacity(), bb, longBuffer, 0);
-//                assertEquals(CL.CL_SUCCESS, ret);
-
+                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, bb.capacity(), bb, longBuffer, 0);
+                assertEquals(CL.CL_SUCCESS, ret);
+                System.out.println("    type: " + CLDevice.Type.valueOf(bb.get()));
+                bb.rewind();
 
             }
 
@@ -133,16 +148,15 @@ public class JOCLTest {
 
         Arrays.fill(longBuffer, 0);
 
-        long context = cl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, cb, null, null);
+        long context = cl.clCreateContextFromType(null, 0, CL.CL_DEVICE_TYPE_ALL, cb, null, null, 0);
         System.out.println("context handle: "+context);
 
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer, 0);
         assertEquals(CL.CL_SUCCESS, ret);
 
         System.out.println("CL_CONTEXT_DEVICES result: "+longBuffer[0]);
-//        System.out.println("CL_CONTEXT_DEVICES result: "+buffer[1]);
 
-
+        cl.clReleaseContext(context);
     }
 
 

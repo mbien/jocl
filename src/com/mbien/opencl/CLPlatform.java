@@ -6,9 +6,13 @@ import java.nio.ByteBuffer;
  *
  * @author Michael Bien
  */
-public class CLPlatform {
+public final class CLPlatform {
 
-    private final long platformID;
+    /**
+     * OpenCL platform id for this platform.
+     */
+    public  final long platformID;
+
     private final CL cl;
 
     CLPlatform(CL cl, long id) {
@@ -16,6 +20,9 @@ public class CLPlatform {
         this.cl = cl;
     }
 
+    /**
+     * Lists all physical devices available on this platform.
+     */
     public CLDevice[] listCLDevices() {
 
         int[] intBuffer = new int[1];

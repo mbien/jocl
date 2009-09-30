@@ -28,12 +28,37 @@ public class JOCLTest {
     }
 
     @Test
-    public void basicLowLevelTest() {
+    public void highLevelTest() {
+        System.out.println(" - - - highLevelTest - - - ");
 
-        System.out.print("loading native libs...");
-        System.loadLibrary("gluegen-rt");
-        System.loadLibrary("jocl");
-        System.out.println("done");
+        CLPlatform[] clPlatforms = CLContext.listCLPlatforms();
+
+        for (CLPlatform platform : clPlatforms) {
+            
+            System.out.println("platform info:");
+            System.out.println(platform.getName());
+            System.out.println(platform.getProfile());
+            System.out.println(platform.getVersion());
+            System.out.println(platform.getVendor());
+
+            CLDevice[] clDevices = platform.listCLDevices();
+            for (CLDevice device : clDevices) {
+                System.out.println("device info:");
+                System.out.println(device.getName());
+            }
+        }
+
+    }
+
+    @Test
+    public void lowLevelTest() {
+        System.out.println(" - - - lowLevelTest - - - ");
+
+        // already loaded
+//        System.out.print("loading native libs...");
+//        System.loadLibrary("gluegen-rt");
+//        System.loadLibrary("jocl");
+//        System.out.println("done");
 
         CreateContextCallback cb = new CreateContextCallback() {
             @Override
@@ -49,6 +74,7 @@ public class JOCLTest {
         CL cl = new CLImpl();
 
         int[] intBuffer = new int[1];
+        // find all available OpenCL platforms
         ret = cl.clGetPlatformIDs(0, null, 0, intBuffer, 0);
         assertEquals(CL.CL_SUCCESS, ret);
         System.out.println("#platforms: "+intBuffer[0]);
@@ -56,50 +82,56 @@ public class JOCLTest {
         long[] platformId = new long[intBuffer[0]];
         ret = cl.clGetPlatformIDs(platformId.length, platformId, 0, null, 0);
         assertEquals(CL.CL_SUCCESS, ret);
-        
-        long[] longBuffer = new long[1];
 
+        // print platform info
+        long[] longBuffer = new long[1];
         ByteBuffer bb = ByteBuffer.allocate(128);
-        byte[] str = new byte[128];
 
         for (int i = 0; i < platformId.length; i++)  {
 
             long platform = platformId[i];
             System.out.println("platform id: "+platform);
 
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_PROFILE, bb.capacity(), bb, null, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_PROFILE, bb.capacity(), bb, longBuffer, 0);
             assertEquals(CL.CL_SUCCESS, ret);
-            bb.get(str);
+            System.out.println("    profile: "+new String(bb.array(), 0, (int)longBuffer[0]));
 
-            System.out.println("    profile: "+new String(str));
-            Arrays.fill(str, (byte)0);
-            bb.rewind();
-
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VERSION, bb.capacity(), bb, null, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VERSION, bb.capacity(), bb, longBuffer, 0);
             assertEquals(CL.CL_SUCCESS, ret);
-            bb.get(str);
-            System.out.println("    version: "+new String(str));
-            Arrays.fill(str, (byte)0);
-            bb.rewind();
+            System.out.println("    version: "+new String(bb.array(), 0, (int)longBuffer[0]));
 
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_NAME, bb.capacity(), bb, null, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_NAME, bb.capacity(), bb, longBuffer, 0);
             assertEquals(CL.CL_SUCCESS, ret);
-            bb.get(str);
-            System.out.println("    name: "+new String(str));
-            Arrays.fill(str, (byte)0);
-            bb.rewind();
+            System.out.println("    name: "+new String(bb.array(), 0, (int)longBuffer[0]));
 
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VENDOR, bb.capacity(), bb, null, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VENDOR, bb.capacity(), bb, longBuffer, 0);
             assertEquals(CL.CL_SUCCESS, ret);
-            bb.get(str);
-            System.out.println("    vendor: "+new String(str));
-            Arrays.fill(str, (byte)0);
-            bb.rewind();
+            System.out.println("    vendor: "+new String(bb.array(), 0, (int)longBuffer[0]));
+
+            //find all devices
+            ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
+            assertEquals(CL.CL_SUCCESS, ret);
+            System.out.println("#devices: "+intBuffer[0]);
+
+            long[] devices = new long[intBuffer[0]];
+            ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.length, devices, 0, null, 0);
+
+            //print device info
+            for (int j = 0; j < devices.length; j++) {
+                long device = devices[j];
+                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, bb.capacity(), bb, longBuffer, 0);
+                assertEquals(CL.CL_SUCCESS, ret);
+                System.out.println("    device: "+new String(bb.array(), 0, (int)longBuffer[0]));
+
+//                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, bb.capacity(), bb, longBuffer, 0);
+//                assertEquals(CL.CL_SUCCESS, ret);
+
+
+            }
 
         }
 
         Arrays.fill(longBuffer, 0);
-
 
         long context = cl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, cb, null, null);
         System.out.println("context handle: "+context);

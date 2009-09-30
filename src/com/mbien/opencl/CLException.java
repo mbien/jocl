@@ -1,0 +1,134 @@
+package com.mbien.opencl;
+
+/**
+ * Main Exception type for runtime OpenCL errors and unsuccessfull function calls (e.g. returning other values than CL_SUCCESS).
+ * @author Michael Bien
+ */
+public class CLException extends RuntimeException {
+
+    public CLException(Throwable cause) {
+        super(cause);
+    }
+
+    public CLException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public CLException(String message) {
+        super(message);
+    }
+
+    public CLException(int error, String message) {
+        super(resolveError(error) + ": " + message);
+    }
+
+ 
+    private static final String resolveError(int error) {
+
+        switch (error) {
+            case CL.CL_INVALID_VALUE:
+                return "CL_INVALID_VALUE";
+
+            case CL.CL_INVALID_DEVICE_TYPE:
+                return "CL_INVALID_DEVICE_TYPE";
+
+            case CL.CL_INVALID_PLATFORM:
+                return "CL_INVALID_PLATFORM";
+
+            case CL.CL_INVALID_DEVICE:
+                return "CL_INVALID_DEVICE";
+
+            case CL.CL_INVALID_CONTEXT:
+                return "CL_INVALID_CONTEXT";
+
+            case CL.CL_INVALID_QUEUE_PROPERTIES:
+                return "CL_INVALID_QUEUE_PROPERTIES";
+
+            case CL.CL_INVALID_COMMAND_QUEUE:
+                return "CL_INVALID_COMMAND_QUEUE";
+
+            case CL.CL_INVALID_HOST_PTR:
+                return "CL_INVALID_HOST_PTR";
+
+            case CL.CL_INVALID_MEM_OBJECT:
+                return "CL_INVALID_MEM_OBJECT";
+
+            case CL.CL_INVALID_IMAGE_FORMAT_DESCRIPTOR:
+                return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
+
+            case CL.CL_INVALID_IMAGE_SIZE:
+                return "CL_INVALID_IMAGE_SIZE";
+
+            case CL.CL_INVALID_SAMPLER:
+                return "CL_INVALID_SAMPLER";
+
+            case CL.CL_INVALID_BINARY:
+                return "CL_INVALID_BINARY";
+
+            case CL.CL_INVALID_BUILD_OPTIONS:
+                return "CL_INVALID_BUILD_OPTIONS";
+
+            case CL.CL_INVALID_PROGRAM:
+                return "CL_INVALID_PROGRAM";
+
+            case CL.CL_INVALID_PROGRAM_EXECUTABLE:
+                return "CL_INVALID_PROGRAM_EXECUTABLE";
+
+            case CL.CL_INVALID_KERNEL_NAME:
+                return "CL_INVALID_KERNEL_NAME";
+
+            case CL.CL_INVALID_KERNEL_DEFINITION:
+                return "CL_INVALID_KERNEL_DEFINITION";
+
+            case CL.CL_INVALID_KERNEL:
+                return "CL_INVALID_KERNEL";
+
+            case CL.CL_INVALID_ARG_INDEX:
+                return "CL_INVALID_ARG_INDEX";
+
+            case CL.CL_INVALID_ARG_VALUE:
+                return "CL_INVALID_ARG_VALUE";
+
+            case CL.CL_INVALID_ARG_SIZE:
+                return "CL_INVALID_ARG_SIZE";
+
+            case CL.CL_INVALID_KERNEL_ARGS:
+                return "CL_INVALID_KERNEL_ARGS";
+
+            case CL.CL_INVALID_WORK_DIMENSION:
+                return "CL_INVALID_WORK_DIMENSION";
+
+            case CL.CL_INVALID_WORK_GROUP_SIZE:
+                return "CL_INVALID_WORK_GROUP_SIZE";
+
+            case CL.CL_INVALID_WORK_ITEM_SIZE:
+                return "CL_INVALID_WORK_ITEM_SIZE";
+
+            case CL.CL_INVALID_GLOBAL_OFFSET:
+                return "CL_INVALID_GLOBAL_OFFSET";
+
+            case CL.CL_INVALID_EVENT_WAIT_LIST:
+                return "CL_INVALID_EVENT_WAIT_LIST";
+
+            case CL.CL_INVALID_EVENT:
+                return "CL_INVALID_EVENT";
+
+            case CL.CL_INVALID_OPERATION:
+                return "CL_INVALID_OPERATION";
+
+            case CL.CL_INVALID_GL_OBJECT:
+                return "CL_INVALID_GL_OBJECT";
+
+            case CL.CL_INVALID_BUFFER_SIZE:
+                return "CL_INVALID_BUFFER_SIZE";
+
+            case CL.CL_INVALID_MIP_LEVEL:
+                return "CL_INVALID_MIP_LEVEL";
+
+            default:
+                return "unknown cause";
+        }
+    }
+
+
+}

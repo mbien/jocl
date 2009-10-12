@@ -13,8 +13,6 @@ import java.util.Set;
  */
 public final class CLDevice {
 
-    //FIXME gluegen does not generate CL_DEVICE_TYPE_* remove hardcoded values ASAP
-
     /**
      * Enumeration for the type of a device.
      */
@@ -22,19 +20,19 @@ public final class CLDevice {
         /**
          * CL_DEVICE_TYPE_CPU
          */
-        CPU(1 << 1),
+        CPU(CL.CL_DEVICE_TYPE_CPU),
         /**
          * CL_DEVICE_TYPE_GPU
          */
-        GPU(1 << 2),
+        GPU(CL.CL_DEVICE_TYPE_GPU),
         /**
          * CL_DEVICE_TYPE_ACCELERATOR
          */
-        ACCELERATOR(1 << 3),
+        ACCELERATOR(CL.CL_DEVICE_TYPE_ACCELERATOR),
         /**
          * CL_DEVICE_TYPE_DEFAULT
          */
-        DEFAULT(1 << 0);
+        DEFAULT(CL.CL_DEVICE_TYPE_DEFAULT);
 
          /**
          * Value of wrapped OpenCL device type.
@@ -47,13 +45,13 @@ public final class CLDevice {
 
         public static Type valueOf(int clDeviceType) {
             switch(clDeviceType) {
-                case(1 << 0):
+                case(CL.CL_DEVICE_TYPE_DEFAULT):
                     return DEFAULT;
-                case(1 << 1):
+                case(CL.CL_DEVICE_TYPE_CPU):
                     return CPU;
-                case(1 << 2):
+                case(CL.CL_DEVICE_TYPE_GPU):
                     return GPU;
-                case(1 << 3):
+                case(CL.CL_DEVICE_TYPE_ACCELERATOR):
                     return ACCELERATOR;
             }
             return null;

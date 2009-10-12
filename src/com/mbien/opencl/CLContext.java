@@ -1,8 +1,6 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
 /**
@@ -48,8 +46,8 @@ public final class CLContext {
             type |= deviceTypes[i].CL_TYPE;
         }
 
-        long context = cl.clCreateContextFromType(null, 0, type, null, null, null, 0);
-        return new CLContext(context);
+        long ctxID = cl.clCreateContextFromType(null, 0, type, null, null, null, 0);
+        return new CLContext(ctxID);
     }
 
     /**
@@ -122,6 +120,13 @@ public final class CLContext {
             platforms[i] = new CLPlatform(cl, platformId[i]);
 
         return platforms;
+    }
+
+    /**
+     * Returns the low level binding interface to the OpenCL APIs.
+     */
+    public static CL getLowLevelBinding() {
+        return cl;
     }
 
 }

@@ -19,11 +19,10 @@ public class CLException extends RuntimeException {
     }
 
     public CLException(int error, String message) {
-        super(resolveError(error) + ": " + message);
+        super(identifyError(error) + ": " + message);
     }
 
- 
-    private static final String resolveError(int error) {
+    private static final String identifyError(int error) {
 
         switch (error) {
             case CL.CL_INVALID_VALUE:

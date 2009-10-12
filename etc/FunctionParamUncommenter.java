@@ -29,9 +29,11 @@ public class FunctionParamUncommenter {
             = compile("\\s*(const)?\\w+\\s* \\**\\s+ (/\\*) \\s+[^\\*\\[]+ (\\*/)", MULTILINE|COMMENTS);
                                                                      //^ array size in param name causes some problems
 
+    //TODO integrate in build...
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        uncomment("/home/mbien/NetBeansProjects/JOGL/jocl/resources/CL/cl.h", false);
-        uncomment("/home/mbien/NetBeansProjects/JOGL/jocl/resources/CL/cl_gl.h", false);
+        String path = "/home/mbien/NetBeansProjects/JOGL/jocl/resources/includes/CL/";
+        uncomment(path + "cl.h", false);
+        uncomment(path + "cl_gl.h", false);
     }
 
     private static void uncomment(String file, boolean replace) throws FileNotFoundException, IOException {

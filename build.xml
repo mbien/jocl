@@ -30,9 +30,10 @@
 
         <!--OpenCL Impl including OpenGL interoperability-->
         <dirset id="jocl.include.path" dir="${basedir}">
-            <include name="resources"/>
-            <include name="resources/CL"/>
-            <include name="resources/jvm_stubs"/>
+            <include name="resources/includes"/>
+            <include name="resources/stubs_includes/jvm"/>
+            <include name="resources/stubs_includes/gl"/>
+            <include name="resources/stubs_includes/common"/>
         </dirset>
 
         <echo message=" - - - generate JOCL binding files - - - "/>
@@ -97,18 +98,14 @@
                 <includepath path="${java.includes.dir}"/>
                 <includepath path="${java.includes.dir.platform}"/>
 
-            <!-- TODO should we use our own or jogl's GL headers?  -->
-                <includepath path="${basedir}/resources/includes"/>
+                <!-- TODO should we use our own or jogl's GL headers?  -->
+                <includepath path="${basedir}/resources/includes/CL"/>
                 <includepath path="${basedir}/resources/includes/GL3"/>
+
             <!--
                 <includepath path="${jogl.root}/make/stub_includes/opengl/GL3"/>
                 <includepath path="${jogl.root}/make/stub_includes/opengl"/>
-
-                -L/usr/X11R6/lib64 -lGL -L/usr/X11R6/lib64 -lX11 -L/usr/X11R6/lib64 -lXxf86vm
-
             -->
-                <includepath path="${basedir}/resources"/>
-                <includepath path="${basedir}/resources/CL"/>
 
             </compiler>
 
@@ -146,9 +143,6 @@
         <delete dir="gensrc"/>
     </target>
 
-
-    <target name="-post-jar" depends="javadoc">
-    </target>
 
     <!--
 

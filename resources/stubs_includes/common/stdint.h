@@ -20,9 +20,6 @@
 
     typedef unsigned long     size_t;
 
-    // FIXME workaround prevent re-defininition of int16_t in types.h
-    #  define __int8_t_defined
-
     /* Greatest-width integer types */
     /* Modern GCCs provide __INTMAX_TYPE__ */
     #if defined(__INTMAX_TYPE__)

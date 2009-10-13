@@ -99,9 +99,7 @@
                 <includepath path="${java.includes.dir.platform}"/>
 
                 <!-- TODO should we use our own or jogl's GL headers?  -->
-                <includepath path="${basedir}/resources/includes/CL"/>
-                <includepath path="${basedir}/resources/includes/GL3"/>
-
+                <includepath path="${basedir}/resources/includes"/>
             <!--
                 <includepath path="${jogl.root}/make/stub_includes/opengl/GL3"/>
                 <includepath path="${jogl.root}/make/stub_includes/opengl"/>

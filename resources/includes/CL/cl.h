@@ -21,6 +21,8 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  ******************************************************************************/
 
+/* $Revision: 8406 $ on $Date: 2009-06-12 10:56:01 -0700 (Fri, 12 Jun 2009) $ */
+
 #ifndef __OPENCL_CL_H
 #define __OPENCL_CL_H
 
@@ -85,13 +87,56 @@ typedef struct _cl_image_format {
     cl_channel_type         image_channel_data_type;
 } cl_image_format;
 
+
+/******************************************************************************/
+
+// Macro names and corresponding values defined by OpenCL
+
+#define CL_CHAR_BIT         8
+#define CL_SCHAR_MAX        127
+#define CL_SCHAR_MIN        (-127-1)
+#define CL_CHAR_MAX         CL_SCHAR_MAX
+#define CL_CHAR_MIN         CL_SCHAR_MIN
+#define CL_UCHAR_MAX        255
+#define CL_SHRT_MAX         32767
+#define CL_SHRT_MIN         (-32767-1)
+#define CL_USHRT_MAX        65535
+#define CL_INT_MAX          2147483647
+#define CL_INT_MIN          (-2147483647-1)
+#define CL_UINT_MAX         0xffffffffU
+#define CL_LONG_MAX         ((cl_long) 0x7FFFFFFFFFFFFFFFLL)
+#define CL_LONG_MIN         ((cl_long) -0x7FFFFFFFFFFFFFFFLL - 1LL)
+#define CL_ULONG_MAX        ((cl_ulong) 0xFFFFFFFFFFFFFFFFULL)
+
+#define CL_FLT_DIG          6
+#define CL_FLT_MANT_DIG     24
+#define CL_FLT_MAX_10_EXP   +38
+#define CL_FLT_MAX_EXP      +128
+#define CL_FLT_MIN_10_EXP   -37
+#define CL_FLT_MIN_EXP      -125
+#define CL_FLT_RADIX        2
+#define CL_FLT_MAX          0x1.fffffep127f
+#define CL_FLT_MIN          0x1.0p-126f
+#define CL_FLT_EPSILON      0x1.0p-23f
+
+#define CL_DBL_DIG          15
+#define CL_DBL_MANT_DIG     53
+#define CL_DBL_MAX_10_EXP   +308
+#define CL_DBL_MAX_EXP      +1024
+#define CL_DBL_MIN_10_EXP   -307
+#define CL_DBL_MIN_EXP      -1021
+#define CL_DBL_RADIX        2
+#define CL_DBL_MAX          0x1.fffffffffffffp1023
+#define CL_DBL_MIN          0x1.0p-1022
+#define CL_DBL_EPSILON      0x1.0p-52
+
 /******************************************************************************/
 
 // Error Codes
 #define CL_SUCCESS                                  0
 #define CL_DEVICE_NOT_FOUND                         -1
 #define CL_DEVICE_NOT_AVAILABLE                     -2
-#define CL_DEVICE_COMPILER_NOT_AVAILABLE            -3
+#define CL_COMPILER_NOT_AVAILABLE                   -3
 #define CL_MEM_OBJECT_ALLOCATION_FAILURE            -4
 #define CL_OUT_OF_RESOURCES                         -5
 #define CL_OUT_OF_HOST_MEMORY                       -6
@@ -148,6 +193,7 @@ typedef struct _cl_image_format {
 #define CL_PLATFORM_VERSION                         0x0901
 #define CL_PLATFORM_NAME                            0x0902
 #define CL_PLATFORM_VENDOR                          0x0903
+#define CL_PLATFORM_EXTENSIONS                      0x0904
 
 // cl_device_type - bitfield
 #define CL_DEVICE_TYPE_DEFAULT                      (1 << 0)
@@ -208,10 +254,6 @@ typedef struct _cl_image_format {
 #define CL_DEVICE_EXTENSIONS                        0x1030
 #define CL_DEVICE_PLATFORM                          0x1031
 
-// cl_device_address_info - bitfield
-#define CL_DEVICE_ADDRESS_32_BITS                   (1 << 0)
-#define CL_DEVICE_ADDRESS_64_BITS                   (1 << 1)
-
 // cl_device_fp_config - bitfield
 #define CL_FP_DENORM                                (1 << 0)
 #define CL_FP_INF_NAN                               (1 << 1)
@@ -239,9 +281,10 @@ typedef struct _cl_image_format {
 
 // cl_context_info
 #define CL_CONTEXT_REFERENCE_COUNT                  0x1080
-#define CL_CONTEXT_NUM_DEVICES                      0x1081
-#define CL_CONTEXT_DEVICES                          0x1082
-#define CL_CONTEXT_PROPERTIES                       0x1083
+#define CL_CONTEXT_DEVICES                          0x1081
+#define CL_CONTEXT_PROPERTIES                       0x1082
+
+// cl_context_properties
 #define CL_CONTEXT_PLATFORM                         0x1084
 
 // cl_command_queue_info
@@ -385,10 +428,8 @@ typedef struct _cl_image_format {
 #define CL_COMMAND_MAP_IMAGE                        0x11FC
 #define CL_COMMAND_UNMAP_MEM_OBJECT                 0x11FD
 #define CL_COMMAND_MARKER                           0x11FE
-#define CL_COMMAND_WAIT_FOR_EVENTS                  0x11FF
-#define CL_COMMAND_BARRIER                          0x1200
-#define CL_COMMAND_ACQUIRE_GL_OBJECTS               0x1201
-#define CL_COMMAND_RELEASE_GL_OBJECTS               0x1202
+#define CL_COMMAND_ACQUIRE_GL_OBJECTS               0x11FF
+#define CL_COMMAND_RELEASE_GL_OBJECTS               0x1200
 
 // command execution status
 #define CL_COMPLETE                                 0x0
@@ -834,7 +875,7 @@ clEnqueueTask(cl_command_queue  /* command_queue */,
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clEnqueueNativeKernel(cl_command_queue  /* command_queue */,
-                      void (*user_func)(void *),
+					  void (*user_func)(void *),
                       void *            /* args */,
                       size_t            /* cb_args */,
                       cl_uint           /* num_mem_objects */,
@@ -855,6 +896,15 @@ clEnqueueWaitForEvents(cl_command_queue /* command_queue */,
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clEnqueueBarrier(cl_command_queue /* command_queue */) CL_API_SUFFIX__VERSION_1_0;
+
+// Extension function access
+//
+// Returns the extension function address for the given function name,
+// or NULL if a valid function can not be found.  The client must
+// check to make sure the address is not NULL, before using or
+// calling the returned function address.
+//
+void *clGetExtensionFunctionAddress(const char * /* func_name */) CL_API_SUFFIX__VERSION_1_0;
 
 #ifdef __cplusplus
 }

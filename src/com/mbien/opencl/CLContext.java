@@ -1,6 +1,7 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.IntBuffer;
 
 /**
@@ -62,9 +63,8 @@ public final class CLContext {
     /**
      * Gets the device with maximal FLOPS from this context.
      */
+    /*
     public CLDevice getMaxFlopsDevice() {
-
-        //TODO not finished
 
         long[] longBuffer = new long[1];
 //        ByteBuffer bb = ByteBuffer.allocate(8);
@@ -95,6 +95,12 @@ public final class CLContext {
 
         return null;
     }
+
+    public CLDevice[] getCLDevices() {
+
+    }
+*/
+
 
     /**
      * Lists all available OpenCL implementaitons.

@@ -1,3 +1,12 @@
+/*
+void checkStatus(const char* msg, int status) {
+    if (status != CL_SUCCESS) {
+        printf("%s; error: %d \n", msg, status);
+        exit(EXIT_FAILURE);
+    }
+}
+*/
+
 
 /*
 void createContextCallback(const char * c, const void * v, size_t s, void * o) {
@@ -22,14 +31,7 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject 
 
     intptr_t * _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
-
-/*
-    printf("jlong: %zu \n", sizeof(jlong)   );
-    printf("intptr_t: %zu \n", sizeof(intptr_t));
-    printf("size_t: %zu \n", sizeof(size_t));
-*/
-
-    cl_context _res;
+    cl_context _ctx;
 
     if (props != NULL) {
         _props_ptr = (intptr_t *) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
@@ -39,9 +41,21 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject 
     }
 
     //TODO callback; payload
-    _res = clCreateContextFromType((intptr_t *) _props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
+    _ctx = clCreateContextFromType((intptr_t *) _props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
 
-    return (jlong) (intptr_t) _res;
+/*
+    printf(" - - - - test - - - -  \n");
+    cl_uint err;
+    size_t deviceListSize;
+
+    // get the list of GPU devices associated with context
+    err = clGetContextInfo(_ctx, CL_CONTEXT_DEVICES, 0, NULL, &deviceListSize);  checkStatus("getContextInfo1", err);
+    cl_uint count = (cl_uint)deviceListSize / sizeof(cl_device_id);
+    printf("devices: %d \n",  count);
+    printf(" - - - - test end - - - -  \n");
+*/
+
+    return (jlong)_ctx;
 }
 
 
@@ -73,5 +87,40 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
 }
 */
 
+/**
+ * Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void (*pfn_notify)(cl_program, void *user_data), void * );
+ */
+JNIEXPORT jint JNICALL
+Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
+        jlong program, jint deviceCount, jobject deviceList, jint offset, jstring options, jobject cb, jobject data) {
 
+    const char* _strchars_options = NULL;
+    cl_int _res;
+    size_t * _deviceListPtr = NULL;
 
+    if (options != NULL) {
+        _strchars_options = (*env)->GetStringUTFChars(env, options, (jboolean*)NULL);
+        if (_strchars_options == NULL) {
+            (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/OutOfMemoryError"),
+                           "Failed to get UTF-8 chars for argument \"options\" in native dispatcher for \"clBuildProgram\"");
+            return CL_FALSE;
+        }
+    }
+
+    if (deviceList != NULL) {
+        _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)) + offset);
+    }
+    
+    // TODO payload, callback...
+    _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, _deviceListPtr, _strchars_options, NULL, NULL);
+
+    if (deviceList != NULL) {
+        (*env)->ReleasePrimitiveArrayCritical(env, deviceList, _deviceListPtr, 0);
+    }
+
+    if (options != NULL) {
+        (*env)->ReleaseStringUTFChars(env, options, _strchars_options);
+    }
+    
+    return _res;
+}

@@ -1,8 +1,10 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.BufferFactory;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -107,8 +109,7 @@ public class JOCLTest {
 //        };
 
         long[] longBuffer = new long[1];
-        ByteBuffer bb = ByteBuffer.allocate(1024);
-        bb.order(ByteOrder.nativeOrder());
+        ByteBuffer bb = ByteBuffer.allocate(4096).order(ByteOrder.nativeOrder());
 
         CL cl = CLContext.getLowLevelBinding();
 
@@ -138,20 +139,20 @@ public class JOCLTest {
         long commandQueue = cl.clCreateCommandQueue(context, firstDeviceID, 0, intArray, 0);
         checkError("on clCreateCommandQueue", intArray[0]);
 
-        int iNumElements = 11444777;	// Length of float arrays to process (odd # for illustration)
-        int szLocalWorkSize = 256;      // set and log Global and Local work size dimensions
-        int szGlobalWorkSize = roundUp(szLocalWorkSize, iNumElements);  // rounded up to the nearest multiple of the LocalWorkSize
+        int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
+        int localWorkSize = 256;      // set and log Global and Local work size dimensions
+        int globalWorkSize = roundUp(localWorkSize, elementCount);  // rounded up to the nearest multiple of the LocalWorkSize
         int sizeofFloat = 4; // TODO sizeof float ...
-        
+
         // Allocate the OpenCL buffer memory objects for source and result on the device GMEM
-        long cmDevSrcA = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, sizeofFloat * szGlobalWorkSize, null, intArray, 0);
+        long devSrcA = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, sizeofFloat * globalWorkSize, null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
-        long cmDevSrcB = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, sizeofFloat * szGlobalWorkSize, null, intArray, 0);
+        long devSrcB = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, sizeofFloat * globalWorkSize, null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
-        long cmDevDst  = cl.clCreateBuffer(context, CL.CL_MEM_WRITE_ONLY, sizeofFloat * szGlobalWorkSize, null, intArray, 0);
+        long devDst  = cl.clCreateBuffer(context, CL.CL_MEM_WRITE_ONLY, sizeofFloat * globalWorkSize, null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
-        
-        String src = 
+
+        String src =
               " // OpenCL Kernel Function for element by element vector addition                                                \n"
             + "__kernel void VectorAdd(__global const float* a, __global const float* b, __global float* c, int iNumElements) { \n"
             + "    // get index into global data array                                                                          \n"
@@ -168,10 +169,26 @@ public class JOCLTest {
         // Create the program
         long program = cl.clCreateProgramWithSource(context, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
         checkError("on clCreateProgramWithSource", intArray[0]);
-        
+
         // Build the program
-        ret = cl.clBuildProgram(program, new long[] { firstDeviceID }, null, null, null);
+        ret = cl.clBuildProgram(program, null, null, null, null);
         checkError("on clBuildProgram", ret);
+
+        // Read program infos
+        bb.rewind();
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_NUM_DEVICES, bb.capacity(), bb, null, 0);
+        checkError("on clGetProgramInfo1", ret);
+        out.println("program associated with "+bb.getInt(0)+" device(s)");
+
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, bb, longBuffer, 0);
+        checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
+        out.println("program source length (cl): "+longBuffer[0]);
+        out.println("program source length (java): "+src.length());
+
+        bb.rewind();
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, bb.capacity(), bb, null, 0);
+        checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
+        out.println("program source:\n"+new String(bb.array(), 0, (int)longBuffer[0]));
 
         // Check program status
         Arrays.fill(longBuffer, 42);
@@ -194,12 +211,77 @@ public class JOCLTest {
         out.println("log:\n" + new String(bb.array(), 0, (int)longBuffer[0]));
 
         // Create the kernel
+        Arrays.fill(intArray, 42);
         long kernel = cl.clCreateKernel(program, "VectorAdd", intArray, 0);
         checkError("on clCreateKernel", intArray[0]);
-        
+
+
+        ByteBuffer srcA = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_FLOAT);
+        ByteBuffer srcB = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_FLOAT);
+        ByteBuffer dst  = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_FLOAT);
+        ByteBuffer elementCountBuffer = BufferFactory.newDirectByteBuffer(BufferFactory.SIZEOF_INT);
+        elementCountBuffer.putInt(elementCount);
+
+        srcA.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
+        srcB.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
+
+        fillBuffer(srcA, 23456);
+        fillBuffer(srcB, 46987);
+
+        // Set the Argument values
+        ret = cl.clSetKernelArg(kernel, 0, BufferFactory.SIZEOF_LONG, wrap(devSrcA));  checkError("on clSetKernelArg0", ret);
+        ret = cl.clSetKernelArg(kernel, 1, BufferFactory.SIZEOF_LONG, wrap(devSrcB));  checkError("on clSetKernelArg1", ret);
+        ret = cl.clSetKernelArg(kernel, 2, BufferFactory.SIZEOF_LONG, wrap(devDst));   checkError("on clSetKernelArg2", ret);
+        ret = cl.clSetKernelArg(kernel, 3, BufferFactory.SIZEOF_INT, elementCountBuffer);  checkError("on clSetKernelArg3", ret);
+
+        // Asynchronous write of data to GPU device
+        ret = cl.clEnqueueWriteBuffer(commandQueue, devSrcA, CL.CL_FALSE, 0, srcA.capacity(), srcA, 0, null, 0, null, 0);
+        checkError("on clEnqueueWriteBuffer", ret);
+        ret = cl.clEnqueueWriteBuffer(commandQueue, devSrcB, CL.CL_FALSE, 0, srcB.capacity(), srcB, 0, null, 0, null, 0);
+        checkError("on clEnqueueWriteBuffer", ret);
+
+        // Launch kernel
+        ret = cl.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, 0,
+                                                                 new long[]{ globalWorkSize }, 0,
+                                                                 new long[]{ localWorkSize }, 0, 0,
+                                                                 null, 0,
+                                                                 null, 0);
+        checkError("on clEnqueueNDRangeKernel", ret);
+
+        // Synchronous/blocking read of results
+        ret = cl.clEnqueueReadBuffer(commandQueue, devDst, CL.CL_TRUE, 0, BufferFactory.SIZEOF_FLOAT * globalWorkSize, dst, 0, null, 0, null, 0);
+        checkError("on clEnqueueReadBuffer", ret);
+
+//        for(int i = 0; i < 50; i++)
+//            System.out.println(dst.getFloat());
+
+        // cleanup
+        ret = cl.clReleaseProgram(program);
+        checkError("on clReleaseProgram", ret);
+
+        ret = cl.clReleaseKernel(kernel);
+        checkError("on clReleaseKernel", ret);
+
+        ret = cl.clUnloadCompiler();
+        checkError("on clUnloadCompiler", ret);
+
         ret = cl.clReleaseContext(context);
         checkError("on clReleaseContext", ret);
 
+    }
+
+    private void fillBuffer(ByteBuffer buffer, int seed) {
+
+        Random rnd = new Random(seed);
+
+        while(buffer.remaining() != 0)
+            buffer.putFloat(rnd.nextFloat());
+
+        buffer.rewind();
+    }
+
+    private ByteBuffer wrap(long value) {
+        return (ByteBuffer)ByteBuffer.allocateDirect(8).order(ByteOrder.nativeOrder()).putLong(value).rewind();
     }
 
     private String getBuildStatus(int status) {

@@ -110,6 +110,14 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
     if (deviceList != NULL) {
         _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)) + offset);
     }
+
+/*
+    printf("---------------------------------------------------------------------------\n");
+    printf("deviceList: %d\n", _deviceListPtr);
+    printf("_strchars_options: %d\n", _strchars_options);
+    printf("deviceCount: %d\n", deviceCount);
+    printf("---------------------------------------------------------------------------\n");
+*/
     
     // TODO payload, callback...
     _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, _deviceListPtr, _strchars_options, NULL, NULL);

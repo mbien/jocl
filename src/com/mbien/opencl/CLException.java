@@ -125,7 +125,7 @@ public class CLException extends RuntimeException {
                 return "CL_INVALID_MIP_LEVEL";
 
             default:
-                return "unknown cause: error "+error;
+                return "unknown cause: error " + error;
         }
     }
 

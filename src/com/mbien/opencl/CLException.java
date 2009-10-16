@@ -25,6 +25,42 @@ public class CLException extends RuntimeException {
     private static final String identifyError(int error) {
 
         switch (error) {
+            case CL.CL_DEVICE_NOT_FOUND:
+                return "CL_DEVICE_NOT_FOUND";
+
+            case CL.CL_DEVICE_NOT_AVAILABLE:
+                return "CL_DEVICE_NOT_AVAILABLE";
+
+            case CL.CL_COMPILER_NOT_AVAILABLE:
+                return "CL_COMPILER_NOT_AVAILABLE";
+
+            case CL.CL_MEM_OBJECT_ALLOCATION_FAILURE:
+                return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
+
+            case CL.CL_OUT_OF_RESOURCES:
+                return "CL_OUT_OF_RESOURCES";
+
+            case CL.CL_OUT_OF_HOST_MEMORY:
+                return "CL_OUT_OF_HOST_MEMORY";
+
+            case CL.CL_PROFILING_INFO_NOT_AVAILABLE:
+                return "CL_PROFILING_INFO_NOT_AVAILABLE";
+
+            case CL.CL_MEM_COPY_OVERLAP:
+                return "CL_MEM_COPY_OVERLAP";
+
+            case CL.CL_IMAGE_FORMAT_MISMATCH:
+                return "CL_IMAGE_FORMAT_MISMATCH";
+
+            case CL.CL_IMAGE_FORMAT_NOT_SUPPORTED:
+                return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
+
+            case CL.CL_BUILD_PROGRAM_FAILURE:
+                return "CL_BUILD_PROGRAM_FAILURE";
+
+            case CL.CL_MAP_FAILURE:
+                return "CL_MAP_FAILURE";
+
             case CL.CL_INVALID_VALUE:
                 return "CL_INVALID_VALUE";
 

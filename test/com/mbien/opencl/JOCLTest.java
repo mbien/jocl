@@ -108,7 +108,7 @@ public class JOCLTest {
 //            }
 //        };
 
-        long[] longBuffer = new long[1];
+        long[] longArray = new long[1];
         ByteBuffer bb = ByteBuffer.allocate(4096).order(ByteOrder.nativeOrder());
 
         CL cl = CLContext.getLowLevelBinding();
@@ -120,16 +120,16 @@ public class JOCLTest {
         out.println("context handle: "+context);
 
         // TODO fix gluegen bug: array-buffer mixing... bb is a noop
-        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, bb, longBuffer, 0);
+        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, bb, longArray, 0);
         checkError("on clGetContextInfo", ret);
 
         int sizeofLong = 8; // TODO sizeof long...
-        out.println("context created with " + longBuffer[0]/sizeofLong + " devices");
+        out.println("context created with " + longArray[0]/sizeofLong + " devices");
 
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, bb.capacity(), bb, null, 0);
         checkError("on clGetContextInfo", ret);
 
-        for (int i = 0; i < longBuffer[0]/sizeofLong; i++) {
+        for (int i = 0; i < longArray[0]/sizeofLong; i++) {
             out.println("device id: "+bb.getLong());
         }
 
@@ -142,19 +142,21 @@ public class JOCLTest {
         int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
         int localWorkSize = 256;      // set and log Global and Local work size dimensions
         int globalWorkSize = roundUp(localWorkSize, elementCount);  // rounded up to the nearest multiple of the LocalWorkSize
-        int sizeofFloat = 4; // TODO sizeof float ...
 
+        out.println(globalWorkSize);
+
+        // TODO sizeof int ...
         // Allocate the OpenCL buffer memory objects for source and result on the device GMEM
-        long devSrcA = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, sizeofFloat * globalWorkSize, null, intArray, 0);
+        long devSrcA = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, BufferFactory.SIZEOF_INT * globalWorkSize, null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
-        long devSrcB = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, sizeofFloat * globalWorkSize, null, intArray, 0);
+        long devSrcB = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, BufferFactory.SIZEOF_INT * globalWorkSize, null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
-        long devDst  = cl.clCreateBuffer(context, CL.CL_MEM_WRITE_ONLY, sizeofFloat * globalWorkSize, null, intArray, 0);
+        long devDst  = cl.clCreateBuffer(context, CL.CL_MEM_WRITE_ONLY, BufferFactory.SIZEOF_INT * globalWorkSize, null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
 
         String src =
               " // OpenCL Kernel Function for element by element vector addition                                                \n"
-            + "__kernel void VectorAdd(__global const float* a, __global const float* b, __global float* c, int iNumElements) { \n"
+            + "__kernel void VectorAdd(__global const int* a, __global const int* b, __global int* c, int iNumElements) {       \n"
             + "    // get index into global data array                                                                          \n"
             + "    int iGID = get_global_id(0);                                                                                 \n"
             + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code                           \n"
@@ -163,6 +165,7 @@ public class JOCLTest {
             + "    }                                                                                                            \n"
             + "    // add the vector elements                                                                                   \n"
             + "    c[iGID] = a[iGID] + b[iGID];                                                                                 \n"
+            + "    //c[iGID] = iGID;                                                                                            \n"
             + "}                                                                                                                \n";
 
 
@@ -180,18 +183,18 @@ public class JOCLTest {
         checkError("on clGetProgramInfo1", ret);
         out.println("program associated with "+bb.getInt(0)+" device(s)");
 
-        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, bb, longBuffer, 0);
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, bb, longArray, 0);
         checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
-        out.println("program source length (cl): "+longBuffer[0]);
+        out.println("program source length (cl): "+longArray[0]);
         out.println("program source length (java): "+src.length());
 
         bb.rewind();
         ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, bb.capacity(), bb, null, 0);
         checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
-        out.println("program source:\n"+new String(bb.array(), 0, (int)longBuffer[0]));
+        out.println("program source:\n"+new String(bb.array(), 0, (int)longArray[0]));
 
         // Check program status
-        Arrays.fill(longBuffer, 42);
+        Arrays.fill(longArray, 42);
         bb.rewind();
         ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_STATUS, bb.capacity(), bb, null, 0);
         checkError("on clGetProgramBuildInfo1", ret);
@@ -201,14 +204,14 @@ public class JOCLTest {
 
         // Read build log
         // TODO fix gluegen bug: array-buffer mixing... bb is a noop
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, 0, bb, longBuffer, 0);
+        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, 0, bb, longArray, 0);
         checkError("on clGetProgramBuildInfo2", ret);
-        out.println("program log length: " + longBuffer[0]);
+        out.println("program log length: " + longArray[0]);
 
         bb.rewind();
         ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, bb.capacity(), bb, null, 0);
         checkError("on clGetProgramBuildInfo3", ret);
-        out.println("log:\n" + new String(bb.array(), 0, (int)longBuffer[0]));
+        out.println("log:\n" + new String(bb.array(), 0, (int)longArray[0]));
 
         // Create the kernel
         Arrays.fill(intArray, 42);
@@ -216,14 +219,12 @@ public class JOCLTest {
         checkError("on clCreateKernel", intArray[0]);
 
 
-        ByteBuffer srcA = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_FLOAT);
-        ByteBuffer srcB = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_FLOAT);
-        ByteBuffer dst  = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_FLOAT);
-        ByteBuffer elementCountBuffer = BufferFactory.newDirectByteBuffer(BufferFactory.SIZEOF_INT);
-        elementCountBuffer.putInt(elementCount);
+        ByteBuffer srcA = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
+        ByteBuffer srcB = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
+        ByteBuffer dst  = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
 
-        srcA.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
-        srcB.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
+//        srcA.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
+//        srcB.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
 
         fillBuffer(srcA, 23456);
         fillBuffer(srcB, 46987);
@@ -232,7 +233,9 @@ public class JOCLTest {
         ret = cl.clSetKernelArg(kernel, 0, BufferFactory.SIZEOF_LONG, wrap(devSrcA));  checkError("on clSetKernelArg0", ret);
         ret = cl.clSetKernelArg(kernel, 1, BufferFactory.SIZEOF_LONG, wrap(devSrcB));  checkError("on clSetKernelArg1", ret);
         ret = cl.clSetKernelArg(kernel, 2, BufferFactory.SIZEOF_LONG, wrap(devDst));   checkError("on clSetKernelArg2", ret);
-        ret = cl.clSetKernelArg(kernel, 3, BufferFactory.SIZEOF_INT, elementCountBuffer);  checkError("on clSetKernelArg3", ret);
+        ret = cl.clSetKernelArg(kernel, 3, BufferFactory.SIZEOF_INT,  wrap(elementCount));  checkError("on clSetKernelArg3", ret);
+
+        out.println("used device memory: "+ (srcA.capacity()+srcB.capacity()+dst.capacity())/1000000 +"MB");
 
         // Asynchronous write of data to GPU device
         ret = cl.clEnqueueWriteBuffer(commandQueue, devSrcA, CL.CL_FALSE, 0, srcA.capacity(), srcA, 0, null, 0, null, 0);
@@ -249,13 +252,26 @@ public class JOCLTest {
         checkError("on clEnqueueNDRangeKernel", ret);
 
         // Synchronous/blocking read of results
-        ret = cl.clEnqueueReadBuffer(commandQueue, devDst, CL.CL_TRUE, 0, BufferFactory.SIZEOF_FLOAT * globalWorkSize, dst, 0, null, 0, null, 0);
+        ret = cl.clEnqueueReadBuffer(commandQueue, devDst, CL.CL_TRUE, 0, BufferFactory.SIZEOF_INT * globalWorkSize, dst, 0, null, 0, null, 0);
         checkError("on clEnqueueReadBuffer", ret);
 
-//        for(int i = 0; i < 50; i++)
-//            System.out.println(dst.getFloat());
+        out.println("a+b=c result snapshot: ");
+        for(int i = 0; i < 10; i++)
+            out.print(dst.getInt()+", ");
+        out.println();
+
 
         // cleanup
+        ret = cl.clReleaseCommandQueue(commandQueue);
+        checkError("on clReleaseCommandQueue", ret);
+
+        ret = cl.clReleaseMemObject(devSrcA);
+        checkError("on clReleaseMemObject", ret);
+        ret = cl.clReleaseMemObject(devSrcB);
+        checkError("on clReleaseMemObject", ret);
+        ret = cl.clReleaseMemObject(devDst);
+        checkError("on clReleaseMemObject", ret);
+
         ret = cl.clReleaseProgram(program);
         checkError("on clReleaseProgram", ret);
 
@@ -270,18 +286,27 @@ public class JOCLTest {
 
     }
 
+    @Test
+    public void loadTest() {
+        out.println(" - - - loadTest - - - ");
+        for(int i = 0; i < 100; i++) {
+            out.println("###iteration "+i);
+            lowLevelTest2();
+        }
+    }
+
     private void fillBuffer(ByteBuffer buffer, int seed) {
 
         Random rnd = new Random(seed);
 
         while(buffer.remaining() != 0)
-            buffer.putFloat(rnd.nextFloat());
+            buffer.putInt(rnd.nextInt());
 
         buffer.rewind();
     }
 
     private ByteBuffer wrap(long value) {
-        return (ByteBuffer)ByteBuffer.allocateDirect(8).order(ByteOrder.nativeOrder()).putLong(value).rewind();
+        return (ByteBuffer) BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
     }
 
     private String getBuildStatus(int status) {

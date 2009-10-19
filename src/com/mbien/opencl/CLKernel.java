@@ -53,8 +53,9 @@ public class CLKernel {
     }
 
     public void release() {
-        cl.clReleaseKernel(ID);
+        int ret = cl.clReleaseKernel(ID);
         program.kernelReleased(this);
+        checkForError(ret, "can not release kernel");
     }
 
     @Override

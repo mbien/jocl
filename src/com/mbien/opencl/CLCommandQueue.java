@@ -10,11 +10,13 @@ public class CLCommandQueue {
 
     public final long ID;
     private final CLContext context;
+    private final CLDevice device;
     private final CL cl;
 
     CLCommandQueue(CLContext context, CLDevice device, long properties) {
         this.context = context;
         this.cl = context.cl;
+        this.device = device;
 
         int[] status = new int[1];
         this.ID = cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
@@ -55,7 +57,7 @@ public class CLCommandQueue {
 
        int ret = cl.clEnqueueNDRangeKernel(
                 ID, kernel.ID, 1,
-                null, 0,
+                globalWorkOffset, 0,
                 globalWorkSize, 0,
                 localWorkSize, 0,
                 0,
@@ -70,6 +72,7 @@ public class CLCommandQueue {
 
     public void release() {
         int ret = cl.clReleaseCommandQueue(ID);
+        context.commandQueueReleased(device, this);
         checkForError(ret, "can not release command queue");
     }
 

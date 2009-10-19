@@ -419,7 +419,7 @@ public class JOCLTest {
         // Asynchronous write of data to GPU device, blocking read later
         queue.putWriteBuffer(clBufferA, false)
              .putWriteBuffer(clBufferB, false)
-             .putNDRangeKernel(vectorAddKernel, 1, new long[]{0}, new long[]{ globalWorkSize }, new long[]{ localWorkSize })
+             .putNDRangeKernel(vectorAddKernel, 1, null, new long[]{ globalWorkSize }, new long[]{ localWorkSize })
              .putReadBuffer(clBufferC, true).release();
 
         out.println("a+b=c result snapshot: ");

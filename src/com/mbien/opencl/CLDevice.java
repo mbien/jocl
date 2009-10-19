@@ -86,7 +86,7 @@ public final class CLDevice {
     public CLCommandQueue createCommandQueue(long properties) {
         if(context == null)
             throw new IllegalStateException("this device is not associated with a context");
-        return new CLCommandQueue(context, this, properties);
+        return context.createCommandQueue(this, properties);
     }
 
     /*keep this package private for now, may be null*/

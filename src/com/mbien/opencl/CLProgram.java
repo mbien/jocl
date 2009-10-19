@@ -140,8 +140,8 @@ public class CLProgram {
         }
 
         int ret = cl.clReleaseProgram(ID);
-        checkForError(ret, "can not release program");
         context.programReleased(this);
+        checkForError(ret, "can not release program");
         
     }
 

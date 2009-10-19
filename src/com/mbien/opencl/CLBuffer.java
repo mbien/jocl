@@ -33,8 +33,9 @@ public class CLBuffer {
     }
 
     public void release() {
-        cl.clReleaseMemObject(ID);
+        int ret = cl.clReleaseMemObject(ID);
         context.bufferReleased(this);
+        checkForError(ret, "can not release mem object");
     }
 
     @Override

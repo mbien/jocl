@@ -7,7 +7,9 @@ import java.nio.IntBuffer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import static com.mbien.opencl.CLException.*;
 
 /**
@@ -23,6 +25,7 @@ public final class CLContext {
 
     private final List<CLProgram> programs;
     private final List<CLBuffer> buffers;
+    private final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
     static{
         System.loadLibrary("gluegen-rt");
@@ -34,6 +37,7 @@ public final class CLContext {
         this.ID = contextID;
         this.programs = new ArrayList<CLProgram>();
         this.buffers = new ArrayList<CLBuffer>();
+        this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
     }
 
     /**
@@ -78,12 +82,34 @@ public final class CLContext {
         return buffer;
     }
 
+    CLCommandQueue createCommandQueue(CLDevice device, long properties) {
+
+        CLCommandQueue queue = new CLCommandQueue(this, device, properties);
+
+        List<CLCommandQueue> list = queuesMap.get(device);
+        if(list == null) {
+            list = new ArrayList<CLCommandQueue>();
+            queuesMap.put(device, list);
+        }
+        list.add(queue);
+
+        return queue;
+    }
+
     void programReleased(CLProgram program) {
         programs.remove(program);
     }
 
     void bufferReleased(CLBuffer buffer) {
         buffers.remove(buffer);
+    }
+
+    void commandQueueReleased(CLDevice device, CLCommandQueue queue) {
+        List<CLCommandQueue> list = queuesMap.get(device);
+        list.remove(queue);
+        // remove empty lists from map
+        if(list.isEmpty())
+            queuesMap.remove(device);
     }
 
     /**

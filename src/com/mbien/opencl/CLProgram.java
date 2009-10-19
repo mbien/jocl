@@ -2,6 +2,10 @@ package com.mbien.opencl;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import static com.mbien.opencl.CLException.*;
 
 /**
@@ -10,9 +14,12 @@ import static com.mbien.opencl.CLException.*;
  */
 public class CLProgram {
     
-    private final CLContext context;
-    private final long programID;
+    public final CLContext context;
+    public final long programID;
+    
     private final CL cl;
+
+    private final Map<String, CLKernel> kernels;
     
     public enum Status {
         
@@ -53,6 +60,8 @@ public class CLProgram {
         this.cl = context.cl;
         this.context = context;
 
+        this.kernels = new HashMap<String, CLKernel>();
+
         int[] intArray = new int[1];
         // Create the program
         programID = cl.clCreateProgramWithSource(contextID, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
@@ -92,10 +101,46 @@ public class CLProgram {
     }
 
     /**
+     * Returns all kernels of this program in a unmodifiable view of a map with the kernel function names as keys.
+     */
+    public Map<String, CLKernel> getCLKernels() {
+
+        if(kernels.isEmpty()) {
+            
+            int[] intArray = new int[1];
+            int ret = cl.clCreateKernelsInProgram(programID, 0, null, 0, intArray, 0);
+            checkForError(ret, "can not create kernels for program");
+
+            long[] kernelIDs = new long[intArray[0]];
+            ret = cl.clCreateKernelsInProgram(programID, kernelIDs.length, kernelIDs, 0, null, 0);
+            checkForError(ret, "can not create kernels for program");
+
+            for (int i = 0; i < intArray[0]; i++) {
+                CLKernel kernel = new CLKernel(this, kernelIDs[i]);
+                kernels.put(kernel.name, kernel);
+            }
+        }
+
+        return Collections.unmodifiableMap(kernels);
+    }
+
+    void kernelReleased(CLKernel kernel) {
+        this.kernels.remove(kernel.name);
+    }
+
+    /**
      * Releases this program.
      * @return this
      */
     public CLProgram release() {
+
+        if(!kernels.isEmpty()) {
+            String[] names = kernels.keySet().toArray(new String[kernels.size()]);
+            for (String name : names) {
+                kernels.get(name).release();
+            }
+        }
+
         int ret = cl.clReleaseProgram(programID);
         checkForError(ret, "can not release program");
         context.programReleased(this);
@@ -119,7 +164,7 @@ public class CLProgram {
         int count = bb.capacity() / 8; // TODO sizeof cl_device
         CLDevice[] devices = new CLDevice[count];
         for (int i = 0; i < count; i++) {
-            devices[i] = context.getCLDevices(bb.getLong());
+            devices[i] = context.getCLDevice(bb.getLong());
         }
 
         return devices;
@@ -192,6 +237,32 @@ public class CLProgram {
         checkForError(ret, "error on clGetProgramBuildInfo");
 
         return bb.getInt();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CLProgram other = (CLProgram) obj;
+        if (this.programID != other.programID) {
+            return false;
+        }
+        if (!this.context.equals(other.context)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (this.context != null ? this.context.hashCode() : 0);
+        hash = 37 * hash + (int) (this.programID ^ (this.programID >>> 32));
+        return hash;
     }
 
 }

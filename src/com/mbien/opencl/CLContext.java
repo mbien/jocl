@@ -22,6 +22,7 @@ public final class CLContext {
     private CLDevice[] devices;
 
     private final List<CLProgram> programs;
+    private final List<CLBuffer> buffers;
 
     static{
         System.loadLibrary("gluegen-rt");
@@ -32,6 +33,7 @@ public final class CLContext {
     private CLContext(long contextID) {
         this.contextID = contextID;
         this.programs = new ArrayList<CLProgram>();
+        this.buffers = new ArrayList<CLBuffer>();
     }
 
     /**
@@ -70,14 +72,32 @@ public final class CLContext {
         return program;
     }
 
+    public CLBuffer createBuffer(int flags, ByteBuffer directBuffer) {
+        CLBuffer buffer = new CLBuffer(this, flags, directBuffer);
+        buffers.add(buffer);
+        return buffer;
+    }
+
     void programReleased(CLProgram program) {
         programs.remove(program);
+    }
+
+    void bufferReleased(CLBuffer buffer) {
+        buffers.remove(buffer);
     }
 
     /**
      * Releases the context and all resources.
      */
     public CLContext release() {
+
+        //release all resources
+        while(!programs.isEmpty())
+            programs.get(0).release();
+
+        while(!buffers.isEmpty())
+            buffers.get(0).release();
+
         int ret = cl.clReleaseContext(contextID);
         checkForError(ret, "error releasing context");
         return this;
@@ -86,8 +106,15 @@ public final class CLContext {
     /**
      * Returns a read only view of all programs associated with this context.
      */
-    public List<CLProgram> getPrograms() {
+    public List<CLProgram> getCLPrograms() {
         return Collections.unmodifiableList(programs);
+    }
+
+    /**
+     * Returns a read only view of all buffers associated with this context.
+     */
+    public List<CLBuffer> getCLBuffers() {
+        return Collections.unmodifiableList(buffers);
     }
 
 
@@ -157,7 +184,7 @@ public final class CLContext {
         return devices;
     }
 
-    CLDevice getCLDevices(long dID) {
+    CLDevice getCLDevice(long dID) {
         CLDevice[] deviceArray = getCLDevices();
         for (int i = 0; i < deviceArray.length; i++) {
             if(dID == deviceArray[i].deviceID)
@@ -195,6 +222,36 @@ public final class CLContext {
      */
     public static CL getLowLevelBinding() {
         return cl;
+    }
+
+
+    @Override
+    public String toString() {
+        return "CLContext [id: " + contextID
+                      + " #devices: " + getCLDevices().length
+                      + "]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CLContext other = (CLContext) obj;
+        if (this.contextID != other.contextID) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + (int) (this.contextID ^ (this.contextID >>> 32));
+        return hash;
     }
 
 

@@ -191,9 +191,17 @@ public final class CLDevice {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj != null && obj instanceof CLDevice)
-            return ((CLDevice)obj).deviceID == deviceID;
-        return false;
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CLDevice other = (CLDevice) obj;
+        if (this.deviceID != other.deviceID) {
+            return false;
+        }
+        return true;
     }
 
     @Override

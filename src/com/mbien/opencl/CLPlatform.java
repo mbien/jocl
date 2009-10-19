@@ -11,7 +11,7 @@ public final class CLPlatform {
     /**
      * OpenCL platform id for this platform.
      */
-    public  final long platformID;
+    public final long platformID;
 
     private final CL cl;
 
@@ -94,7 +94,27 @@ public final class CLPlatform {
                          +" version:"+getVersion()+"]";
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CLPlatform other = (CLPlatform) obj;
+        if (this.platformID != other.platformID) {
+            return false;
+        }
+        return true;
+    }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + (int) (this.platformID ^ (this.platformID >>> 32));
+        return hash;
+    }
 
 
 }

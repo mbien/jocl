@@ -22,6 +22,12 @@ public class CLException extends RuntimeException {
         super(identifyError(error) + ": " + message);
     }
 
+    public static final void checkForError(int status, String message) {
+        if(status != CL.CL_SUCCESS)
+            throw new CLException(status, message);
+    }
+
+
     private static final String identifyError(int error) {
 
         switch (error) {

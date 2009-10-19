@@ -16,6 +16,20 @@ import static java.lang.System.*;
  */
 public class JOCLTest {
 
+    private final static String programSource =
+              " // OpenCL Kernel Function for element by element vector addition                                                \n"
+            + "__kernel void VectorAdd(__global const int* a, __global const int* b, __global int* c, int iNumElements) {       \n"
+            + "    // get index into global data array                                                                          \n"
+            + "    int iGID = get_global_id(0);                                                                                 \n"
+            + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code                           \n"
+            + "    if (iGID >= iNumElements)  {                                                                                 \n"
+            + "        return;                                                                                                  \n"
+            + "    }                                                                                                            \n"
+            + "    // add the vector elements                                                                                   \n"
+            + "    c[iGID] = a[iGID] + b[iGID];                                                                                 \n"
+            + "    //c[iGID] = iGID;                                                                                            \n"
+            + "}                                                                                                                \n";
+
     public JOCLTest() {
     }
 
@@ -119,8 +133,7 @@ public class JOCLTest {
         long context = cl.clCreateContextFromType(null, 0, CL.CL_DEVICE_TYPE_ALL, null, null, null, 0);
         out.println("context handle: "+context);
 
-        // TODO fix gluegen bug: array-buffer mixing... bb is a noop
-        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, bb, longArray, 0);
+        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longArray, 0);
         checkError("on clGetContextInfo", ret);
 
         int sizeofLong = 8; // TODO sizeof long...
@@ -154,23 +167,9 @@ public class JOCLTest {
         long devDst  = cl.clCreateBuffer(context, CL.CL_MEM_WRITE_ONLY, BufferFactory.SIZEOF_INT * globalWorkSize, null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
 
-        String src =
-              " // OpenCL Kernel Function for element by element vector addition                                                \n"
-            + "__kernel void VectorAdd(__global const int* a, __global const int* b, __global int* c, int iNumElements) {       \n"
-            + "    // get index into global data array                                                                          \n"
-            + "    int iGID = get_global_id(0);                                                                                 \n"
-            + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code                           \n"
-            + "    if (iGID >= iNumElements)  {                                                                                 \n"
-            + "        return;                                                                                                  \n"
-            + "    }                                                                                                            \n"
-            + "    // add the vector elements                                                                                   \n"
-            + "    c[iGID] = a[iGID] + b[iGID];                                                                                 \n"
-            + "    //c[iGID] = iGID;                                                                                            \n"
-            + "}                                                                                                                \n";
-
 
         // Create the program
-        long program = cl.clCreateProgramWithSource(context, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
+        long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, new long[]{programSource.length()}, 0, intArray, 0);
         checkError("on clCreateProgramWithSource", intArray[0]);
 
         // Build the program
@@ -186,7 +185,7 @@ public class JOCLTest {
         ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, bb, longArray, 0);
         checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
         out.println("program source length (cl): "+longArray[0]);
-        out.println("program source length (java): "+src.length());
+        out.println("program source length (java): "+programSource.length());
 
         bb.rewind();
         ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, bb.capacity(), bb, null, 0);
@@ -203,8 +202,7 @@ public class JOCLTest {
         assertEquals("build status", CL.CL_BUILD_SUCCESS, bb.getInt(0));
 
         // Read build log
-        // TODO fix gluegen bug: array-buffer mixing... bb is a noop
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, 0, bb, longArray, 0);
+        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, 0, null, longArray, 0);
         checkError("on clGetProgramBuildInfo2", ret);
         out.println("program log length: " + longArray[0]);
 
@@ -328,9 +326,9 @@ public class JOCLTest {
     }
 
     @Test
-    public void highLevelTest() {
+    public void highLevelTest1() {
         
-        out.println(" - - - highLevelTest - - - ");
+        out.println(" - - - highLevelTest; contextless - - - ");
 
         CLPlatform[] clPlatforms = CLContext.listCLPlatforms();
 
@@ -359,14 +357,46 @@ public class JOCLTest {
         }
 
 
-        CLContext ctx = CLContext.create();
-//        CLDevice device = ctx.getMaxFlopsDevice();
-//        out.println("max FLOPS device: " + device);
-        ctx.release();
     }
 
 
-    
+    @Test
+    public void highLevelTest2() {
+
+        out.println(" - - - highLevelTest - - - ");
+
+        CLContext context = CLContext.create();
+
+        CLDevice[] contextDevices = context.getCLDevices();
+
+        out.println("context devices:");
+        for (CLDevice device : contextDevices) {
+            out.println("   "+device.toString());
+        }
+
+        CLProgram program = context.createProgram(programSource).build();
+
+        CLDevice[] programDevices = program.getCLDevices();
+
+        assertEquals(contextDevices.length, programDevices.length);
+
+        out.println("program devices:");
+        for (CLDevice device : programDevices) {
+            out.println("   "+device.toString());
+            out.println("   build log: "+program.getBuildLog(device));
+            out.println("   build status: "+program.getBuildStatus(device));
+        }
+
+        out.println("source:\n"+program.getSource());
+
+        assertTrue(1 == context.getPrograms().size());
+        program.release();
+        assertTrue(0 == context.getPrograms().size());
+
+//        CLDevice device = ctx.getMaxFlopsDevice();
+//        out.println("max FLOPS device: " + device);
+        context.release();
+    }
 
 
     private final int roundUp(int groupSize, int globalSize) {

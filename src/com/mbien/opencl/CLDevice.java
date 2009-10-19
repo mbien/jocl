@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
+import static com.mbien.opencl.CLException.*;
+
 /**
  * 
  * @author Michael Bien
@@ -34,7 +36,7 @@ public final class CLDevice {
          */
         DEFAULT(CL.CL_DEVICE_TYPE_DEFAULT);
 
-         /**
+        /**
          * Value of wrapped OpenCL device type.
          */
         public final int CL_TYPE;
@@ -160,8 +162,7 @@ public final class CLDevice {
 
         int ret = cl.clGetDeviceInfo(deviceID, key, bb.capacity(), bb, null, 0);
 
-        if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "can not receive device info");
+        checkForError(ret, "can not receive device info");
 
         return bb.getLong();
     }
@@ -173,8 +174,7 @@ public final class CLDevice {
 
         int ret = cl.clGetDeviceInfo(deviceID, key, bb.capacity(), bb, longBuffer, 0);
         
-        if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "can not receive device info string");
+        checkForError(ret, "can not receive device info string");
 
         return new String(bb.array(), 0, (int)longBuffer[0]);
         
@@ -183,9 +183,10 @@ public final class CLDevice {
 
     @Override
     public String toString() {
-        return "CLPlatform [name:" + getName()
-                        + " type:" + getType()
-                        + " profile: " + getProfile()+"]";
+        return "CLDevice [id: " + deviceID
+                      + " name: " + getName()
+                      + " type: " + getType()
+                      + " profile: " + getProfile()+"]";
     }
 
     @Override

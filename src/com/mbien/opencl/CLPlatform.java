@@ -1,7 +1,7 @@
 package com.mbien.opencl;
 
 import java.nio.ByteBuffer;
-
+import static com.mbien.opencl.CLException.*;
 /**
  *
  * @author Michael Bien
@@ -29,13 +29,11 @@ public final class CLPlatform {
 
         //find all devices
         int ret = cl.clGetDeviceIDs(platformID, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
-        if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "error while enumerating devices");
+        checkForError(ret, "error while enumerating devices");
 
         long[] deviceIDs = new long[intBuffer[0]];
         ret = cl.clGetDeviceIDs(platformID, CL.CL_DEVICE_TYPE_ALL, deviceIDs.length, deviceIDs, 0, null, 0);
-        if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "error while enumerating devices");
+        checkForError(ret, "error while enumerating devices");
 
         CLDevice[] devices = new CLDevice[deviceIDs.length];
 
@@ -83,8 +81,7 @@ public final class CLPlatform {
         ByteBuffer bb = ByteBuffer.allocate(512);
 
         int ret = cl.clGetPlatformInfo(platformID, key, bb.capacity(), bb, longBuffer, 0);
-        if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "can not receive info string");
+        checkForError(ret, "can not receive info string");
 
         return new String(bb.array(), 0, (int)longBuffer[0]);
     }

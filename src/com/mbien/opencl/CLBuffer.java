@@ -10,7 +10,7 @@ import static com.mbien.opencl.CLException.*;
 public class CLBuffer {
 
     public final ByteBuffer buffer;
-    public final long bufferID;
+    public final long ID;
     
     private final CLContext context;
     private final CL cl;
@@ -26,16 +26,15 @@ public class CLBuffer {
 
         int[] intArray = new int[1];
 
-        this.bufferID = cl.clCreateBuffer(context.contextID, flags, directBuffer.capacity(), null, intArray, 0);
+        this.ID = cl.clCreateBuffer(context.ID, flags, directBuffer.capacity(), null, intArray, 0);
 
         checkForError(intArray[0], "can not create cl buffer");
         
     }
 
-    public CLBuffer release() {
-        cl.clReleaseMemObject(bufferID);
+    public void release() {
+        cl.clReleaseMemObject(ID);
         context.bufferReleased(this);
-        return this;
     }
 
     @Override
@@ -50,7 +49,7 @@ public class CLBuffer {
         if (this.buffer != other.buffer && (this.buffer == null || !this.buffer.equals(other.buffer))) {
             return false;
         }
-        if (this.context.contextID != other.context.contextID) {
+        if (this.context.ID != other.context.ID) {
             return false;
         }
         return true;
@@ -60,7 +59,7 @@ public class CLBuffer {
     public int hashCode() {
         int hash = 3;
         hash = 29 * hash + (this.buffer != null ? this.buffer.hashCode() : 0);
-        hash = 29 * hash + (int) (this.context.contextID ^ (this.context.contextID >>> 32));
+        hash = 29 * hash + (int) (this.context.ID ^ (this.context.ID >>> 32));
         return hash;
     }
 

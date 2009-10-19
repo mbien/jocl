@@ -5,7 +5,6 @@ import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import static com.mbien.opencl.CLException.*;
 
 /**
@@ -15,7 +14,7 @@ import static com.mbien.opencl.CLException.*;
 public class CLProgram {
     
     public final CLContext context;
-    public final long programID;
+    public final long ID;
     
     private final CL cl;
 
@@ -64,13 +63,13 @@ public class CLProgram {
 
         int[] intArray = new int[1];
         // Create the program
-        programID = cl.clCreateProgramWithSource(contextID, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
+        ID = cl.clCreateProgramWithSource(contextID, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
         checkForError(intArray[0], "can not create program with source");
     }
 
 
     /**
-     * Builds this program for all devices accosiated with the context and implementation specific build options.
+     * Builds this program for all devices associated with the context and implementation specific build options.
      * @return this
      */
     public CLProgram build() {
@@ -89,12 +88,12 @@ public class CLProgram {
         if(devices != null) {
             deviceIDs = new long[devices.length];
             for (int i = 0; i < deviceIDs.length; i++) {
-                deviceIDs[i] = devices[i].deviceID;
+                deviceIDs[i] = devices[i].ID;
             }
         }
 
         // Build the program
-        int ret = cl.clBuildProgram(programID, deviceIDs, options, null, null);
+        int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
         checkForError(ret, "error building program");
 
         return this;
@@ -108,11 +107,11 @@ public class CLProgram {
         if(kernels.isEmpty()) {
             
             int[] intArray = new int[1];
-            int ret = cl.clCreateKernelsInProgram(programID, 0, null, 0, intArray, 0);
+            int ret = cl.clCreateKernelsInProgram(ID, 0, null, 0, intArray, 0);
             checkForError(ret, "can not create kernels for program");
 
             long[] kernelIDs = new long[intArray[0]];
-            ret = cl.clCreateKernelsInProgram(programID, kernelIDs.length, kernelIDs, 0, null, 0);
+            ret = cl.clCreateKernelsInProgram(ID, kernelIDs.length, kernelIDs, 0, null, 0);
             checkForError(ret, "can not create kernels for program");
 
             for (int i = 0; i < intArray[0]; i++) {
@@ -130,9 +129,8 @@ public class CLProgram {
 
     /**
      * Releases this program.
-     * @return this
      */
-    public CLProgram release() {
+    public void release() {
 
         if(!kernels.isEmpty()) {
             String[] names = kernels.keySet().toArray(new String[kernels.size()]);
@@ -141,11 +139,10 @@ public class CLProgram {
             }
         }
 
-        int ret = cl.clReleaseProgram(programID);
+        int ret = cl.clReleaseProgram(ID);
         checkForError(ret, "can not release program");
         context.programReleased(this);
-
-        return this;
+        
     }
 
     /**
@@ -154,11 +151,11 @@ public class CLProgram {
     public CLDevice[] getCLDevices() {
 
         long[] longArray = new long[1];
-        int ret = cl.clGetProgramInfo(programID, CL.CL_PROGRAM_DEVICES, 0, null, longArray, 0);
+        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, 0, null, longArray, 0);
         checkForError(ret, "on clGetProgramInfo");
 
         ByteBuffer bb = ByteBuffer.allocate((int) longArray[0]).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(programID, CL.CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
         checkForError(ret, "on clGetProgramInfo");
 
         int count = bb.capacity() / 8; // TODO sizeof cl_device
@@ -172,11 +169,11 @@ public class CLProgram {
     }
 
     public String getBuildLog(CLDevice device) {
-        return getBuildInfoString(device.deviceID, CL.CL_PROGRAM_BUILD_LOG);
+        return getBuildInfoString(device.ID, CL.CL_PROGRAM_BUILD_LOG);
     }
 
     public Status getBuildStatus(CLDevice device) {
-        int clStatus = getBuildInfoInt(device.deviceID, CL.CL_PROGRAM_BUILD_STATUS);
+        int clStatus = getBuildInfoInt(device.ID, CL.CL_PROGRAM_BUILD_STATUS);
         return Status.valueOf(clStatus);
     }
 
@@ -193,12 +190,12 @@ public class CLProgram {
 
         long[] longArray = new long[1];
 
-        int ret = cl.clGetProgramBuildInfo(programID, device, flag, 0, null, longArray, 0);
+        int ret = cl.clGetProgramBuildInfo(ID, device, flag, 0, null, longArray, 0);
         checkForError(ret, "on clGetProgramBuildInfo");
 
         ByteBuffer bb = ByteBuffer.allocate((int)longArray[0]).order(ByteOrder.nativeOrder());
 
-        ret = cl.clGetProgramBuildInfo(programID, device, flag, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null, 0);
         checkForError(ret, "on clGetProgramBuildInfo");
 
         return new String(bb.array(), 0, (int)longArray[0]);
@@ -208,12 +205,12 @@ public class CLProgram {
 
         long[] longArray = new long[1];
 
-        int ret = cl.clGetProgramInfo(programID, flag, 0, null, longArray, 0);
+        int ret = cl.clGetProgramInfo(ID, flag, 0, null, longArray, 0);
         checkForError(ret, "on clGetProgramInfo");
 
         ByteBuffer bb = ByteBuffer.allocate((int)longArray[0]).order(ByteOrder.nativeOrder());
 
-        ret = cl.clGetProgramInfo(programID, flag, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramInfo(ID, flag, bb.capacity(), bb, null, 0);
         checkForError(ret, "on clGetProgramInfo");
 
         return new String(bb.array(), 0, (int)longArray[0]);
@@ -233,7 +230,7 @@ public class CLProgram {
 
         ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
 
-        int ret = cl.clGetProgramBuildInfo(programID, device, flag, bb.capacity(), bb, null, 0);
+        int ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null, 0);
         checkForError(ret, "error on clGetProgramBuildInfo");
 
         return bb.getInt();
@@ -248,7 +245,7 @@ public class CLProgram {
             return false;
         }
         final CLProgram other = (CLProgram) obj;
-        if (this.programID != other.programID) {
+        if (this.ID != other.ID) {
             return false;
         }
         if (!this.context.equals(other.context)) {
@@ -261,7 +258,7 @@ public class CLProgram {
     public int hashCode() {
         int hash = 7;
         hash = 37 * hash + (this.context != null ? this.context.hashCode() : 0);
-        hash = 37 * hash + (int) (this.programID ^ (this.programID >>> 32));
+        hash = 37 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
     }
 

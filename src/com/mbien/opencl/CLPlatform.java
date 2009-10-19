@@ -11,12 +11,12 @@ public final class CLPlatform {
     /**
      * OpenCL platform id for this platform.
      */
-    public final long platformID;
+    public final long ID;
 
     private final CL cl;
 
     CLPlatform(CL cl, long id) {
-        this.platformID = id;
+        this.ID = id;
         this.cl = cl;
     }
 
@@ -28,11 +28,11 @@ public final class CLPlatform {
         int[] intBuffer = new int[1];
 
         //find all devices
-        int ret = cl.clGetDeviceIDs(platformID, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
+        int ret = cl.clGetDeviceIDs(ID, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
         checkForError(ret, "error while enumerating devices");
 
         long[] deviceIDs = new long[intBuffer[0]];
-        ret = cl.clGetDeviceIDs(platformID, CL.CL_DEVICE_TYPE_ALL, deviceIDs.length, deviceIDs, 0, null, 0);
+        ret = cl.clGetDeviceIDs(ID, CL.CL_DEVICE_TYPE_ALL, deviceIDs.length, deviceIDs, 0, null, 0);
         checkForError(ret, "error while enumerating devices");
 
         CLDevice[] devices = new CLDevice[deviceIDs.length];
@@ -80,7 +80,7 @@ public final class CLPlatform {
         long[] longBuffer = new long[1];
         ByteBuffer bb = ByteBuffer.allocate(512);
 
-        int ret = cl.clGetPlatformInfo(platformID, key, bb.capacity(), bb, longBuffer, 0);
+        int ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, longBuffer, 0);
         checkForError(ret, "can not receive info string");
 
         return new String(bb.array(), 0, (int)longBuffer[0]);
@@ -103,7 +103,7 @@ public final class CLPlatform {
             return false;
         }
         final CLPlatform other = (CLPlatform) obj;
-        if (this.platformID != other.platformID) {
+        if (this.ID != other.ID) {
             return false;
         }
         return true;
@@ -112,7 +112,7 @@ public final class CLPlatform {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 71 * hash + (int) (this.platformID ^ (this.platformID >>> 32));
+        hash = 71 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
     }
 

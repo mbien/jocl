@@ -17,7 +17,7 @@ import static com.mbien.opencl.CLException.*;
 public final class CLContext {
 
     final static CL cl;
-    public final long contextID;
+    public final long ID;
 
     private CLDevice[] devices;
 
@@ -31,7 +31,7 @@ public final class CLContext {
     }
 
     private CLContext(long contextID) {
-        this.contextID = contextID;
+        this.ID = contextID;
         this.programs = new ArrayList<CLProgram>();
         this.buffers = new ArrayList<CLBuffer>();
     }
@@ -67,7 +67,7 @@ public final class CLContext {
     }
     
     public CLProgram createProgram(String src) {
-        CLProgram program = new CLProgram(this, src, contextID);
+        CLProgram program = new CLProgram(this, src, ID);
         programs.add(program);
         return program;
     }
@@ -89,7 +89,7 @@ public final class CLContext {
     /**
      * Releases the context and all resources.
      */
-    public CLContext release() {
+    public void release() {
 
         //release all resources
         while(!programs.isEmpty())
@@ -98,9 +98,8 @@ public final class CLContext {
         while(!buffers.isEmpty())
             buffers.get(0).release();
 
-        int ret = cl.clReleaseContext(contextID);
+        int ret = cl.clReleaseContext(ID);
         checkForError(ret, "error releasing context");
-        return this;
     }
 
     /**
@@ -167,17 +166,17 @@ public final class CLContext {
             long[] longBuffer = new long[1];
 
             int ret;
-            ret = cl.clGetContextInfo(contextID, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer, 0);
+            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer, 0);
             checkForError(ret, "can not enumerate devices");
 
             ByteBuffer deviceIDs = ByteBuffer.allocate((int)longBuffer[0]).order(ByteOrder.nativeOrder());
 
-            ret = cl.clGetContextInfo(contextID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null, 0);
+            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null, 0);
             checkForError(ret, "can not enumerate devices");
 
             devices = new CLDevice[deviceIDs.capacity()/sizeofDeviceID];
             for (int i = 0; i < devices.length; i++)
-                devices[i] = new CLDevice(cl, deviceIDs.getLong()); // TODO doublechek deviceID size on 32 bit systems
+                devices[i] = new CLDevice(this, deviceIDs.getLong()); // TODO doublechek deviceID size on 32 bit systems
 
         }
 
@@ -187,7 +186,7 @@ public final class CLContext {
     CLDevice getCLDevice(long dID) {
         CLDevice[] deviceArray = getCLDevices();
         for (int i = 0; i < deviceArray.length; i++) {
-            if(dID == deviceArray[i].deviceID)
+            if(dID == deviceArray[i].ID)
                 return deviceArray[i];
         }
         return null;
@@ -227,7 +226,7 @@ public final class CLContext {
 
     @Override
     public String toString() {
-        return "CLContext [id: " + contextID
+        return "CLContext [id: " + ID
                       + " #devices: " + getCLDevices().length
                       + "]";
     }
@@ -241,7 +240,7 @@ public final class CLContext {
             return false;
         }
         final CLContext other = (CLContext) obj;
-        if (this.contextID != other.contextID) {
+        if (this.ID != other.ID) {
             return false;
         }
         return true;
@@ -250,7 +249,7 @@ public final class CLContext {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 23 * hash + (int) (this.contextID ^ (this.contextID >>> 32));
+        hash = 23 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
     }
 

@@ -29,14 +29,14 @@ public class JOCLTest {
             + "    // add the vector elements                                                                                   \n"
             + "    c[iGID] = a[iGID] + b[iGID];                                                                                 \n"
             + "}                                                                                                                \n"
-            + "__kernel void Test(__global const int* a, __global const int* b, __global int* c, int iNumElements) {       \n"
+            + "__kernel void Test(__global const int* a, __global const int* b, __global int* c, int iNumElements) {            \n"
             + "    // get index into global data array                                                                          \n"
             + "    int iGID = get_global_id(0);                                                                                 \n"
             + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code                           \n"
             + "    if (iGID >= iNumElements)  {                                                                                 \n"
             + "        return;                                                                                                  \n"
             + "    }                                                                                                            \n"
-            + "    c[iGID] = iGID;                                                                                            \n"
+            + "    c[iGID] = iGID;                                                                                              \n"
             + "}                                                                                                                \n";
 
     public JOCLTest() {
@@ -378,7 +378,9 @@ public class JOCLTest {
             out.println("   build status: "+program.getBuildStatus(device));
         }
 
-        out.println("source:\n"+program.getSource());
+        String source = program.getSource();
+        assertFalse(source.trim().isEmpty());
+//        out.println("source:\n"+source);
 
         int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
         int localWorkSize = 256;      // set and log Global and Local work size dimensions
@@ -390,6 +392,8 @@ public class JOCLTest {
         ByteBuffer srcB = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
         ByteBuffer dest = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
 
+        fillBuffer(srcA, 23456);
+        fillBuffer(srcB, 46987);
 
         CLBuffer clBufferA = context.createBuffer(CL.CL_MEM_READ_ONLY, srcA);
         CLBuffer clBufferB = context.createBuffer(CL.CL_MEM_READ_ONLY, srcB);
@@ -405,14 +409,23 @@ public class JOCLTest {
         
         CLKernel vectorAddKernel = kernels.get("VectorAdd");
 
-        vectorAddKernel
-            .setArg(0, BufferFactory.SIZEOF_LONG, clBufferA)
-            .setArg(1, BufferFactory.SIZEOF_LONG, clBufferB)
-            .setArg(2, BufferFactory.SIZEOF_LONG, clBufferC)
-            .setArg(3, BufferFactory.SIZEOF_LONG, elementCount);
+        vectorAddKernel.setArg(0, BufferFactory.SIZEOF_LONG, clBufferA)
+                       .setArg(1, BufferFactory.SIZEOF_LONG, clBufferB)
+                       .setArg(2, BufferFactory.SIZEOF_LONG, clBufferC)
+                       .setArg(3, BufferFactory.SIZEOF_INT, elementCount);
 
-        //TODO CLComandQueue...
+        CLCommandQueue queue = programDevices[0].createCommandQueue();
 
+        // Asynchronous write of data to GPU device, blocking read later
+        queue.putWriteBuffer(clBufferA, false)
+             .putWriteBuffer(clBufferB, false)
+             .putNDRangeKernel(vectorAddKernel, 1, new long[]{0}, new long[]{ globalWorkSize }, new long[]{ localWorkSize })
+             .putReadBuffer(clBufferC, true).release();
+
+        out.println("a+b=c result snapshot: ");
+        for(int i = 0; i < 10; i++)
+            out.print(dest.getInt()+", ");
+        out.println("...; "+dest.remaining()/BufferFactory.SIZEOF_INT + " more");
 
         assertTrue(3 == context.getCLBuffers().size());
         clBufferA.release();

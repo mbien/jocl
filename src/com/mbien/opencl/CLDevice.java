@@ -61,15 +61,37 @@ public final class CLDevice {
     }
     
     private final CL cl;
+    private CLContext context;
 
     /**
      * OpenCL device id for this device.
      */
-    public final long deviceID;
+    public final long ID;
 
     CLDevice(CL cl, long id) {
         this.cl = cl;
-        this.deviceID = id;
+        this.ID = id;
+    }
+
+    CLDevice(CLContext context, long id) {
+        this.context = context;
+        this.cl = context.cl;
+        this.ID = id;
+    }
+
+    public CLCommandQueue createCommandQueue() {
+        return createCommandQueue(0);
+    }
+    
+    public CLCommandQueue createCommandQueue(long properties) {
+        if(context == null)
+            throw new IllegalStateException("this device is not associated with a context");
+        return new CLCommandQueue(context, this, properties);
+    }
+
+    /*keep this package private for now, may be null*/
+    CLContext getContext() {
+        return context;
     }
 
     /**
@@ -160,7 +182,7 @@ public final class CLDevice {
         ByteBuffer bb = ByteBuffer.allocate(8);
         bb.order(ByteOrder.nativeOrder());
 
-        int ret = cl.clGetDeviceInfo(deviceID, key, bb.capacity(), bb, null, 0);
+        int ret = cl.clGetDeviceInfo(ID, key, bb.capacity(), bb, null, 0);
 
         checkForError(ret, "can not receive device info");
 
@@ -172,7 +194,7 @@ public final class CLDevice {
         long[] longBuffer = new long[1];
         ByteBuffer bb = ByteBuffer.allocate(512);
 
-        int ret = cl.clGetDeviceInfo(deviceID, key, bb.capacity(), bb, longBuffer, 0);
+        int ret = cl.clGetDeviceInfo(ID, key, bb.capacity(), bb, longBuffer, 0);
         
         checkForError(ret, "can not receive device info string");
 
@@ -183,7 +205,7 @@ public final class CLDevice {
 
     @Override
     public String toString() {
-        return "CLDevice [id: " + deviceID
+        return "CLDevice [id: " + ID
                       + " name: " + getName()
                       + " type: " + getType()
                       + " profile: " + getProfile()+"]";
@@ -198,7 +220,7 @@ public final class CLDevice {
             return false;
         }
         final CLDevice other = (CLDevice) obj;
-        if (this.deviceID != other.deviceID) {
+        if (this.ID != other.ID) {
             return false;
         }
         return true;
@@ -207,7 +229,7 @@ public final class CLDevice {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 79 * hash + (int) (this.deviceID ^ (this.deviceID >>> 32));
+        hash = 79 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
     }
 

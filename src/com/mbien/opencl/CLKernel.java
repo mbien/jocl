@@ -32,7 +32,7 @@ public class CLKernel {
         ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null, 0);
         checkForError(ret, "error while asking for kernel function name");
 
-        this.name = new String(bb.array(), 0, (int)longArray[0]).trim();
+        this.name = new String(bb.array(), 0, bb.capacity()).trim();
 
     }
 

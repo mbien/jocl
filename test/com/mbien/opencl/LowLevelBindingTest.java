@@ -4,18 +4,17 @@ import com.sun.gluegen.runtime.BufferFactory;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
+import static com.mbien.opencl.TestUtils.*;
 
 /**
- * Test for testing basic functionality.
+ * Test testing the low level bindings.
  * @author Michael Bien
  */
-public class JOCLTest {
+public class LowLevelBindingTest {
 
     private final static String programSource =
               " // OpenCL Kernel Function for element by element vector addition                                                \n"
@@ -39,8 +38,6 @@ public class JOCLTest {
             + "    c[iGID] = iGID;                                                                                              \n"
             + "}                                                                                                                \n";
 
-    public JOCLTest() {
-    }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -55,7 +52,7 @@ public class JOCLTest {
 
         int ret = CL.CL_SUCCESS;
 
-        CL cl = CLContext.getLowLevelBinding();
+        CL cl = CLPlatform.getLowLevelBinding();
 
         int[] intBuffer = new int[1];
         // find all available OpenCL platforms
@@ -134,7 +131,7 @@ public class JOCLTest {
         long[] longArray = new long[1];
         ByteBuffer bb = ByteBuffer.allocate(4096).order(ByteOrder.nativeOrder());
 
-        CL cl = CLContext.getLowLevelBinding();
+        CL cl = CLPlatform.getLowLevelBinding();
 
         int ret = CL.CL_SUCCESS;
         int[] intArray = new int[1];
@@ -302,161 +299,8 @@ public class JOCLTest {
         }
     }
 
-    private void fillBuffer(ByteBuffer buffer, int seed) {
-
-        Random rnd = new Random(seed);
-
-        while(buffer.remaining() != 0)
-            buffer.putInt(rnd.nextInt());
-
-        buffer.rewind();
-    }
-
     private ByteBuffer wrap(long value) {
         return (ByteBuffer) BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
-    }
-
-    @Test
-    public void highLevelTest1() {
-        
-        out.println(" - - - highLevelTest; contextless - - - ");
-
-        CLPlatform[] clPlatforms = CLContext.listCLPlatforms();
-
-        for (CLPlatform platform : clPlatforms) {
-
-            out.println("platform info:");
-            out.println("    name: "+platform.getName());
-            out.println("    profile: "+platform.getProfile());
-            out.println("    version: "+platform.getVersion());
-            out.println("    vendor: "+platform.getVendor());
-
-            CLDevice[] clDevices = platform.listCLDevices();
-            for (CLDevice device : clDevices) {
-                out.println("device info:");
-                out.println("    name: "+device.getName());
-                out.println("    profile: "+device.getProfile());
-                out.println("    vendor: "+device.getVendor());
-                out.println("    type: "+device.getType());
-                out.println("    global mem: "+device.getGlobalMemSize()/(1024*1024)+" MB");
-                out.println("    local mem: "+device.getLocalMemSize()/1024+" KB");
-                out.println("    clock: "+device.getMaxClockFrequency()+" MHz");
-                out.println("    max work group size: "+device.getMaxWorkGroupSize());
-                out.println("    max compute units: "+device.getMaxComputeUnits());
-                out.println("    extensions: "+device.getExtensions());
-            }
-        }
-
-
-    }
-
-
-    @Test
-    public void highLevelTest2() {
-
-        out.println(" - - - highLevelTest - - - ");
-
-        CLContext context = CLContext.create();
-
-        CLDevice[] contextDevices = context.getCLDevices();
-
-        out.println("context devices:");
-        for (CLDevice device : contextDevices) {
-            out.println("   "+device.toString());
-        }
-
-        CLProgram program = context.createProgram(programSource).build();
-
-        CLDevice[] programDevices = program.getCLDevices();
-
-        assertEquals(contextDevices.length, programDevices.length);
-
-        out.println("program devices:");
-        for (CLDevice device : programDevices) {
-            out.println("   "+device.toString());
-            out.println("   build log: "+program.getBuildLog(device));
-            out.println("   build status: "+program.getBuildStatus(device));
-        }
-
-        String source = program.getSource();
-        assertFalse(source.trim().isEmpty());
-//        out.println("source:\n"+source);
-
-        int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
-        int localWorkSize = 256;      // set and log Global and Local work size dimensions
-        int globalWorkSize = roundUp(localWorkSize, elementCount);  // rounded up to the nearest multiple of the LocalWorkSize
-
-        out.println("allocateing buffers of size: "+globalWorkSize);
-
-        ByteBuffer srcA = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
-        ByteBuffer srcB = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
-        ByteBuffer dest = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
-
-        fillBuffer(srcA, 23456);
-        fillBuffer(srcB, 46987);
-
-        CLBuffer clBufferA = context.createBuffer(CL.CL_MEM_READ_ONLY, srcA);
-        CLBuffer clBufferB = context.createBuffer(CL.CL_MEM_READ_ONLY, srcB);
-        CLBuffer clBufferC = context.createBuffer(CL.CL_MEM_WRITE_ONLY, dest);
-        
-        Map<String, CLKernel> kernels = program.getCLKernels();
-        for (CLKernel kernel : kernels.values()) {
-            out.println("kernel: "+kernel.toString());
-        }
-
-        assertNotNull(kernels.get("VectorAdd"));
-        assertNotNull(kernels.get("Test"));
-        
-        CLKernel vectorAddKernel = kernels.get("VectorAdd");
-
-        vectorAddKernel.setArg(0, BufferFactory.SIZEOF_LONG, clBufferA)
-                       .setArg(1, BufferFactory.SIZEOF_LONG, clBufferB)
-                       .setArg(2, BufferFactory.SIZEOF_LONG, clBufferC)
-                       .setArg(3, BufferFactory.SIZEOF_INT, elementCount);
-
-        CLCommandQueue queue = programDevices[0].createCommandQueue();
-
-        // Asynchronous write of data to GPU device, blocking read later
-        queue.putWriteBuffer(clBufferA, false)
-             .putWriteBuffer(clBufferB, false)
-             .putNDRangeKernel(vectorAddKernel, 1, null, new long[]{ globalWorkSize }, new long[]{ localWorkSize })
-             .putReadBuffer(clBufferC, true).release();
-
-        out.println("a+b=c result snapshot: ");
-        for(int i = 0; i < 10; i++)
-            out.print(dest.getInt()+", ");
-        out.println("...; "+dest.remaining()/BufferFactory.SIZEOF_INT + " more");
-
-        assertTrue(3 == context.getCLBuffers().size());
-        clBufferA.release();
-        assertTrue(2 == context.getCLBuffers().size());
-
-        assertTrue(2 == context.getCLBuffers().size());
-        clBufferB.release();
-        assertTrue(1 == context.getCLBuffers().size());
-
-        assertTrue(1 == context.getCLBuffers().size());
-        clBufferC.release();
-        assertTrue(0 == context.getCLBuffers().size());
-
-
-        assertTrue(1 == context.getCLPrograms().size());
-        program.release();
-        assertTrue(0 == context.getCLPrograms().size());
-
-//        CLDevice device = ctx.getMaxFlopsDevice();
-//        out.println("max FLOPS device: " + device);
-        context.release();
-    }
-
-
-    private final int roundUp(int groupSize, int globalSize) {
-        int r = globalSize % groupSize;
-        if (r == 0) {
-            return globalSize;
-        } else {
-            return globalSize + groupSize - r;
-        }
     }
 
     private final void checkForError(int ret) {

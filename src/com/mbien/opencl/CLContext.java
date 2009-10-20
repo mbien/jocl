@@ -1,6 +1,9 @@
 package com.mbien.opencl;
 
-import com.mbien.opencl.impl.CLImpl;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -18,7 +21,7 @@ import static com.mbien.opencl.CLException.*;
  */
 public final class CLContext {
 
-    final static CL cl;
+    final CL cl;
     public final long ID;
 
     private CLDevice[] devices;
@@ -27,13 +30,9 @@ public final class CLContext {
     private final List<CLBuffer> buffers;
     private final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
-    static{
-        System.loadLibrary("gluegen-rt");
-        System.loadLibrary("jocl");
-        cl = new CLImpl();
-    }
 
     private CLContext(long contextID) {
+        this.cl = CLPlatform.getLowLevelBinding();
         this.ID = contextID;
         this.programs = new ArrayList<CLProgram>();
         this.buffers = new ArrayList<CLBuffer>();
@@ -62,18 +61,41 @@ public final class CLContext {
 
     private static final CLContext createContext(long deviceType) {
 
-        IntBuffer error = IntBuffer.allocate(1);
-        long context = cl.clCreateContextFromType(null, 0, deviceType, null, null, error, 0);
+        IntBuffer status = IntBuffer.allocate(1);
+        long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(null, 0, deviceType, null, null, status, 0);
 
-        checkForError(error.get(), "can not create CL context");
+        checkForError(status.get(), "can not create CL context");
 
         return new CLContext(context);
     }
-    
+
+    /**
+     * Creates a program from the given sources, the program is not build yet.
+     */
     public CLProgram createProgram(String src) {
         CLProgram program = new CLProgram(this, src, ID);
         programs.add(program);
         return program;
+    }
+
+    /**
+     * Creates a program and reads the sources from stream, the program is not build yet.
+     * @throws IOException when a IOException occurred while reading or closing the stream.
+     */
+    public CLProgram createProgram(InputStream sources) throws IOException {
+        
+        BufferedReader reader = new BufferedReader(new InputStreamReader(sources));
+        StringBuilder sb = new StringBuilder();
+
+        String line = null;
+        try {
+            while ((line = reader.readLine()) != null)
+                sb.append(line).append("\n");
+        } finally {
+            sources.close();
+        }
+
+        return createProgram(sb.toString());
     }
 
     public CLBuffer createBuffer(int flags, ByteBuffer directBuffer) {
@@ -217,38 +239,6 @@ public final class CLContext {
         }
         return null;
     }
-
-    /**
-     * Lists all available OpenCL implementaitons.
-     * @throws CLException if something went wrong initializing OpenCL
-     */
-    public static CLPlatform[] listCLPlatforms() {
-
-        int[] intBuffer = new int[1];
-        // find all available OpenCL platforms
-        int ret = cl.clGetPlatformIDs(0, null, 0, intBuffer, 0);
-        checkForError(ret, "can not enumerate platforms");
-
-        // receive platform ids
-        long[] platformId = new long[intBuffer[0]];
-        ret = cl.clGetPlatformIDs(platformId.length, platformId, 0, null, 0);
-        checkForError(ret, "can not enumerate platforms");
-
-        CLPlatform[] platforms = new CLPlatform[platformId.length];
-
-        for (int i = 0; i < platformId.length; i++)
-            platforms[i] = new CLPlatform(cl, platformId[i]);
-
-        return platforms;
-    }
-
-    /**
-     * Returns the low level binding interface to the OpenCL APIs.
-     */
-    public static CL getLowLevelBinding() {
-        return cl;
-    }
-
 
     @Override
     public String toString() {

@@ -123,10 +123,13 @@ public class CLCommandQueue {
     }
 */
     
-//    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
-//        return this.putNDRangeKernel(kernel, workDimension,
-//                new long[] {globalWorkOffset}, new long[] {globalWorkSize}, new long[] {localWorkSize});
-//    }
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
+        return this.putNDRangeKernel(
+                kernel, workDimension,
+                globalWorkOffset==0 ? null : new long[] {globalWorkOffset},
+                globalWorkSize  ==0 ? null : new long[] {globalWorkSize  },
+                localWorkSize   ==0 ? null : new long[] {localWorkSize   }  );
+    }
 
     public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long[] globalWorkOffset, long[] globalWorkSize, long[] localWorkSize) {
 
@@ -145,10 +148,46 @@ public class CLCommandQueue {
         return this;
     }
 
+    public CLCommandQueue finish() {
+        int ret = cl.clFinish(ID);
+        checkForError(ret, "can not finish command queue");
+        return this;
+    }
+
     public void release() {
         int ret = cl.clReleaseCommandQueue(ID);
-        context.commandQueueReleased(device, this);
+        context.onCommandQueueReleased(device, this);
         checkForError(ret, "can not release command queue");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CLCommandQueue other = (CLCommandQueue) obj;
+        if (this.ID != other.ID) {
+            return false;
+        }
+        if (this.context != other.context && (this.context == null || !this.context.equals(other.context))) {
+            return false;
+        }
+        if (this.device != other.device && (this.device == null || !this.device.equals(other.device))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + (int) (this.ID ^ (this.ID >>> 32));
+        hash = 89 * hash + (this.context != null ? this.context.hashCode() : 0);
+        hash = 89 * hash + (this.device != null ? this.device.hashCode() : 0);
+        return hash;
     }
 
 

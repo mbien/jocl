@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.CLBuffer.MEM;
 import com.sun.gluegen.runtime.BufferFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -99,14 +100,27 @@ public final class CLContext {
         return createProgram(sb.toString());
     }
 
-    public CLBuffer createBuffer(int flags, ByteBuffer directBuffer) {
-        CLBuffer buffer = new CLBuffer(this, flags, directBuffer);
-        buffers.add(buffer);
-        return buffer;
+    /**
+     * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
+     */
+    public CLBuffer createBuffer(ByteBuffer directBuffer, MEM... flags) {
+        return createBuffer(directBuffer, MEM.flagsToInt(flags));
+    }
+    /**
+     * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
+     */
+    public CLBuffer createBuffer(int size, MEM... flags) {
+        return createBuffer(size, MEM.flagsToInt(flags));
     }
 
-    public CLBuffer createBuffer(int flags, int size) {
-        return createBuffer(flags, BufferFactory.newDirectByteBuffer(size));
+    public CLBuffer createBuffer(int size, int flags) {
+        return createBuffer(BufferFactory.newDirectByteBuffer(size), flags);
+    }
+
+    public CLBuffer createBuffer(ByteBuffer directBuffer, int flags) {
+        CLBuffer buffer = new CLBuffer(this, directBuffer, flags);
+        buffers.add(buffer);
+        return buffer;
     }
 
     CLCommandQueue createCommandQueue(CLDevice device, long properties) {
@@ -123,15 +137,15 @@ public final class CLContext {
         return queue;
     }
 
-    void programReleased(CLProgram program) {
+    void onProgramReleased(CLProgram program) {
         programs.remove(program);
     }
 
-    void bufferReleased(CLBuffer buffer) {
+    void onBufferReleased(CLBuffer buffer) {
         buffers.remove(buffer);
     }
 
-    void commandQueueReleased(CLDevice device, CLCommandQueue queue) {
+    void onCommandQueueReleased(CLDevice device, CLCommandQueue queue) {
         List<CLCommandQueue> list = queuesMap.get(device);
         list.remove(queue);
         // remove empty lists from map
@@ -173,39 +187,28 @@ public final class CLContext {
     /**
      * Gets the device with maximal FLOPS from this context.
      */
-    /*
     public CLDevice getMaxFlopsDevice() {
 
-        long[] longBuffer = new long[1];
-//        ByteBuffer bb = ByteBuffer.allocate(8);
-//        bb.order(ByteOrder.nativeOrder());
+        CLDevice[] clDevices = getCLDevices();
+        CLDevice maxFLOPSDevice = null;
 
-        int ret = cl.clGetContextInfo(contextID, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer, 0);
-        if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "can not receive context info");
+        int maxflops = -1;
 
-        System.out.println("#devices: "+longBuffer[0]);
+        for (int i = 0; i < clDevices.length; i++) {
 
-        long[] deviceIDs = new long[(int)longBuffer[0]];
-        ret = cl.clGetContextInfo(contextID, CL.CL_CONTEXT_DEVICES, 0, null, deviceIDs, 0);
+            CLDevice device = clDevices[i];
+            int maxComputeUnits     = device.getMaxComputeUnits();
+            int maxClockFrequency   = device.getMaxClockFrequency();
+            int flops = maxComputeUnits*maxClockFrequency;
 
-        if(CL.CL_SUCCESS != ret)
-            throw new CLException(ret, "can not receive context info");
-
-        for (int i = 0; i < deviceIDs.length; i++) {
-            long l = deviceIDs[i];
-            System.out.println("device id"+l);
+            if(flops > maxflops) {
+                maxflops = flops;
+                maxFLOPSDevice = device;
+            }
         }
 
-            // get the list of GPU devices associated with context
-//        ciErrNum = clGetContextInfo(cxGPUContext, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
-//        cl_device_id *cdDevices = (cl_device_id *)malloc(dataBytes);
-//        ciErrNum |= clGetContextInfo(cxGPUContext, CL_CONTEXT_DEVICES, dataBytes, cdDevices, NULL);
-//        shrCheckError(ciErrNum, CL_SUCCESS);
-
-        return null;
+        return maxFLOPSDevice;
     }
-*/
 
     /**
      * Returns all devices associated with this CLContext.
@@ -214,7 +217,7 @@ public final class CLContext {
 
         if(devices == null) {
 
-            int sizeofDeviceID = 8; // TODO doublechek deviceID size on 32 bit systems
+            int sizeofDeviceID = 8; // TODO doublecheck deviceID size on 32 bit systems
 
             long[] longBuffer = new long[1];
 
@@ -229,7 +232,7 @@ public final class CLContext {
 
             devices = new CLDevice[deviceIDs.capacity()/sizeofDeviceID];
             for (int i = 0; i < devices.length; i++)
-                devices[i] = new CLDevice(this, deviceIDs.getLong()); // TODO doublechek deviceID size on 32 bit systems
+                devices[i] = new CLDevice(this, deviceIDs.getLong()); // TODO doublecheck deviceID size on 32 bit systems
 
         }
 

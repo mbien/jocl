@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.CLBuffer.MEM;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -87,6 +88,9 @@ public class HighLevelBindingTest {
         assertFalse(source.trim().isEmpty());
 //        out.println("source:\n"+source);
 
+//        Map<CLDevice, byte[]> binaries = program.getBinaries();
+//        assertFalse(binaries.isEmpty());
+
         int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
         int localWorkSize = 256;      // set and log Global and Local work size dimensions
         int globalWorkSize = roundUp(localWorkSize, elementCount);  // rounded up to the nearest multiple of the LocalWorkSize
@@ -100,9 +104,9 @@ public class HighLevelBindingTest {
         fillBuffer(srcA, 23456);
         fillBuffer(srcB, 46987);
 
-        CLBuffer clBufferA = context.createBuffer(CL.CL_MEM_READ_ONLY, srcA);
-        CLBuffer clBufferB = context.createBuffer(CL.CL_MEM_READ_ONLY, srcB);
-        CLBuffer clBufferC = context.createBuffer(CL.CL_MEM_WRITE_ONLY, dest);
+        CLBuffer clBufferA = context.createBuffer(srcA, MEM.READ_ONLY);
+        CLBuffer clBufferB = context.createBuffer(srcB, MEM.READ_ONLY);
+        CLBuffer clBufferC = context.createBuffer(dest, MEM.WRITE_ONLY);
 
         Map<String, CLKernel> kernels = program.getCLKernels();
         for (CLKernel kernel : kernels.values()) {
@@ -114,10 +118,10 @@ public class HighLevelBindingTest {
 
         CLKernel vectorAddKernel = kernels.get("VectorAddGM");
 
-        vectorAddKernel.setArg(0, SIZEOF_LONG, clBufferA)
-                       .setArg(1, SIZEOF_LONG, clBufferB)
-                       .setArg(2, SIZEOF_LONG, clBufferC)
-                       .setArg(3, SIZEOF_INT, elementCount);
+        vectorAddKernel.setArg(0, clBufferA)
+                       .setArg(1, clBufferB)
+                       .setArg(2, clBufferC)
+                       .setArg(3, elementCount);
 
         CLCommandQueue queue = programDevices[0].createCommandQueue();
 
@@ -125,7 +129,8 @@ public class HighLevelBindingTest {
         queue.putWriteBuffer(clBufferA, false)
              .putWriteBuffer(clBufferB, false)
              .putNDRangeKernel(vectorAddKernel, 1, null, new long[]{ globalWorkSize }, new long[]{ localWorkSize })
-             .putReadBuffer(clBufferC, true).release();
+             .putReadBuffer(clBufferC, true)
+             .finish().release();
 
         out.println("a+b=c result snapshot: ");
         for(int i = 0; i < 10; i++)
@@ -164,8 +169,8 @@ public class HighLevelBindingTest {
         CLContext context = CLContext.create();
 
          // the CL.MEM_* flag is probably completly irrelevant in our case since we do not use a kernel in this test
-        CLBuffer clBufferA = context.createBuffer(CL.CL_MEM_READ_ONLY,  elements*SIZEOF_INT);
-        CLBuffer clBufferB = context.createBuffer(CL.CL_MEM_READ_ONLY,  elements*SIZEOF_INT);
+        CLBuffer clBufferA = context.createBuffer(elements*SIZEOF_INT, MEM.READ_ONLY);
+        CLBuffer clBufferB = context.createBuffer(elements*SIZEOF_INT, MEM.READ_ONLY);
 
         // fill only first read buffer -> we will copy the payload to the second later.
         fillBuffer(clBufferA.buffer, 12345);
@@ -175,7 +180,8 @@ public class HighLevelBindingTest {
         // asynchronous write of data to GPU device, blocking read later to get the computed results back.
         queue.putWriteBuffer(clBufferA, false)                                 // write A
              .putCopyBuffer(clBufferA, clBufferB, clBufferA.buffer.capacity()) // copy A -> B
-             .putReadBuffer(clBufferB, true);                                  // read B
+             .putReadBuffer(clBufferB, true)                                   // read B
+             .finish();
 
         context.release();
 

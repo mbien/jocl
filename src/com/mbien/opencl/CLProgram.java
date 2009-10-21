@@ -123,7 +123,7 @@ public class CLProgram {
         return Collections.unmodifiableMap(kernels);
     }
 
-    void kernelReleased(CLKernel kernel) {
+    void onKernelReleased(CLKernel kernel) {
         this.kernels.remove(kernel.name);
     }
 
@@ -140,7 +140,7 @@ public class CLProgram {
         }
 
         int ret = cl.clReleaseProgram(ID);
-        context.programReleased(this);
+        context.onProgramReleased(this);
         checkForError(ret, "can not release program");
         
     }
@@ -184,7 +184,35 @@ public class CLProgram {
         return getProgramInfoString(CL.CL_PROGRAM_SOURCE);
     }
 
-    // TODO binaries, serialization, program build options
+    public Map<CLDevice, byte[]> getBinaries() {
+
+        CLDevice[] devices = getCLDevices();
+
+        ByteBuffer sizes = ByteBuffer.allocate(8*devices.length).order(ByteOrder.nativeOrder());
+        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null, 0);
+        checkForError(ret, "on clGetProgramInfo");
+
+        int binarySize = 0;
+        while(sizes.remaining() != 0)
+            binarySize += (int)sizes.getLong();
+
+        ByteBuffer binaries = ByteBuffer.allocate(binarySize).order(ByteOrder.nativeOrder());
+        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null, 0); // crash, driver bug?
+        checkForError(ret, "on clGetProgramInfo");
+
+        Map<CLDevice, byte[]> map = new HashMap<CLDevice, byte[]>();
+
+        for (int i = 0; i < devices.length; i++) {
+            byte[] bytes = new byte[(int)sizes.getLong()];
+            binaries.get(bytes);
+            map.put(devices[i], bytes);
+        }
+
+        return map;
+    }
+
+
+    // TODO serialization, program build options
 
     private final String getBuildInfoString(long device, int flag) {
 

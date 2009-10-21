@@ -1,6 +1,7 @@
 package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.BufferFactory;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import static com.mbien.opencl.CLException.*;
@@ -36,25 +37,47 @@ public class CLKernel {
 
     }
 
-    public CLKernel setArg(int argumentIndex, int argumentSize, CLBuffer value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, argumentSize, wrapLong(value.ID));
+    public CLKernel setArg(int argumentIndex, CLBuffer value) {
+        int ret = cl.clSetKernelArg(ID, argumentIndex, 8, wrap(value.ID));
         checkForError(ret, "error on clSetKernelArg");
         return this;
     }
 
-    public CLKernel setArg(int argumentIndex, int argumentSize, long value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, argumentSize, wrapLong(value));
+    public CLKernel setArg(int argumentIndex, int value) {
+        int ret = cl.clSetKernelArg(ID, argumentIndex, 4, wrap(value));
         checkForError(ret, "error on clSetKernelArg");
         return this;
     }
 
-    private final ByteBuffer wrapLong(long value) {
-        return (ByteBuffer) BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
+    public CLKernel setArg(int argumentIndex, long value) {
+        int ret = cl.clSetKernelArg(ID, argumentIndex, 8, wrap(value));
+        checkForError(ret, "error on clSetKernelArg");
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, float value) {
+        int ret = cl.clSetKernelArg(ID, argumentIndex, 4, wrap(value));
+        checkForError(ret, "error on clSetKernelArg");
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, double value) {
+        int ret = cl.clSetKernelArg(ID, argumentIndex, 8, wrap(value));
+        checkForError(ret, "error on clSetKernelArg");
+        return this;
+    }
+
+    private final Buffer wrap(double value) {
+        return BufferFactory.newDirectByteBuffer(8).putDouble(value).rewind();
+    }
+
+    private final Buffer wrap(long value) {
+        return BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
     }
 
     public void release() {
         int ret = cl.clReleaseKernel(ID);
-        program.kernelReleased(this);
+        program.onKernelReleased(this);
         checkForError(ret, "can not release kernel");
     }
 

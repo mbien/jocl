@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.BufferFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,6 +103,10 @@ public final class CLContext {
         CLBuffer buffer = new CLBuffer(this, flags, directBuffer);
         buffers.add(buffer);
         return buffer;
+    }
+
+    public CLBuffer createBuffer(int flags, int size) {
+        return createBuffer(flags, BufferFactory.newDirectByteBuffer(size));
     }
 
     CLCommandQueue createCommandQueue(CLDevice device, long properties) {

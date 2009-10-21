@@ -30,8 +30,8 @@ public class CLCommandQueue {
         int ret = cl.clEnqueueWriteBuffer(
                 ID, writeBuffer.ID, blockingWrite ? CL.CL_TRUE : CL.CL_FALSE,
                 0, writeBuffer.buffer.capacity(), writeBuffer.buffer,
-                0, null, 0,
-                null, 0 );
+//                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
+                0, null, 0, null, 0); //TODO events
 
         if(ret != CL.CL_SUCCESS)
             throw new CLException(ret, "can not enqueue WriteBuffer: " + writeBuffer);
@@ -44,14 +44,89 @@ public class CLCommandQueue {
         int ret = cl.clEnqueueReadBuffer(
                 ID, readBuffer.ID, blockingRead ? CL.CL_TRUE : CL.CL_FALSE,
                 0, readBuffer.buffer.capacity(), readBuffer.buffer,
-                0, null, 0,
-                null, 0 );
+//                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
+                0, null, 0, null, 0); //TODO events
 
         if(ret != CL.CL_SUCCESS)
             throw new CLException(ret, "can not enqueue ReadBuffer: " + readBuffer);
         
         return this;
     }
+
+    public CLCommandQueue putBarrier() {
+        int ret = cl.clEnqueueBarrier(ID);
+        checkForError(ret, "can not enqueue Barrier");
+        return this;
+    }
+
+    public CLCommandQueue putCopyBuffer(CLBuffer src, CLBuffer dest, long bytesToCopy) {
+        int ret = cl.clEnqueueCopyBuffer(
+                        ID, src.ID, dest.ID, src.buffer.position(), dest.buffer.position(), bytesToCopy,
+//                      0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null
+                        0, null, 0, null, 0); //TODO events
+        checkForError(ret, "can not copy Buffer");
+        return this;
+    }
+    
+    //TODO implement remaining methods
+    /*
+    public CLCommandQueue putCopyImage() {
+
+        return this;
+    }
+    public CLCommandQueue putCopyBufferToImage() {
+
+        return this;
+    }
+    public CLCommandQueue putCopyImageToBuffer() {
+
+        return this;
+    }
+    public CLCommandQueue putMarker() {
+
+        return this;
+    }
+
+    public CLCommandQueue putWriteImage() {
+
+        return this;
+    }
+
+    public CLCommandQueue putReadImage() {
+
+        return this;
+    }
+
+    public CLCommandQueue putTask() {
+
+        return this;
+    }
+
+    public CLBuffer putMapBuffer() {
+
+        return null;
+    }
+
+    public CLCommandQueue putMapImage() {
+
+        return this;
+    }
+
+    public CLCommandQueue putUnmapMemObject() {
+
+        return this;
+    }
+
+    public CLCommandQueue putWaitForEvents() {
+
+        return this;
+    }
+*/
+    
+//    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
+//        return this.putNDRangeKernel(kernel, workDimension,
+//                new long[] {globalWorkOffset}, new long[] {globalWorkSize}, new long[] {localWorkSize});
+//    }
 
     public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long[] globalWorkOffset, long[] globalWorkSize, long[] localWorkSize) {
 

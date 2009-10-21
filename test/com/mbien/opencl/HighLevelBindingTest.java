@@ -1,14 +1,15 @@
 package com.mbien.opencl;
 
-import com.sun.gluegen.runtime.BufferFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
+import static com.sun.gluegen.runtime.BufferFactory.*;
 
 /**
  * Test testing the high level bindings.
@@ -92,9 +93,9 @@ public class HighLevelBindingTest {
 
         out.println("allocateing buffers of size: "+globalWorkSize);
 
-        ByteBuffer srcA = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
-        ByteBuffer srcB = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
-        ByteBuffer dest = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
+        ByteBuffer srcA = newDirectByteBuffer(globalWorkSize*SIZEOF_INT);
+        ByteBuffer srcB = newDirectByteBuffer(globalWorkSize*SIZEOF_INT);
+        ByteBuffer dest = newDirectByteBuffer(globalWorkSize*SIZEOF_INT);
 
         fillBuffer(srcA, 23456);
         fillBuffer(srcB, 46987);
@@ -113,10 +114,10 @@ public class HighLevelBindingTest {
 
         CLKernel vectorAddKernel = kernels.get("VectorAddGM");
 
-        vectorAddKernel.setArg(0, BufferFactory.SIZEOF_LONG, clBufferA)
-                       .setArg(1, BufferFactory.SIZEOF_LONG, clBufferB)
-                       .setArg(2, BufferFactory.SIZEOF_LONG, clBufferC)
-                       .setArg(3, BufferFactory.SIZEOF_INT, elementCount);
+        vectorAddKernel.setArg(0, SIZEOF_LONG, clBufferA)
+                       .setArg(1, SIZEOF_LONG, clBufferB)
+                       .setArg(2, SIZEOF_LONG, clBufferC)
+                       .setArg(3, SIZEOF_INT, elementCount);
 
         CLCommandQueue queue = programDevices[0].createCommandQueue();
 
@@ -129,7 +130,7 @@ public class HighLevelBindingTest {
         out.println("a+b=c result snapshot: ");
         for(int i = 0; i < 10; i++)
             out.print(dest.getInt()+", ");
-        out.println("...; "+dest.remaining()/BufferFactory.SIZEOF_INT + " more");
+        out.println("...; "+dest.remaining()/SIZEOF_INT + " more");
 
         assertTrue(3 == context.getCLBuffers().size());
         clBufferA.release();
@@ -151,6 +152,51 @@ public class HighLevelBindingTest {
 //        CLDevice device = ctx.getMaxFlopsDevice();
 //        out.println("max FLOPS device: " + device);
         context.release();
+    }
+
+    @Test
+    public void writeCopyReadBufferTest() throws IOException {
+
+        out.println(" - - - highLevelTest; copy buffer test - - - ");
+
+        final int elements = 10000000; //many..
+
+        CLContext context = CLContext.create();
+
+         // the CL.MEM_* flag is probably completly irrelevant in our case since we do not use a kernel in this test
+        CLBuffer clBufferA = context.createBuffer(CL.CL_MEM_READ_ONLY,  elements*SIZEOF_INT);
+        CLBuffer clBufferB = context.createBuffer(CL.CL_MEM_READ_ONLY,  elements*SIZEOF_INT);
+
+        // fill only first read buffer -> we will copy the payload to the second later.
+        fillBuffer(clBufferA.buffer, 12345);
+
+        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
+
+        // asynchronous write of data to GPU device, blocking read later to get the computed results back.
+        queue.putWriteBuffer(clBufferA, false)                                 // write A
+             .putCopyBuffer(clBufferA, clBufferB, clBufferA.buffer.capacity()) // copy A -> B
+             .putReadBuffer(clBufferB, true);                                  // read B
+
+        context.release();
+
+        ByteBuffer a = clBufferA.buffer;
+        ByteBuffer b = clBufferB.buffer;
+
+        // print first few elements of the resulting buffer to the console.
+        out.println("validating computed results...");
+        for(int i = 0; i < elements; i++) {
+            int aVal = a.getInt();
+            int bVal = b.getInt();
+            if(aVal != bVal) {
+                out.println("a: "+aVal);
+                out.println("b: "+bVal);
+                out.println("position: "+a.position());
+                fail("a!=b");
+            }
+
+        }
+        out.println("results are valid");
+
     }
     
 }

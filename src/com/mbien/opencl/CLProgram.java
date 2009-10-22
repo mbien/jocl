@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.CPU;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Collections;
@@ -158,10 +159,10 @@ public class CLProgram {
         ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
         checkForError(ret, "on clGetProgramInfo");
 
-        int count = bb.capacity() / 8; // TODO sizeof cl_device
+        int count = bb.capacity() / (CPU.is32Bit()?4:8);
         CLDevice[] devices = new CLDevice[count];
         for (int i = 0; i < count; i++) {
-            devices[i] = context.getCLDevice(bb.getLong());
+            devices[i] = context.getCLDevice(CPU.is32Bit()?bb.getInt():bb.getLong());
         }
 
         return devices;

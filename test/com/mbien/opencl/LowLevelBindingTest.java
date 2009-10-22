@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.sun.gluegen.runtime.BufferFactory;
+import com.sun.gluegen.runtime.CPU;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -9,6 +9,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
+import static com.sun.gluegen.runtime.BufferFactory.*;
 
 /**
  * Test testing the low level bindings.
@@ -142,7 +143,7 @@ public class LowLevelBindingTest {
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longArray, 0);
         checkError("on clGetContextInfo", ret);
 
-        int sizeofLong = 8; // TODO sizeof long...
+        int sizeofLong = (CPU.is32Bit()?4:8);
         out.println("context created with " + longArray[0]/sizeofLong + " devices");
 
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, bb.capacity(), bb, null, 0);
@@ -164,11 +165,10 @@ public class LowLevelBindingTest {
 
         out.println("allocateing buffers of size: "+globalWorkSize);
 
-        ByteBuffer srcA = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
-        ByteBuffer srcB = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
-        ByteBuffer dest = BufferFactory.newDirectByteBuffer(globalWorkSize*BufferFactory.SIZEOF_INT);
+        ByteBuffer srcA = newDirectByteBuffer(globalWorkSize*SIZEOF_INT);
+        ByteBuffer srcB = newDirectByteBuffer(globalWorkSize*SIZEOF_INT);
+        ByteBuffer dest = newDirectByteBuffer(globalWorkSize*SIZEOF_INT);
 
-        // TODO sizeof int ...
         // Allocate the OpenCL buffer memory objects for source and result on the device GMEM
         long devSrcA = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, srcA.capacity(), null, intArray, 0);
         checkError("on clCreateBuffer", intArray[0]);
@@ -192,7 +192,7 @@ public class LowLevelBindingTest {
         checkError("on clGetProgramInfo1", ret);
         out.println("program associated with "+bb.getInt(0)+" device(s)");
 
-        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, bb, longArray, 0);
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, null, longArray, 0);
         checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
         out.println("program source length (cl): "+longArray[0]);
         out.println("program source length (java): "+programSource.length());
@@ -226,17 +226,17 @@ public class LowLevelBindingTest {
         long kernel = cl.clCreateKernel(program, "VectorAdd", intArray, 0);
         checkError("on clCreateKernel", intArray[0]);
 
-//        srcA.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
-//        srcB.limit(elementCount*BufferFactory.SIZEOF_FLOAT);
+//        srcA.limit(elementCount*SIZEOF_FLOAT);
+//        srcB.limit(elementCount*SIZEOF_FLOAT);
 
         fillBuffer(srcA, 23456);
         fillBuffer(srcB, 46987);
 
         // Set the Argument values
-        ret = cl.clSetKernelArg(kernel, 0, BufferFactory.SIZEOF_LONG, wrap(devSrcA));  checkError("on clSetKernelArg0", ret);
-        ret = cl.clSetKernelArg(kernel, 1, BufferFactory.SIZEOF_LONG, wrap(devSrcB));  checkError("on clSetKernelArg1", ret);
-        ret = cl.clSetKernelArg(kernel, 2, BufferFactory.SIZEOF_LONG, wrap(devDst));   checkError("on clSetKernelArg2", ret);
-        ret = cl.clSetKernelArg(kernel, 3, BufferFactory.SIZEOF_INT,  wrap(elementCount));  checkError("on clSetKernelArg3", ret);
+        ret = cl.clSetKernelArg(kernel, 0, CPU.is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcA));  checkError("on clSetKernelArg0", ret);
+        ret = cl.clSetKernelArg(kernel, 1, CPU.is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcB));  checkError("on clSetKernelArg1", ret);
+        ret = cl.clSetKernelArg(kernel, 2, CPU.is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devDst));   checkError("on clSetKernelArg2", ret);
+        ret = cl.clSetKernelArg(kernel, 3, SIZEOF_INT,  wrap(elementCount));  checkError("on clSetKernelArg3", ret);
 
         out.println("used device memory: "+ (srcA.capacity()+srcB.capacity()+dest.capacity())/1000000 +"MB");
 
@@ -261,7 +261,7 @@ public class LowLevelBindingTest {
         out.println("a+b=c result snapshot: ");
         for(int i = 0; i < 10; i++)
             out.print(dest.getInt()+", ");
-        out.println("...; "+dest.remaining()/BufferFactory.SIZEOF_INT + " more");
+        out.println("...; "+dest.remaining()/SIZEOF_INT + " more");
 
 
         // cleanup
@@ -300,7 +300,7 @@ public class LowLevelBindingTest {
     }
 
     private ByteBuffer wrap(long value) {
-        return (ByteBuffer) BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
+        return (ByteBuffer) newDirectByteBuffer(8).putLong(value).rewind();
     }
 
     private final void checkForError(int ret) {

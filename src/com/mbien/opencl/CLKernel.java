@@ -1,6 +1,7 @@
 package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.BufferFactory;
+import com.sun.gluegen.runtime.CPU;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -38,7 +39,7 @@ public class CLKernel {
     }
 
     public CLKernel setArg(int argumentIndex, CLBuffer value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, 8, wrap(value.ID));
+        int ret = cl.clSetKernelArg(ID, argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
         checkForError(ret, "error on clSetKernelArg");
         return this;
     }

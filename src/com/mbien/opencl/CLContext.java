@@ -2,6 +2,7 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.CLBuffer.MEM;
 import com.sun.gluegen.runtime.BufferFactory;
+import com.sun.gluegen.runtime.CPU;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -217,7 +218,7 @@ public final class CLContext {
 
         if(devices == null) {
 
-            int sizeofDeviceID = 8; // TODO doublecheck deviceID size on 32 bit systems
+            int sizeofDeviceID = CPU.is32Bit()?4:8;
 
             long[] longBuffer = new long[1];
 
@@ -231,9 +232,10 @@ public final class CLContext {
             checkForError(ret, "can not enumerate devices");
 
             devices = new CLDevice[deviceIDs.capacity()/sizeofDeviceID];
-            for (int i = 0; i < devices.length; i++)
-                devices[i] = new CLDevice(this, deviceIDs.getLong()); // TODO doublecheck deviceID size on 32 bit systems
-
+            for (int i = 0; i < devices.length; i++) {
+                devices[i] = new CLDevice(this, 
+                        CPU.is32Bit()?deviceIDs.getInt():deviceIDs.getLong());
+            }
         }
 
         return devices;

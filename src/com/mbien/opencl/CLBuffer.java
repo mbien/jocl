@@ -77,12 +77,14 @@ public class CLBuffer {
         }
 
         static int flagsToInt(MEM[] flags) {
-            int clFlags = CL.CL_MEM_READ_WRITE;
+            int clFlags = 0;
             if(flags != null) {
                 for (int i = 0; i < flags.length; i++) {
                     clFlags |= flags[i].CL_FLAG;
                 }
             }
+            if(clFlags == 0)
+                clFlags = CL.CL_MEM_READ_WRITE;
             return clFlags;
         }
 

@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.mbien.opencl.CLBuffer.MEM;
+import com.mbien.opencl.CLBuffer.Mem;
 import com.sun.gluegen.runtime.BufferFactory;
 import com.sun.gluegen.runtime.CPU;
 import java.io.BufferedReader;
@@ -19,7 +19,9 @@ import java.util.Map;
 import static com.mbien.opencl.CLException.*;
 
 /**
- *
+ * CLContext is responsible for managing objects such as command-queues, memory,
+ * program and kernel objects and for executing kernels on one or more devices
+ * specified in the context.
  * @author Michael Bien
  */
 public final class CLContext {
@@ -42,30 +44,71 @@ public final class CLContext {
         this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
     }
 
+    private final void initDevices() {
+        
+        if (devices == null) {
+
+            int sizeofDeviceID = CPU.is32Bit() ? 4 : 8;
+            long[] longBuffer = new long[1];
+
+            int ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer, 0);
+            checkForError(ret, "can not enumerate devices");
+
+            ByteBuffer deviceIDs = ByteBuffer.allocate((int) longBuffer[0]).order(ByteOrder.nativeOrder());
+            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null, 0);
+            checkForError(ret, "can not enumerate devices");
+
+            devices = new CLDevice[deviceIDs.capacity() / sizeofDeviceID];
+            for (int i = 0; i < devices.length; i++) {
+                devices[i] = new CLDevice(this, CPU.is32Bit() ? deviceIDs.getInt() : deviceIDs.getLong());
+            }
+        }
+    }
+
     /**
-     * Creates a default context on all available devices.
+     * Creates a default context on all available devices (CL_DEVICE_TYPE_ALL).
+     * The platform to be used is implementation dependent.
      */
     public static final CLContext create() {
-        return createContext(CL.CL_DEVICE_TYPE_ALL);
+        return createContext(null, CL.CL_DEVICE_TYPE_ALL);
     }
 
     /**
      * Creates a default context on the specified device types.
+     * The platform to be used is implementation dependent.
      */
     public static final CLContext create(CLDevice.Type... deviceTypes) {
-
-        int type = deviceTypes[0].CL_TYPE;
-        for (int i = 1; i < deviceTypes.length; i++) {
-            type |= deviceTypes[i].CL_TYPE;
-        }
-
-        return createContext(type);
+        return create(null, deviceTypes);
     }
 
-    private static final CLContext createContext(long deviceType) {
+    // TODO check if driver bug, otherwise find the reason why this is not working (INVALID_VALUE with NV driver)
+    /**
+     * Creates a default context on the specified platform and with the specified
+     * device types.
+     */
+    private static final CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
+
+        int type = 0;
+        if(deviceTypes != null) {
+            for (int i = 0; i < deviceTypes.length; i++) {
+                type |= deviceTypes[i].CL_TYPE;
+            }
+        }
+
+        IntBuffer properties = null;
+        if(platform != null) {
+            properties = IntBuffer.allocate(3);
+            properties.put(CL.CL_CONTEXT_PLATFORM).put((int)platform.ID).put(0); // TODO check if this has to be int or long
+            properties.rewind();
+        }
+
+        return createContext(properties, type);
+    }
+
+    private static final CLContext createContext(IntBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
-        long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(null, 0, deviceType, null, null, status, 0);
+        long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(properties, deviceType, null, null, status);
 
         checkForError(status.get(), "can not create CL context");
 
@@ -104,14 +147,14 @@ public final class CLContext {
     /**
      * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
      */
-    public CLBuffer createBuffer(ByteBuffer directBuffer, MEM... flags) {
-        return createBuffer(directBuffer, MEM.flagsToInt(flags));
+    public CLBuffer createBuffer(ByteBuffer directBuffer, Mem... flags) {
+        return createBuffer(directBuffer, Mem.flagsToInt(flags));
     }
     /**
      * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
      */
-    public CLBuffer createBuffer(int size, MEM... flags) {
-        return createBuffer(size, MEM.flagsToInt(flags));
+    public CLBuffer createBuffer(int size, Mem... flags) {
+        return createBuffer(size, Mem.flagsToInt(flags));
     }
 
     public CLBuffer createBuffer(int size, int flags) {
@@ -187,6 +230,8 @@ public final class CLContext {
 
     /**
      * Gets the device with maximal FLOPS from this context.
+     * The device speed is estimated by calulating the product of
+     * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      */
     public CLDevice getMaxFlopsDevice() {
 
@@ -215,29 +260,7 @@ public final class CLContext {
      * Returns all devices associated with this CLContext.
      */
     public CLDevice[] getCLDevices() {
-
-        if(devices == null) {
-
-            int sizeofDeviceID = CPU.is32Bit()?4:8;
-
-            long[] longBuffer = new long[1];
-
-            int ret;
-            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer, 0);
-            checkForError(ret, "can not enumerate devices");
-
-            ByteBuffer deviceIDs = ByteBuffer.allocate((int)longBuffer[0]).order(ByteOrder.nativeOrder());
-
-            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null, 0);
-            checkForError(ret, "can not enumerate devices");
-
-            devices = new CLDevice[deviceIDs.capacity()/sizeofDeviceID];
-            for (int i = 0; i < devices.length; i++) {
-                devices[i] = new CLDevice(this, 
-                        CPU.is32Bit()?deviceIDs.getInt():deviceIDs.getLong());
-            }
-        }
-
+        initDevices();
         return devices;
     }
 
@@ -278,6 +301,5 @@ public final class CLContext {
         hash = 23 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
     }
-
 
 }

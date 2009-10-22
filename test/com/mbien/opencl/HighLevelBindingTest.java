@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.mbien.opencl.CLBuffer.MEM;
+import com.mbien.opencl.CLBuffer.Mem;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -35,6 +35,7 @@ public class HighLevelBindingTest {
 
             out.println("platform info:");
             out.println("    name: "+platform.getName());
+            out.println("    id: "+platform.ID);
             out.println("    profile: "+platform.getProfile());
             out.println("    version: "+platform.getVersion());
             out.println("    vendor: "+platform.getVendor());
@@ -62,7 +63,8 @@ public class HighLevelBindingTest {
 
         out.println(" - - - highLevelTest; global memory kernel - - - ");
 
-        CLContext context = CLContext.create();
+//        CLPlatform[] clPlatforms = CLPlatform.listCLPlatforms();
+        CLContext context = CLContext.create(/*clPlatforms[0]*/);
 
         CLDevice[] contextDevices = context.getCLDevices();
 
@@ -104,9 +106,9 @@ public class HighLevelBindingTest {
         fillBuffer(srcA, 23456);
         fillBuffer(srcB, 46987);
 
-        CLBuffer clBufferA = context.createBuffer(srcA, MEM.READ_ONLY);
-        CLBuffer clBufferB = context.createBuffer(srcB, MEM.READ_ONLY);
-        CLBuffer clBufferC = context.createBuffer(dest, MEM.WRITE_ONLY);
+        CLBuffer clBufferA = context.createBuffer(srcA, Mem.READ_ONLY);
+        CLBuffer clBufferB = context.createBuffer(srcB, Mem.READ_ONLY);
+        CLBuffer clBufferC = context.createBuffer(dest, Mem.WRITE_ONLY);
 
         Map<String, CLKernel> kernels = program.getCLKernels();
         for (CLKernel kernel : kernels.values()) {
@@ -169,8 +171,8 @@ public class HighLevelBindingTest {
         CLContext context = CLContext.create();
 
          // the CL.MEM_* flag is probably completly irrelevant in our case since we do not use a kernel in this test
-        CLBuffer clBufferA = context.createBuffer(elements*SIZEOF_INT, MEM.READ_ONLY);
-        CLBuffer clBufferB = context.createBuffer(elements*SIZEOF_INT, MEM.READ_ONLY);
+        CLBuffer clBufferA = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
+        CLBuffer clBufferB = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
 
         // fill only first read buffer -> we will copy the payload to the second later.
         fillBuffer(clBufferA.buffer, 12345);

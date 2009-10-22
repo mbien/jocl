@@ -76,6 +76,9 @@ public class CLKernel {
         return BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
     }
 
+    /**
+     * Releases all resources of this kernel from its context.
+     */
     public void release() {
         int ret = cl.clReleaseKernel(ID);
         program.onKernelReleased(this);

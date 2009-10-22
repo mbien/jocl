@@ -24,9 +24,8 @@ void createContextCallback(const char * c, const void * v, size_t s, void * o) {
  *                                                      void *                   user_data ,
  *                                                      cl_int *                 errcode_ret );
  */
-//__Ljava_lang_Object_2IJLjava_lang_Object_2Ljava_lang_Object_2Ljava_lang_Object_2I
 JNIEXPORT jlong JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject _unused,
+Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType1(JNIEnv *env, jobject _unused,
         jobject props, jint props_byte_offset, jlong device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
     intptr_t * _props_ptr  = NULL;
@@ -34,26 +33,21 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject 
     cl_context _ctx;
 
     if (props != NULL) {
-        _props_ptr = (intptr_t *) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
+        _props_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
     }
     if (errcode != NULL) {
-        _errcode_ptr = (int32_t *) (((char*) (*env)->GetDirectBufferAddress(env, errcode)) + errcode_byte_offset);
+        _errcode_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, errcode, NULL)) + errcode_byte_offset);
     }
 
     //TODO callback; payload
-    _ctx = clCreateContextFromType((intptr_t *) _props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
+    _ctx = clCreateContextFromType((cl_context_properties *) _props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
 
-/*
-    printf(" - - - - test - - - -  \n");
-    cl_uint err;
-    size_t deviceListSize;
-
-    // get the list of GPU devices associated with context
-    err = clGetContextInfo(_ctx, CL_CONTEXT_DEVICES, 0, NULL, &deviceListSize);  checkStatus("getContextInfo1", err);
-    cl_uint count = (cl_uint)deviceListSize / sizeof(cl_device_id);
-    printf("devices: %d \n",  count);
-    printf(" - - - - test end - - - -  \n");
-*/
+    if (errcode != NULL) {
+        (*env)->ReleasePrimitiveArrayCritical(env, errcode, _errcode_ptr, 0);
+    }
+    if (props != NULL) {
+        (*env)->ReleasePrimitiveArrayCritical(env, props, _props_ptr, 0);
+    }
 
     return (jlong)_ctx;
 }
@@ -111,14 +105,6 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
         _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)) + offset);
     }
 
-/*
-    printf("---------------------------------------------------------------------------\n");
-    printf("deviceList: %d\n", _deviceListPtr);
-    printf("_strchars_options: %d\n", _strchars_options);
-    printf("deviceCount: %d\n", deviceCount);
-    printf("---------------------------------------------------------------------------\n");
-*/
-    
     // TODO payload, callback...
     _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, _deviceListPtr, _strchars_options, NULL, NULL);
 

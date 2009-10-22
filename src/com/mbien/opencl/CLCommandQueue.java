@@ -3,7 +3,12 @@ package com.mbien.opencl;
 import static com.mbien.opencl.CLException.*;
 
 /**
- *
+ * The command-queue can be used to queue a set of operations in order. Having multiple
+ * command-queues allows applications to queue multiple independent commands without
+ * requiring synchronization. Note that this should work as long as these objects are
+ * not being shared.<b/>
+ * Sharing of objects across multiple command-queues will require the application to
+ * perform appropriate synchronization.
  * @author Michael Bien
  */
 public class CLCommandQueue {
@@ -190,5 +195,36 @@ public class CLCommandQueue {
         return hash;
     }
 
+    /**
+     * Enumeration for the command-queue settings.
+     */
+    public enum Mode {
+        /**
+         * CL_DEVICE_TYPE_CPU
+         */
+        OUT_OF_ORDER_EXEC_MODE(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE),
+        /**
+         * CL_DEVICE_TYPE_GPU
+         */
+        PROFILING_MODE(CL.CL_QUEUE_PROFILING_ENABLE);
 
+        /**
+         * Value of wrapped OpenCL device type.
+         */
+        public final int CL_QUEUE_MODE;
+
+        private Mode(int CL_VALUE) {
+            this.CL_QUEUE_MODE = CL_VALUE;
+        }
+
+        public static Mode valueOf(int queueMode) {
+            switch(queueMode) {
+                case(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE):
+                    return OUT_OF_ORDER_EXEC_MODE;
+                case(CL.CL_QUEUE_PROFILING_ENABLE):
+                    return PROFILING_MODE;
+            }
+            return null;
+        }
+    }
 }

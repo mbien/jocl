@@ -137,7 +137,7 @@ public class LowLevelBindingTest {
         int ret = CL.CL_SUCCESS;
         int[] intArray = new int[1];
 
-        long context = cl.clCreateContextFromType(null, 0, CL.CL_DEVICE_TYPE_ALL, null, null, null, 0);
+        long context = cl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, null, null, null);
         out.println("context handle: "+context);
 
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longArray, 0);

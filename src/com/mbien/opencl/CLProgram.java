@@ -21,39 +21,6 @@ public class CLProgram {
 
     private final Map<String, CLKernel> kernels;
     
-    public enum Status {
-        
-        BUILD_SUCCESS(CL.CL_BUILD_SUCCESS), 
-        BUILD_NONE(CL.CL_BUILD_NONE), 
-        BUILD_IN_PROGRESS(CL.CL_BUILD_IN_PROGRESS),
-        BUILD_ERROR(CL.CL_BUILD_ERROR);
-                
-        /**
-         * Value of wrapped OpenCL device type.
-         */
-        public final int CL_BUILD_STATUS;
-
-        private Status(int CL_BUILD_STATUS) {
-            this.CL_BUILD_STATUS = CL_BUILD_STATUS;
-        }
-        
-        public static Status valueOf(int clBuildStatus) {
-            switch(clBuildStatus) {
-                case(CL.CL_BUILD_SUCCESS):
-                    return BUILD_SUCCESS;
-                case(CL.CL_BUILD_NONE):
-                    return BUILD_NONE;
-                case(CL.CL_BUILD_IN_PROGRESS):
-                    return BUILD_IN_PROGRESS;
-                case(CL.CL_BUILD_ERROR):
-                    return BUILD_ERROR;
-// is this a standard state?
-//              case (CL.CL_BUILD_PROGRAM_FAILURE):
-//                    return BUILD_PROGRAM_FAILURE;
-            }
-            return null;
-        }
-    }
 
     CLProgram(CLContext context, String src, long contextID) {
         
@@ -68,45 +35,9 @@ public class CLProgram {
         checkForError(intArray[0], "can not create program with source");
     }
 
-
-    /**
-     * Builds this program for all devices associated with the context and implementation specific build options.
-     * @return this
-     */
-    public CLProgram build() {
-        build(null, null);
-        return this;
-    }
-
-    /**
-     * Builds this program for the given devices and with the specified build options.
-     * @return this
-     * @param devices A list of devices this program should be build on or null for all devices of its context.
-     */
-    public CLProgram build(CLDevice[] devices, String options) {
-
-        long[] deviceIDs = null;
-        if(devices != null) {
-            deviceIDs = new long[devices.length];
-            for (int i = 0; i < deviceIDs.length; i++) {
-                deviceIDs[i] = devices[i].ID;
-            }
-        }
-
-        // Build the program
-        int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
-        checkForError(ret, "error building program");
-
-        return this;
-    }
-
-    /**
-     * Returns all kernels of this program in a unmodifiable view of a map with the kernel function names as keys.
-     */
-    public Map<String, CLKernel> getCLKernels() {
+    private final void initKernels() {
 
         if(kernels.isEmpty()) {
-            
             int[] intArray = new int[1];
             int ret = cl.clCreateKernelsInProgram(ID, 0, null, 0, intArray, 0);
             checkForError(ret, "can not create kernels for program");
@@ -120,98 +51,7 @@ public class CLProgram {
                 kernels.put(kernel.name, kernel);
             }
         }
-
-        return Collections.unmodifiableMap(kernels);
     }
-
-    void onKernelReleased(CLKernel kernel) {
-        this.kernels.remove(kernel.name);
-    }
-
-    /**
-     * Releases this program.
-     */
-    public void release() {
-
-        if(!kernels.isEmpty()) {
-            String[] names = kernels.keySet().toArray(new String[kernels.size()]);
-            for (String name : names) {
-                kernels.get(name).release();
-            }
-        }
-
-        int ret = cl.clReleaseProgram(ID);
-        context.onProgramReleased(this);
-        checkForError(ret, "can not release program");
-        
-    }
-
-    /**
-     * Returns all devices associated with this program.
-     */
-    public CLDevice[] getCLDevices() {
-
-        long[] longArray = new long[1];
-        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, 0, null, longArray, 0);
-        checkForError(ret, "on clGetProgramInfo");
-
-        ByteBuffer bb = ByteBuffer.allocate((int) longArray[0]).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
-        checkForError(ret, "on clGetProgramInfo");
-
-        int count = bb.capacity() / (CPU.is32Bit()?4:8);
-        CLDevice[] devices = new CLDevice[count];
-        for (int i = 0; i < count; i++) {
-            devices[i] = context.getCLDevice(CPU.is32Bit()?bb.getInt():bb.getLong());
-        }
-
-        return devices;
-
-    }
-
-    public String getBuildLog(CLDevice device) {
-        return getBuildInfoString(device.ID, CL.CL_PROGRAM_BUILD_LOG);
-    }
-
-    public Status getBuildStatus(CLDevice device) {
-        int clStatus = getBuildInfoInt(device.ID, CL.CL_PROGRAM_BUILD_STATUS);
-        return Status.valueOf(clStatus);
-    }
-
-    /**
-     * Returns the source code of this program. Note: sources are not cached, each call of this method calls into OpenCL.
-     */
-    public String getSource() {
-        return getProgramInfoString(CL.CL_PROGRAM_SOURCE);
-    }
-
-    public Map<CLDevice, byte[]> getBinaries() {
-
-        CLDevice[] devices = getCLDevices();
-
-        ByteBuffer sizes = ByteBuffer.allocate(8*devices.length).order(ByteOrder.nativeOrder());
-        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null, 0);
-        checkForError(ret, "on clGetProgramInfo");
-
-        int binarySize = 0;
-        while(sizes.remaining() != 0)
-            binarySize += (int)sizes.getLong();
-
-        ByteBuffer binaries = ByteBuffer.allocate(binarySize).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null, 0); // crash, driver bug?
-        checkForError(ret, "on clGetProgramInfo");
-
-        Map<CLDevice, byte[]> map = new HashMap<CLDevice, byte[]>();
-
-        for (int i = 0; i < devices.length; i++) {
-            byte[] bytes = new byte[(int)sizes.getLong()];
-            binaries.get(bytes);
-            map.put(devices[i], bytes);
-        }
-
-        return map;
-    }
-
 
     // TODO serialization, program build options
 
@@ -254,7 +94,7 @@ public class CLProgram {
 //
 //        return bb.getInt();
 //    }
-    
+
     private int getBuildInfoInt(long device, int flag) {
 
         ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
@@ -263,6 +103,165 @@ public class CLProgram {
         checkForError(ret, "error on clGetProgramBuildInfo");
 
         return bb.getInt();
+    }
+
+
+    /**
+     * Builds this program for all devices associated with the context and implementation specific build options.
+     * @return this
+     */
+    public CLProgram build() {
+        build(null, null);
+        return this;
+    }
+
+    /**
+     * Builds this program for all devices associated with the context using the specified build options.
+     * @return this
+     */
+    public CLProgram build(String options) {
+        build(null, options);
+        return this;
+    }
+
+    /**
+     * Builds this program for the given devices and with the specified build options.
+     * @return this
+     * @param devices A list of devices this program should be build on or null for all devices of its context.
+     */
+    public CLProgram build(CLDevice[] devices, String options) {
+
+        long[] deviceIDs = null;
+        if(devices != null) {
+            deviceIDs = new long[devices.length];
+            for (int i = 0; i < deviceIDs.length; i++) {
+                deviceIDs[i] = devices[i].ID;
+            }
+        }
+
+        // Build the program
+        int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
+        checkForError(ret, "error building program");
+
+        return this;
+    }
+
+    void onKernelReleased(CLKernel kernel) {
+        this.kernels.remove(kernel.name);
+    }
+
+    /**
+     * Releases this program.
+     */
+    public void release() {
+
+        if(!kernels.isEmpty()) {
+            String[] names = kernels.keySet().toArray(new String[kernels.size()]);
+            for (String name : names) {
+                kernels.get(name).release();
+            }
+        }
+
+        int ret = cl.clReleaseProgram(ID);
+        context.onProgramReleased(this);
+        checkForError(ret, "can not release program");
+        
+    }
+
+    /**
+     * Returns the kernel with the specified name or null if not found.
+     */
+    public CLKernel getCLKernel(String kernelName) {
+        initKernels();
+        return kernels.get(kernelName);
+    }
+
+
+    /**
+     * Returns all kernels of this program in a unmodifiable view of a map
+     * with the kernel function names as keys.
+     */
+    public Map<String, CLKernel> getCLKernels() {
+        initKernels();
+        return Collections.unmodifiableMap(kernels);
+    }
+
+    /**
+     * Returns all devices associated with this program.
+     */
+    public CLDevice[] getCLDevices() {
+
+        long[] longArray = new long[1];
+        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, 0, null, longArray, 0);
+        checkForError(ret, "on clGetProgramInfo");
+
+        ByteBuffer bb = ByteBuffer.allocate((int) longArray[0]).order(ByteOrder.nativeOrder());
+        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
+        checkForError(ret, "on clGetProgramInfo");
+
+        int count = bb.capacity() / (CPU.is32Bit()?4:8);
+        CLDevice[] devices = new CLDevice[count];
+        for (int i = 0; i < count; i++) {
+            devices[i] = context.getCLDevice(CPU.is32Bit()?bb.getInt():bb.getLong());
+        }
+
+        return devices;
+
+    }
+
+    /**
+     * Returns the build log for this program. The contents of the log are
+     * implementation dependent log can be an empty String.
+     */
+    public String getBuildLog(CLDevice device) {
+        return getBuildInfoString(device.ID, CL.CL_PROGRAM_BUILD_LOG);
+    }
+
+    /**
+     * Returns the build status enum for this program on the specified device.
+     */
+    public Status getBuildStatus(CLDevice device) {
+        int clStatus = getBuildInfoInt(device.ID, CL.CL_PROGRAM_BUILD_STATUS);
+        return Status.valueOf(clStatus);
+    }
+
+    /**
+     * Returns the source code of this program. Note: sources are not cached,
+     * each call of this method calls into OpenCL.
+     */
+    public String getSource() {
+        return getProgramInfoString(CL.CL_PROGRAM_SOURCE);
+    }
+
+    /**
+     * Returns the binaries for this program in a map containing the device as key
+     * and the byte array as value.
+     */
+    public Map<CLDevice, byte[]> getBinaries() {
+
+        CLDevice[] devices = getCLDevices();
+
+        ByteBuffer sizes = ByteBuffer.allocate(8*devices.length).order(ByteOrder.nativeOrder());
+        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null, 0);
+        checkForError(ret, "on clGetProgramInfo");
+
+        int binarySize = 0;
+        while(sizes.remaining() != 0)
+            binarySize += (int)sizes.getLong();
+
+        ByteBuffer binaries = ByteBuffer.allocate(binarySize).order(ByteOrder.nativeOrder());
+        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null, 0); // TODO crash, driver bug?
+        checkForError(ret, "on clGetProgramInfo");
+
+        Map<CLDevice, byte[]> map = new HashMap<CLDevice, byte[]>();
+
+        for (int i = 0; i < devices.length; i++) {
+            byte[] bytes = new byte[(int)sizes.getLong()];
+            binaries.get(bytes);
+            map.put(devices[i], bytes);
+        }
+
+        return map;
     }
 
     @Override
@@ -289,6 +288,40 @@ public class CLProgram {
         hash = 37 * hash + (this.context != null ? this.context.hashCode() : 0);
         hash = 37 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
+    }
+    
+    public enum Status {
+
+        BUILD_SUCCESS(CL.CL_BUILD_SUCCESS),
+        BUILD_NONE(CL.CL_BUILD_NONE),
+        BUILD_IN_PROGRESS(CL.CL_BUILD_IN_PROGRESS),
+        BUILD_ERROR(CL.CL_BUILD_ERROR);
+
+        /**
+         * Value of wrapped OpenCL device type.
+         */
+        public final int CL_BUILD_STATUS;
+
+        private Status(int CL_BUILD_STATUS) {
+            this.CL_BUILD_STATUS = CL_BUILD_STATUS;
+        }
+
+        public static Status valueOf(int clBuildStatus) {
+            switch(clBuildStatus) {
+                case(CL.CL_BUILD_SUCCESS):
+                    return BUILD_SUCCESS;
+                case(CL.CL_BUILD_NONE):
+                    return BUILD_NONE;
+                case(CL.CL_BUILD_IN_PROGRESS):
+                    return BUILD_IN_PROGRESS;
+                case(CL.CL_BUILD_ERROR):
+                    return BUILD_ERROR;
+// is this a standard state?
+//              case (CL.CL_BUILD_PROGRAM_FAILURE):
+//                    return BUILD_PROGRAM_FAILURE;
+            }
+            return null;
+        }
     }
 
 }

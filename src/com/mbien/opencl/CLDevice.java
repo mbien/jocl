@@ -15,51 +15,6 @@ import static com.mbien.opencl.CLException.*;
  */
 public final class CLDevice {
 
-    /**
-     * Enumeration for the type of a device.
-     */
-    public enum Type {
-        /**
-         * CL_DEVICE_TYPE_CPU
-         */
-        CPU(CL.CL_DEVICE_TYPE_CPU),
-        /**
-         * CL_DEVICE_TYPE_GPU
-         */
-        GPU(CL.CL_DEVICE_TYPE_GPU),
-        /**
-         * CL_DEVICE_TYPE_ACCELERATOR
-         */
-        ACCELERATOR(CL.CL_DEVICE_TYPE_ACCELERATOR),
-        /**
-         * CL_DEVICE_TYPE_DEFAULT
-         */
-        DEFAULT(CL.CL_DEVICE_TYPE_DEFAULT);
-
-        /**
-         * Value of wrapped OpenCL device type.
-         */
-        public final int CL_TYPE;
-
-        private Type(int CL_TYPE) {
-            this.CL_TYPE = CL_TYPE;
-        }
-
-        public static Type valueOf(int clDeviceType) {
-            switch(clDeviceType) {
-                case(CL.CL_DEVICE_TYPE_DEFAULT):
-                    return DEFAULT;
-                case(CL.CL_DEVICE_TYPE_CPU):
-                    return CPU;
-                case(CL.CL_DEVICE_TYPE_GPU):
-                    return GPU;
-                case(CL.CL_DEVICE_TYPE_ACCELERATOR):
-                    return ACCELERATOR;
-            }
-            return null;
-        }
-    }
-    
     private final CL cl;
     private CLContext context;
 
@@ -81,6 +36,20 @@ public final class CLDevice {
 
     public CLCommandQueue createCommandQueue() {
         return createCommandQueue(0);
+    }
+
+    public CLCommandQueue createCommandQueue(CLCommandQueue.Mode property) {
+        return createCommandQueue(property.CL_QUEUE_MODE);
+    }
+
+    public CLCommandQueue createCommandQueue(CLCommandQueue.Mode... properties) {
+        int flags = 0;
+        if(properties != null) {
+            for (int i = 0; i < properties.length; i++) {
+                flags |= properties[i].CL_QUEUE_MODE;
+            }
+        }
+        return createCommandQueue(flags);
     }
     
     public CLCommandQueue createCommandQueue(long properties) {
@@ -123,38 +92,74 @@ public final class CLDevice {
     }
 
     /**
-     * Returns the maximal number of compute units.
+     * Returns the number of parallel compute cores on the OpenCL device.
+     * The minimum value is 1.
      */
     public int getMaxComputeUnits() {
         return (int) getInfoLong(CL.CL_DEVICE_MAX_COMPUTE_UNITS);
     }
 
     /**
-     * Returns the maximal work group size.
+     * Returns the maximum number of work-items in a work-group executing
+     * a kernel using the data parallel execution model.
+     * The minimum value is 1.
      */
     public int getMaxWorkGroupSize() {
         return (int) getInfoLong(CL.CL_DEVICE_MAX_WORK_GROUP_SIZE);
     }
 
     /**
-     * Returns the max clock frequency in Hz.
+     * Returns the maximum configured clock frequency of the device in MHz.
      */
     public int getMaxClockFrequency() {
         return (int) (getInfoLong(CL.CL_DEVICE_MAX_CLOCK_FREQUENCY));
     }
 
     /**
-     * Returns the global memory size in Bytes.
+     * Returns the maximum dimensions that specify the global and local work-item
+     * IDs used by the data parallel execution model.
+     * The minimum value is 3.
+     */
+    public int getMaxWorkItemDimensions() {
+        return (int) getInfoLong(CL.CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
+    }
+
+    /**
+     * Returns the global memory size in bytes.
      */
     public long getGlobalMemSize() {
         return getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_SIZE);
     }
 
     /**
-     * Returns the local memory size in Bytes.
+     * Returns the local memory size in bytes.
      */
     public long getLocalMemSize() {
         return getInfoLong(CL.CL_DEVICE_LOCAL_MEM_SIZE);
+    }
+
+    /**
+     * Returns the max size in bytes of a constant buffer allocation.
+     * The minimum value is 64 KB.
+     */
+    public long getMaxConstantBufferSize() {
+        return getInfoLong(CL.CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE);
+    }
+
+    /**
+     * Returns true if this device is available.
+     */
+    public boolean isAvailable() {
+        return getInfoLong(CL.CL_DEVICE_AVAILABLE) == CL.CL_TRUE;
+    }
+
+    /**
+     * Returns false if the implementation does not have a compiler available to
+     * compile the program source. Is true if the compiler is available.
+     * This can be false for the OpenCL ES profile only.
+     */
+    public boolean isCompilerAvailable() {
+        return getInfoLong(CL.CL_DEVICE_COMPILER_AVAILABLE) == CL.CL_TRUE;
     }
 
     /**
@@ -231,6 +236,51 @@ public final class CLDevice {
         int hash = 3;
         hash = 79 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
+    }
+
+    /**
+     * Enumeration for the type of a device.
+     */
+    public enum Type {
+        /**
+         * CL_DEVICE_TYPE_CPU
+         */
+        CPU(CL.CL_DEVICE_TYPE_CPU),
+        /**
+         * CL_DEVICE_TYPE_GPU
+         */
+        GPU(CL.CL_DEVICE_TYPE_GPU),
+        /**
+         * CL_DEVICE_TYPE_ACCELERATOR
+         */
+        ACCELERATOR(CL.CL_DEVICE_TYPE_ACCELERATOR),
+        /**
+         * CL_DEVICE_TYPE_DEFAULT
+         */
+        DEFAULT(CL.CL_DEVICE_TYPE_DEFAULT);
+
+        /**
+         * Value of wrapped OpenCL device type.
+         */
+        public final int CL_TYPE;
+
+        private Type(int CL_TYPE) {
+            this.CL_TYPE = CL_TYPE;
+        }
+
+        public static Type valueOf(int clDeviceType) {
+            switch(clDeviceType) {
+                case(CL.CL_DEVICE_TYPE_DEFAULT):
+                    return DEFAULT;
+                case(CL.CL_DEVICE_TYPE_CPU):
+                    return CPU;
+                case(CL.CL_DEVICE_TYPE_GPU):
+                    return GPU;
+                case(CL.CL_DEVICE_TYPE_ACCELERATOR):
+                    return ACCELERATOR;
+            }
+            return null;
+        }
     }
 
 }

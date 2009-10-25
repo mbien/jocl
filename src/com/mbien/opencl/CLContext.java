@@ -66,29 +66,44 @@ public final class CLContext {
     }
 
     /**
-     * Creates a default context on all available devices (CL_DEVICE_TYPE_ALL).
+     * Creates a context on all available devices (CL_DEVICE_TYPE_ALL).
      * The platform to be used is implementation dependent.
      */
     public static final CLContext create() {
-        return createContext(null, CL.CL_DEVICE_TYPE_ALL);
+        return createContextFromType(null, CL.CL_DEVICE_TYPE_ALL);
     }
 
     /**
-     * Creates a default context on the specified device types.
+     * Creates a context on the specified device types.
      * The platform to be used is implementation dependent.
      */
     public static final CLContext create(CLDevice.Type... deviceTypes) {
         return create(null, deviceTypes);
     }
 
+    /**
+     * Creates a context on the specified devices.
+     * The platform to be used is implementation dependent.
+     */
+    public static final CLContext create(CLDevice... devices) {
+        return create(null, devices);
+    }
+
+    /**
+     * Creates a context on the specified platform on all available devices (CL_DEVICE_TYPE_ALL).
+     */
+    public static final CLContext create(CLPlatform platform) {
+        return create(platform, CLDevice.Type.ALL);
+    }
+
     // TODO check if driver bug, otherwise find the reason why this is not working (INVALID_VALUE with NV driver)
     /**
-     * Creates a default context on the specified platform and with the specified
+     * Creates a context on the specified platform and with the specified
      * device types.
      */
     private static final CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
 
-        int type = 0;
+        long type = 0;
         if(deviceTypes != null) {
             for (int i = 0; i < deviceTypes.length; i++) {
                 type |= deviceTypes[i].CL_TYPE;
@@ -102,13 +117,45 @@ public final class CLContext {
             properties.rewind();
         }
 
-        return createContext(properties, type);
+        return createContextFromType(properties, type);
     }
 
-    private static final CLContext createContext(IntBuffer properties, long deviceType) {
+    /**
+     * Creates a context on the specified platform and with the specified
+     * devices.
+     */
+    private static final CLContext create(CLPlatform platform, CLDevice... devices) {
+
+        long[] deviceIDs = new long[devices.length];
+
+        for (int i = 0; i < devices.length; i++) {
+            deviceIDs[i] = devices[i].ID;
+        }
+
+        IntBuffer properties = null;
+        if(platform != null) {
+            properties = IntBuffer.allocate(3);
+            properties.put(CL.CL_CONTEXT_PLATFORM).put((int)platform.ID).put(0); // TODO check if this has to be int or long
+            properties.rewind();
+        }
+
+        return createContext(properties, deviceIDs);
+    }
+
+    private static final CLContext createContextFromType(IntBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(properties, deviceType, null, null, status);
+
+        checkForError(status.get(), "can not create CL context");
+
+        return new CLContext(context);
+    }
+
+    private static final CLContext createContext(IntBuffer properties, long[] devices) {
+
+        IntBuffer status = IntBuffer.allocate(1);
+        long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, devices, null, null, status);
 
         checkForError(status.get(), "can not create CL context");
 

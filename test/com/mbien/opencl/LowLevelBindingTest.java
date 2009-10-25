@@ -3,6 +3,7 @@ package com.mbien.opencl;
 import com.sun.gluegen.runtime.CPU;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class LowLevelBindingTest {
     }
 
     @Test
-    public void lowLevelTest1() {
+    public void contextlessTest() {
 
         out.println(" - - - lowLevelTest; contextless binding - - - ");
 
@@ -118,7 +119,53 @@ public class LowLevelBindingTest {
     }
 
     @Test
-    public void lowLevelTest2() {
+    public void createContextTest() {
+
+        out.println(" - - - createContextTest - - - ");
+
+        CL cl = CLPlatform.getLowLevelBinding();
+
+        int[] intArray = new int[1];
+        // find all available OpenCL platforms
+        int ret = cl.clGetPlatformIDs(0, null, 0, intArray, 0);
+        checkForError(ret);
+        out.println("#platforms: "+intArray[0]);
+
+        long[] longArray = new long[intArray[0]];
+        ret = cl.clGetPlatformIDs(longArray.length, longArray, 0, null, 0);
+        checkForError(ret);
+
+        long platform = longArray[0];
+
+        //find all devices
+        ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intArray, 0);
+        checkForError(ret);
+        out.println("#devices: "+intArray[0]);
+
+        long[] devices = new long[intArray[0]];
+        ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.length, devices, 0, null, 0);
+
+        IntBuffer intBuffer = IntBuffer.allocate(1);
+        long context = cl.clCreateContext(null, devices, null, null, intBuffer);
+        checkError("on clCreateContext", intBuffer.get());
+
+        //get number of devices
+        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longArray, 0);
+        checkError("on clGetContextInfo", ret);
+
+        int sizeofLong = (CPU.is32Bit()?4:8);
+        out.println("context created with " + longArray[0]/sizeofLong + " devices");
+
+        //check if equal
+        assertEquals("context was not created on all devices specified", devices.length, longArray[0]/sizeofLong);
+
+        ret = cl.clReleaseContext(context);
+        checkError("on clReleaseContext", ret);
+    }
+
+
+    @Test
+    public void lowLevelVectorAddTest() {
 
         out.println(" - - - lowLevelTest2; VectorAdd kernel - - - ");
 
@@ -295,7 +342,7 @@ public class LowLevelBindingTest {
         out.println(" - - - loadTest - - - ");
         for(int i = 0; i < 100; i++) {
             out.println("###iteration "+i);
-            lowLevelTest2();
+            lowLevelVectorAddTest();
         }
     }
 

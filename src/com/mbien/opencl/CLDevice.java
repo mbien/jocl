@@ -255,21 +255,31 @@ public final class CLDevice {
          */
         ACCELERATOR(CL.CL_DEVICE_TYPE_ACCELERATOR),
         /**
-         * CL_DEVICE_TYPE_DEFAULT
+         * CL_DEVICE_TYPE_DEFAULT. This type can be used for creating a context on
+         * the default device, a single device can never have this type.
          */
-        DEFAULT(CL.CL_DEVICE_TYPE_DEFAULT);
+        DEFAULT(CL.CL_DEVICE_TYPE_DEFAULT),
+        /**
+         * CL_DEVICE_TYPE_ALL. This type can be used for creating a context on
+         * all devices, a single device can never have this type.
+         */
+        ALL(CL.CL_DEVICE_TYPE_ALL);
 
         /**
          * Value of wrapped OpenCL device type.
          */
-        public final int CL_TYPE;
+        public final long CL_TYPE;
 
-        private Type(int CL_TYPE) {
+        private Type(long CL_TYPE) {
             this.CL_TYPE = CL_TYPE;
         }
 
-        public static Type valueOf(int clDeviceType) {
-            switch(clDeviceType) {
+        public static Type valueOf(long clDeviceType) {
+
+            if(clDeviceType == CL.CL_DEVICE_TYPE_ALL)
+                return ALL;
+
+            switch((int)clDeviceType) {
                 case(CL.CL_DEVICE_TYPE_DEFAULT):
                     return DEFAULT;
                 case(CL.CL_DEVICE_TYPE_CPU):

@@ -52,40 +52,64 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType1(JNIEnv *env, jobject 
     return (jlong)_ctx;
 }
 
-
 /*
+ * Entry point to C language function:
+ *extern CL_API_ENTRY cl_context CL_API_CALL
+ *clCreateContext(cl_context_properties *    properties   ,
+ *                cl_uint                    num_devices   ,
+ *                const cl_device_id *       devices   ,
+ *                void (*pfn_notify)(const char *, const void *, size_t, void *)  pfn_notify ,
+ *                void *                     user_data   ,
+ *                cl_int *                   errcode_ret   ) CL_API_SUFFIX__VERSION_1_0;
+ */
 JNIEXPORT jlong JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jlong device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
+Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
+        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
     intptr_t * _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
-    void * _device_ptr = NULL;
+    size_t * _deviceListPtr = NULL;
 
-    cl_context _res;
+    cl_context _ctx;
 
     if (props != NULL) {
-        _props_ptr = (intptr_t *) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
+        _props_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
+    }
+    if (deviceList != NULL) {
+        _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)) /*+ device_byte_offset*/);
+    }
+    if (errcode != NULL) {
+        _errcode_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, errcode, NULL)) + errcode_byte_offset);
     }
 
-   if (device_type != NULL) {
-       _device_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, device_type, NULL)));
-   }
+    // TODO payload, callback...
+    _ctx = clCreateContext((cl_context_properties *) _props_ptr, numDevices, (cl_device_id *)_deviceListPtr, NULL, NULL, (int32_t *) _errcode_ptr);
 
-   _res = clCreateContext();
+    if (errcode != NULL) {
+        (*env)->ReleasePrimitiveArrayCritical(env, errcode, _errcode_ptr, 0);
+    }
+    if (deviceList != NULL) {
+        (*env)->ReleasePrimitiveArrayCritical(env, deviceList, _deviceListPtr, 0);
+    }
+    if (props != NULL) {
+        (*env)->ReleasePrimitiveArrayCritical(env, props, _props_ptr, 0);
+    }
 
-   if (device_type != NULL) {
-    (*env)->ReleasePrimitiveArrayCritical(env, device_type, _device_ptr, 0);
-   }
-   return (jlong) (intptr_t) _res;
+    return (jlong) _ctx;
 }
-*/
 
 /**
- * Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void (*pfn_notify)(cl_program, void *user_data), void * );
+ * Entry point to C language function:
+ * extern CL_API_ENTRY cl_int CL_API_CALL
+ *clBuildProgram(cl_program              program   ,
+ *               cl_uint                 num_devices   ,
+ *               const cl_device_id *    device_list   ,
+ *               const char *            options   ,
+ *               void (*pfn_notify)(cl_program    program   , void *    user_data   ),
+ *               void *                  user_data   ) CL_API_SUFFIX__VERSION_1_0;
  */
 JNIEXPORT jint JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
+Java_com_mbien_opencl_impl_CLImpl_clBuildProgram1(JNIEnv *env, jobject _unused,
         jlong program, jint deviceCount, jobject deviceList, jint offset, jstring options, jobject cb, jobject data) {
 
     const char* _strchars_options = NULL;
@@ -106,7 +130,7 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
     }
 
     // TODO payload, callback...
-    _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, _deviceListPtr, _strchars_options, NULL, NULL);
+    _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, (cl_device_id *)_deviceListPtr, _strchars_options, NULL, NULL);
 
     if (deviceList != NULL) {
         (*env)->ReleasePrimitiveArrayCritical(env, deviceList, _deviceListPtr, 0);

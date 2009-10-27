@@ -38,7 +38,7 @@ public class CLKernel {
 
     }
 
-    public CLKernel setArg(int argumentIndex, CLBuffer value) {
+    public CLKernel setArg(int argumentIndex, CLBuffer<?> value) {
         int ret = cl.clSetKernelArg(ID, argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
         checkForError(ret, "error on clSetKernelArg");
         return this;

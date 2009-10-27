@@ -1,22 +1,26 @@
 package com.mbien.opencl;
 
-import java.nio.ByteBuffer;
+import java.nio.Buffer;
 import static com.mbien.opencl.CLException.*;
 
 /**
  *
  * @author Michael Bien
  */
-public class CLBuffer {
+public class CLBuffer<B extends Buffer> {
 
-    public final ByteBuffer buffer;
+    public final B buffer;
     public final long ID;
     
     private final CLContext context;
     private final CL cl;
 
-    CLBuffer(CLContext context, ByteBuffer directBuffer, int flags) {
-        
+    CLBuffer(CLContext context, B directBuffer, int flags) {
+        this(context, directBuffer, 0, flags);
+    }
+
+    CLBuffer(CLContext context, B directBuffer, int glBuffer, int flags) {
+
         if(!directBuffer.isDirect())
             throw new IllegalArgumentException("buffer is not a direct buffer");
 
@@ -26,10 +30,14 @@ public class CLBuffer {
 
         int[] intArray = new int[1];
 
-        this.ID = cl.clCreateBuffer(context.ID, flags, directBuffer.capacity(), null, intArray, 0);
-
+        if(glBuffer == 0) {
+            this.ID = cl.clCreateBuffer(context.ID, flags, directBuffer.capacity(), null, intArray, 0);
+        }else{
+            CLGLI clgli = (CLGLI)cl;
+            this.ID = clgli.clCreateFromGLBuffer(context.ID, flags, glBuffer, intArray, 0);
+        }
         checkForError(intArray[0], "can not create cl buffer");
-        
+
     }
 
     public void release() {
@@ -46,7 +54,7 @@ public class CLBuffer {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CLBuffer other = (CLBuffer) obj;
+        final CLBuffer<?> other = (CLBuffer<?>) obj;
         if (this.buffer != other.buffer && (this.buffer == null || !this.buffer.equals(other.buffer))) {
             return false;
         }

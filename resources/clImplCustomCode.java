@@ -46,8 +46,8 @@
               if(deviceList != null)
                   listLength = deviceList.length;
 
-              return clBuildProgram1(program, listLength, deviceList, 0, options, cb, userData);
+              return clBuildProgram1(program, listLength, deviceList, options, cb, userData);
         }
         /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
-        private native int clBuildProgram1(long program, int devices, Object deviceList, int arg2_byte_offset, String options, BuildProgramCallback cb, Object userData);
+        private native int clBuildProgram1(long program, int devices, Object deviceList, String options, BuildProgramCallback cb, Object userData);
 

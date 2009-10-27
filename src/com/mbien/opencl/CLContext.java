@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -32,7 +33,7 @@ public final class CLContext {
     private CLDevice[] devices;
 
     private final List<CLProgram> programs;
-    private final List<CLBuffer> buffers;
+    private final List<CLBuffer<? extends Buffer>> buffers;
     private final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
 
@@ -40,7 +41,7 @@ public final class CLContext {
         this.cl = CLPlatform.getLowLevelBinding();
         this.ID = contextID;
         this.programs = new ArrayList<CLProgram>();
-        this.buffers = new ArrayList<CLBuffer>();
+        this.buffers = new ArrayList<CLBuffer<? extends Buffer>>();
         this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
     }
 
@@ -194,22 +195,39 @@ public final class CLContext {
     /**
      * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
      */
-    public CLBuffer createBuffer(ByteBuffer directBuffer, Mem... flags) {
+    public <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, Mem... flags) {
         return createBuffer(directBuffer, Mem.flagsToInt(flags));
     }
+    
     /**
-     * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
+     * Creates a CLBuffer with the specified flags and buffer size in bytes. No flags creates a MEM.READ_WRITE buffer.
      */
-    public CLBuffer createBuffer(int size, Mem... flags) {
+    public CLBuffer<ByteBuffer> createBuffer(int size, Mem... flags) {
         return createBuffer(size, Mem.flagsToInt(flags));
     }
 
-    public CLBuffer createBuffer(int size, int flags) {
+    /**
+     * Creates a CLBuffer with the specified flags and buffer size in bytes.
+     */
+    public CLBuffer<ByteBuffer> createBuffer(int size, int flags) {
         return createBuffer(BufferFactory.newDirectByteBuffer(size), flags);
     }
 
-    public CLBuffer createBuffer(ByteBuffer directBuffer, int flags) {
-        CLBuffer buffer = new CLBuffer(this, directBuffer, flags);
+    /**
+     * Creates a CLBuffer with the specified flags.
+     */
+    public <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, int flags) {
+        CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, flags);
+        buffers.add(buffer);
+        return buffer;
+    }
+
+    public <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
+        return createFromGLBuffer(directBuffer, glBuffer, Mem.flagsToInt(flags));
+    }
+    
+    public <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
+        CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, glBuffer, flags);
         buffers.add(buffer);
         return buffer;
     }
@@ -232,7 +250,7 @@ public final class CLContext {
         programs.remove(program);
     }
 
-    void onBufferReleased(CLBuffer buffer) {
+    void onBufferReleased(CLBuffer<?> buffer) {
         buffers.remove(buffer);
     }
 
@@ -270,7 +288,7 @@ public final class CLContext {
     /**
      * Returns a read only view of all buffers associated with this context.
      */
-    public List<CLBuffer> getCLBuffers() {
+    public List<CLBuffer<? extends Buffer>> getCLBuffers() {
         return Collections.unmodifiableList(buffers);
     }
 

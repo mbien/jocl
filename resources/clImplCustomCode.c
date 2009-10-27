@@ -110,7 +110,7 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
  */
 JNIEXPORT jint JNICALL
 Java_com_mbien_opencl_impl_CLImpl_clBuildProgram1(JNIEnv *env, jobject _unused,
-        jlong program, jint deviceCount, jobject deviceList, jint offset, jstring options, jobject cb, jobject data) {
+        jlong program, jint deviceCount, jobject deviceList, jstring options, jobject cb, jobject data) {
 
     const char* _strchars_options = NULL;
     cl_int _res;
@@ -126,7 +126,7 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram1(JNIEnv *env, jobject _unused,
     }
 
     if (deviceList != NULL) {
-        _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)) + offset);
+        _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)));
     }
 
     // TODO payload, callback...

@@ -106,9 +106,9 @@ public class HighLevelBindingTest {
         fillBuffer(srcA, 23456);
         fillBuffer(srcB, 46987);
 
-        CLBuffer clBufferA = context.createBuffer(srcA, Mem.READ_ONLY);
-        CLBuffer clBufferB = context.createBuffer(srcB, Mem.READ_ONLY);
-        CLBuffer clBufferC = context.createBuffer(dest, Mem.WRITE_ONLY);
+        CLBuffer<ByteBuffer> clBufferA = context.createBuffer(srcA, Mem.READ_ONLY);
+        CLBuffer<ByteBuffer> clBufferB = context.createBuffer(srcB, Mem.READ_ONLY);
+        CLBuffer<ByteBuffer> clBufferC = context.createBuffer(dest, Mem.WRITE_ONLY);
 
         Map<String, CLKernel> kernels = program.getCLKernels();
         for (CLKernel kernel : kernels.values()) {
@@ -171,8 +171,8 @@ public class HighLevelBindingTest {
         CLContext context = CLContext.create();
 
          // the CL.MEM_* flag is probably completly irrelevant in our case since we do not use a kernel in this test
-        CLBuffer clBufferA = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
-        CLBuffer clBufferB = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
+        CLBuffer<ByteBuffer> clBufferA = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
+        CLBuffer<ByteBuffer> clBufferB = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
 
         // fill only first read buffer -> we will copy the payload to the second later.
         fillBuffer(clBufferA.buffer, 12345);

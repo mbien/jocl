@@ -30,7 +30,7 @@ public class CLCommandQueue {
             throw new CLException(status[0], "can not create command queue on "+device);
     }
 
-    public CLCommandQueue putWriteBuffer(CLBuffer writeBuffer, boolean blockingWrite) {
+    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingWrite) {
 
         int ret = cl.clEnqueueWriteBuffer(
                 ID, writeBuffer.ID, blockingWrite ? CL.CL_TRUE : CL.CL_FALSE,
@@ -44,7 +44,7 @@ public class CLCommandQueue {
         return this;
     }
 
-    public CLCommandQueue putReadBuffer(CLBuffer readBuffer, boolean blockingRead) {
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead) {
 
         int ret = cl.clEnqueueReadBuffer(
                 ID, readBuffer.ID, blockingRead ? CL.CL_TRUE : CL.CL_FALSE,
@@ -64,7 +64,7 @@ public class CLCommandQueue {
         return this;
     }
 
-    public CLCommandQueue putCopyBuffer(CLBuffer src, CLBuffer dest, long bytesToCopy) {
+    public CLCommandQueue putCopyBuffer(CLBuffer<?> src, CLBuffer<?> dest, long bytesToCopy) {
         int ret = cl.clEnqueueCopyBuffer(
                         ID, src.ID, dest.ID, src.buffer.position(), dest.buffer.position(), bytesToCopy,
 //                      0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null

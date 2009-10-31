@@ -114,12 +114,6 @@
 
         <echo message=" - - - JOCL natives compiled - - - "/>
 
-        <copy todir="${natives.jocl.dir}">
-            <fileset dir="${gluegen.root}/build/obj">
-                <include name="*.so"/>
-            </fileset>
-        </copy>
-
     </target>
 
     <target name="c.configure.all"   depends="gluegen.cpptasks.detect.os, gluegen.cpptasks.setup.compiler, jocl.setup.linker, c.configure.os" />

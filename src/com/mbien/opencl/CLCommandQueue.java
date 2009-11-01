@@ -1,5 +1,8 @@
 package com.mbien.opencl;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import static com.mbien.opencl.CLException.*;
 
 /**
@@ -226,5 +229,19 @@ public class CLCommandQueue {
             }
             return null;
         }
+
+        public static EnumSet<Mode> valuesOf(int bitfield) {
+            List<Mode> matching = new ArrayList<Mode>();
+            Mode[] values = Mode.values();
+            for (Mode value : values) {
+                if((value.CL_QUEUE_MODE & bitfield) != 0)
+                    matching.add(value);
+            }
+            if(matching.isEmpty())
+                return EnumSet.noneOf(Mode.class);
+            else
+                return EnumSet.copyOf(matching);
+        }
+
     }
 }

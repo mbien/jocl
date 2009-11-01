@@ -166,6 +166,9 @@ public class CLException extends RuntimeException {
             case CL.CL_INVALID_MIP_LEVEL:
                 return "CL_INVALID_MIP_LEVEL";
 
+            case CL.CL_INVALID_GLOBAL_WORK_SIZE:
+                return "CL_INVALID_GLOBAL_WORK_SIZE";
+
             default:
                 return "unknown cause: error " + error;
         }

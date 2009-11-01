@@ -2,8 +2,11 @@ package com.mbien.opencl;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -147,6 +150,126 @@ public final class CLDevice {
     }
 
     /**
+     * Returns the size of global memory cache line in bytes.
+     */
+    public long getGlobalMemCachlineSize() {
+        return getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE);
+    }
+
+    /**
+     * Returns the size of global memory cache in bytes.
+     */
+    public long getGlobalMemCachSize() {
+        return getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
+    }
+
+    /**
+     * Returns true if images are supported by the OpenCL device and false otherwise.
+     */
+    public boolean isImageSupportAvailable() {
+        return getInfoLong(CL.CL_DEVICE_IMAGE_SUPPORT) == CL.CL_TRUE;
+    }
+
+    /**
+     * Returns the max number of simultaneous image objects that can be read by a kernel.
+     * The minimum value is 128 if image support is available.
+     */
+    public int getMaxReadImageArgs() {
+        return (int)getInfoLong(CL.CL_DEVICE_MAX_READ_IMAGE_ARGS);
+    }
+
+    /**
+     * Returns the max number of simultaneous image objects that can be written by a kernel.
+     * The minimum value is 8 if image support is available.
+     */
+    public int getMaxWriteImageArgs() {
+        return (int)getInfoLong(CL.CL_DEVICE_MAX_WRITE_IMAGE_ARGS);
+    }
+
+    /**
+     * Returns the max width of 2D image in pixels. The minimum value is 8192 if
+     * image support is available.
+     */
+    public int getMaxImage2dWidth() {
+        return (int)getInfoLong(CL.CL_DEVICE_IMAGE2D_MAX_WIDTH);
+    }
+
+    /**
+     * Returns the max height of 2D image in pixels. The minimum value is 8192 if
+     * image support is available.
+     */
+    public int getMaxImage2dHeight() {
+        return (int)getInfoLong(CL.CL_DEVICE_IMAGE2D_MAX_HEIGHT);
+    }
+
+    /**
+     * Returns the max width of 3D image in pixels. The minimum value is 2048 if
+     * image support is available.
+     */
+    public int getMaxImage3dWidth() {
+        return (int)getInfoLong(CL.CL_DEVICE_IMAGE3D_MAX_WIDTH);
+    }
+
+    /**
+     * Returns the max height of 3D image in pixels. The minimum value is 2048 if
+     * image support is available.
+     */
+    public int getMaxImage3dHeight() {
+        return (int)getInfoLong(CL.CL_DEVICE_IMAGE3D_MAX_HEIGHT);
+    }
+
+    /**
+     * Returns the max depth of 3D image in pixels. The minimum value is 2048 if
+     * image support is available.
+     */
+    public int getMaxImage3dDepth() {
+        return (int)getInfoLong(CL.CL_DEVICE_IMAGE3D_MAX_DEPTH);
+    }
+
+    /**
+     * Returns the maximum number of samplers that can be used in a kernel. The
+     * minimum value is 16 if image support is available.
+     */
+    public int getMaxSamplers() {
+        return (int)getInfoLong(CL.CL_DEVICE_MAX_SAMPLERS);
+    }
+
+    /**
+     * Returns the resolution of device timer. This is measured in nanoseconds.
+     */
+    public long getProfilingTimerResolution() {
+        return getInfoLong(CL.CL_DEVICE_PROFILING_TIMER_RESOLUTION);
+    }
+
+    /**
+     * Returns the single precision floating-point capability of the device.
+     */
+    public EnumSet<SingleFPConfig> getSingleFPConfig() {
+        return SingleFPConfig.valuesOf((int)getInfoLong(CL.CL_DEVICE_SINGLE_FP_CONFIG));
+    }
+
+    /**
+     * Returns the local memory type.
+     */
+    public LocalMemType getLocalMemType() {
+        return LocalMemType.valueOf((int)getInfoLong(CL.CL_DEVICE_LOCAL_MEM_TYPE));
+    }
+
+    /**
+     * Returns the type of global memory cache supported.
+     */
+    public GlobalMemCacheType getGlobalMemCacheType() {
+        return GlobalMemCacheType.valueOf((int)getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_CACHE_TYPE));
+    }
+
+    /**
+     * Returns the command-queue properties properties supported by the device.
+     */
+    public EnumSet<CLCommandQueue.Mode> getQueueProperties() {
+        return CLCommandQueue.Mode.valuesOf((int)getInfoLong(CL.CL_DEVICE_QUEUE_PROPERTIES));
+    }
+
+    /**
      * Returns true if this device is available.
      */
     public boolean isAvailable() {
@@ -160,6 +283,22 @@ public final class CLDevice {
      */
     public boolean isCompilerAvailable() {
         return getInfoLong(CL.CL_DEVICE_COMPILER_AVAILABLE) == CL.CL_TRUE;
+    }
+
+    /**
+     * Returns true if the OpenCL device is a little endian device and false otherwise.
+     */
+    public boolean isLittleEndianAvailable() {
+        return getInfoLong(CL.CL_DEVICE_ENDIAN_LITTLE) == CL.CL_TRUE;
+    }
+
+    /**
+     * Returns true if the device implements error correction for the memories,
+     * caches, registers etc. in the device. Is false if the device does not
+     * implement error correction.
+     */
+    public boolean isErrorCorrectionSupported() {
+        return getInfoLong(CL.CL_DEVICE_ERROR_CORRECTION_SUPPORT) == CL.CL_TRUE;
     }
 
     /**
@@ -178,10 +317,6 @@ public final class CLDevice {
         return Collections.unmodifiableSet(extSet);
     }
 
-    //TODO CL_DEVICE_IMAGE_SUPPORT
-    //TODO CL_DEVICE_MAX_WORK_ITEM_SIZES
-
-
     private final long getInfoLong(int key) {
 
         ByteBuffer bb = ByteBuffer.allocate(8);
@@ -197,7 +332,7 @@ public final class CLDevice {
     public final String getInfoString(int key) {
 
         long[] longBuffer = new long[1];
-        ByteBuffer bb = ByteBuffer.allocate(512);
+        ByteBuffer bb = ByteBuffer.allocate(512); // TODO use a cache
 
         int ret = cl.clGetDeviceInfo(ID, key, bb.capacity(), bb, longBuffer, 0);
         
@@ -291,6 +426,150 @@ public final class CLDevice {
             }
             return null;
         }
+    }
+
+    /**
+     * Describes single precision floating-point capability of the device.
+     * One or more values are possible.
+     */
+    public enum SingleFPConfig {
+
+        /**
+         * denorms are supported.
+         */
+        DENORM(CL.CL_FP_DENORM),
+
+        /**
+         * INF and quiet NaNs are supported.
+         */
+        INF_NAN(CL.CL_FP_INF_NAN),
+
+        /**
+         * round to nearest rounding mode supported.
+         */
+        ROUND_TO_NEAREST(CL.CL_FP_ROUND_TO_NEAREST),
+
+        /**
+         * round to +ve and –ve infinity rounding modes supported.
+         */
+        ROUND_TO_INF(CL.CL_FP_ROUND_TO_INF),
+
+        /**
+         * round to zero rounding mode supported.
+         */
+        ROUND_TO_ZERO(CL.CL_FP_ROUND_TO_ZERO),
+
+        /**
+         * IEEE754-2008 fused multiply-add is supported.
+         */
+        FMA(CL.CL_FP_FMA);
+
+
+        /**
+         * Value of wrapped OpenCL bitfield.
+         */
+        public final int CL_VALUE;
+
+        private SingleFPConfig(int CL_VALUE) {
+            this.CL_VALUE = CL_VALUE;
+        }
+
+        /**
+         * Returns a EnumSet for the given bitfield.
+         */
+        public static EnumSet<SingleFPConfig> valuesOf(int bitfield) {
+            List<SingleFPConfig> matching = new ArrayList<SingleFPConfig>();
+            SingleFPConfig[] values = SingleFPConfig.values();
+            for (SingleFPConfig value : values) {
+                if((value.CL_VALUE & bitfield) != 0)
+                    matching.add(value);
+            }
+            if(matching.isEmpty())
+                return EnumSet.noneOf(SingleFPConfig.class);
+            else
+                return EnumSet.copyOf(matching);
+        }
+
+    }
+
+    /**
+     * Type of global memory cache supported.
+     */
+    public enum GlobalMemCacheType {
+
+        /**
+         * Global memory cache not supported.
+         */
+        NONE(CL.CL_NONE),
+
+        /**
+         * Read only cache.
+         */
+        READ_ONLY(CL.CL_READ_ONLY_CACHE),
+
+        /**
+         * Read-write cache.
+         */
+        READ_WRITE(CL.CL_READ_WRITE_CACHE);
+        
+
+        /**
+         * Value of wrapped OpenCL value.
+         */
+        public final int CL_VALUE;
+
+        private GlobalMemCacheType(int CL_VALUE) {
+            this.CL_VALUE = CL_VALUE;
+        }
+
+        /**
+         * Returns the matching GlobalMemCacheType for the given cl type.
+         */
+        public static GlobalMemCacheType valueOf(int bitfield) {
+            GlobalMemCacheType[] values = GlobalMemCacheType.values();
+            for (GlobalMemCacheType value : values) {
+                if(value.CL_VALUE == bitfield)
+                    return value;
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Type of local memory cache supported.
+     */
+    public enum LocalMemType {
+
+        /**
+         * GLOBAL implies that no dedicated memory storage is available (global mem is used instead).
+         */
+        GLOBAL(CL.CL_GLOBAL),
+
+        /**
+         * LOCAL implies dedicated local memory storage such as SRAM.
+         */
+        LOCAL(CL.CL_LOCAL);
+
+        /**
+         * Value of wrapped OpenCL value.
+         */
+        public final int CL_VALUE;
+
+        private LocalMemType(int CL_VALUE) {
+            this.CL_VALUE = CL_VALUE;
+        }
+
+        /**
+         * Returns the matching LocalMemCacheType for the given cl type.
+         */
+        public static LocalMemType valueOf(int clLocalCacheType) {
+            if(clLocalCacheType == CL.CL_GLOBAL)
+                return LOCAL;
+            else if(clLocalCacheType == CL.CL_LOCAL)
+                return GLOBAL;
+            return null;
+        }
+
     }
 
 }

@@ -82,6 +82,38 @@ public final class CLPlatform {
 
     }
 
+    static final CLDevice findMaxFlopsDevice(CLDevice[] devices) {
+
+        CLDevice maxFLOPSDevice = null;
+
+        int maxflops = -1;
+
+        for (int i = 0; i < devices.length; i++) {
+
+            CLDevice device = devices[i];
+            int maxComputeUnits     = device.getMaxComputeUnits();
+            int maxClockFrequency   = device.getMaxClockFrequency();
+            int flops = maxComputeUnits*maxClockFrequency;
+
+            if(flops > maxflops) {
+                maxflops = flops;
+                maxFLOPSDevice = device;
+            }
+        }
+
+        return maxFLOPSDevice;
+    }
+
+
+    /**
+     * Gets the device with maximal FLOPS from this platform.
+     * The device speed is estimated by calulating the product of
+     * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
+     */
+    public CLDevice getMaxFlopsDevice() {
+        return findMaxFlopsDevice(listCLDevices());
+    }
+
     /**
      * Returns the platform name.
      */

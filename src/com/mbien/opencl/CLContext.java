@@ -299,26 +299,7 @@ public final class CLContext {
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      */
     public CLDevice getMaxFlopsDevice() {
-
-        CLDevice[] clDevices = getCLDevices();
-        CLDevice maxFLOPSDevice = null;
-
-        int maxflops = -1;
-
-        for (int i = 0; i < clDevices.length; i++) {
-
-            CLDevice device = clDevices[i];
-            int maxComputeUnits     = device.getMaxComputeUnits();
-            int maxClockFrequency   = device.getMaxClockFrequency();
-            int flops = maxComputeUnits*maxClockFrequency;
-
-            if(flops > maxflops) {
-                maxflops = flops;
-                maxFLOPSDevice = device;
-            }
-        }
-
-        return maxFLOPSDevice;
+        return CLPlatform.findMaxFlopsDevice(getCLDevices());
     }
 
     /**

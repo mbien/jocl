@@ -54,6 +54,7 @@ public class HighLevelBindingTest {
             out.println("    profile: "+platform.getProfile());
             out.println("    version: "+platform.getVersion());
             out.println("    vendor: "+platform.getVendor());
+            out.println("    max FLOPS device: "+platform.getMaxFlopsDevice());
 
             CLDevice[] clDevices = platform.listCLDevices();
             for (CLDevice device : clDevices) {
@@ -95,18 +96,16 @@ public class HighLevelBindingTest {
             out.println("   "+device.toString());
         }
 
+        out.println("max FLOPS device: " + context.getMaxFlopsDevice());
+
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
 
         CLDevice[] programDevices = program.getCLDevices();
 
         assertEquals(contextDevices.length, programDevices.length);
 
-        out.println("program devices:");
-        for (CLDevice device : programDevices) {
-            out.println("   "+device.toString());
-            out.println("   build log: "+program.getBuildLog(device));
-            out.println("   build status: "+program.getBuildStatus(device));
-        }
+        out.println("build log:\n"+program.getBuildLog());
+        out.println("build status:\n"+program.getBuildStatus());
 
         String source = program.getSource();
         assertFalse(source.trim().isEmpty());
@@ -178,8 +177,6 @@ public class HighLevelBindingTest {
         program.release();
         assertTrue(0 == context.getCLPrograms().size());
 
-//        CLDevice device = ctx.getMaxFlopsDevice();
-//        out.println("max FLOPS device: " + device);
         context.release();
     }
 

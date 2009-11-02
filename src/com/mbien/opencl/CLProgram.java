@@ -210,8 +210,37 @@ public class CLProgram {
     }
 
     /**
-     * Returns the build log for this program. The contents of the log are
-     * implementation dependent log can be an empty String.
+     * Returns the build log of this program on all devices. The contents of the log are
+     * implementation dependent.
+     */
+    public String getBuildLog() {
+        StringBuilder sb = new StringBuilder();
+        CLDevice[] devices = getCLDevices();
+        for (int i = 0; i < devices.length; i++) {
+            CLDevice device = devices[i];
+            sb.append(device).append(" build log:");
+            sb.append(getBuildLog(device));
+            if(i != devices.length-1)
+                sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Returns the build status enum of this program for each device as Map.
+     */
+    public Map<CLDevice,Status> getBuildStatus() {
+        Map<CLDevice,Status> statusMap = new HashMap<CLDevice, Status>();
+        CLDevice[] devices = getCLDevices();
+        for (CLDevice device : devices) {
+            statusMap.put(device, getBuildStatus(device));
+        }
+        return Collections.unmodifiableMap(statusMap);
+    }
+
+    /**
+     * Returns the build log for this program on the specified device. The contents
+     * of the log are implementation dependent log can be an empty String.
      */
     public String getBuildLog(CLDevice device) {
         return getBuildInfoString(device.ID, CL.CL_PROGRAM_BUILD_LOG);

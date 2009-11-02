@@ -15,11 +15,13 @@
 
     <property name="gluegen.root" value="${basedir}/../gluegen" />
     <property name="jogl.root" value="${basedir}/../jogl" />
+    
+    <property name="etc.build.dir" value="${basedir}/etc/build" />
 
     <!-- Pull in GlueGen cpptasks build file -->
     <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
 
-    <target name="-pre-compile">
+    <target name="-pre-compile" depends="prepare-build">
 
         <path id="gluegen.classpath">
             <pathelement location="${gluegen.root}/build/gluegen.jar" />
@@ -62,6 +64,29 @@
             <classpath refid="gluegen.classpath" />
         </gluegen>
         <echo message=" - - - JOCL binding files generated - - - "/>
+
+    </target>
+
+    <target name="prepare-build">
+
+        <!--compile build utilities-->
+        <mkdir dir="${etc.build.dir}"/>
+        
+        <javac destdir="${etc.build.dir}" classpath="${ant.core.lib}" source="1.5" debug="true" debuglevel="lines,vars,source">
+            <src path="${basedir}/etc/src"/>
+        </javac>
+
+        <taskdef name="uncomment-function-params" classname="com.mbien.ant.FunctionParamUncommenter" classpath="${etc.build.dir}"/>
+
+        <property name="headers.orig" value="${basedir}/resources/includes/CL_orig" />
+        <property name="headers.dest" value="${basedir}/resources/includes/CL" />
+
+        <!--uncomment function names in c headers and copy modified files into include path-->
+        <uncomment-function-params src="${headers.orig}/cl.h" dest="${headers.dest}/cl.h"/>
+        <uncomment-function-params src="${headers.orig}/cl_gl.h" dest="${headers.dest}/cl_gl.h"/>
+
+        <!--nothing to uncomment in cl_platform.h-->
+        <copyfile src="${headers.orig}/cl_platform.h" dest="${headers.dest}/cl_platform.h" forceoverwrite="true"/>
 
     </target>
 
@@ -174,6 +199,7 @@
 
     <target name="-post-clean">
         <delete dir="gensrc"/>
+        <delete dir="${etc.build.dir}"/>
     </target>
 
     <!--

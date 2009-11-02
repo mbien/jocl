@@ -1,5 +1,6 @@
 build
 dist
 gensrc
+resources/includes/CL
 **~
 nbproject/private

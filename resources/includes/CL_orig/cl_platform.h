@@ -39,10 +39,10 @@ extern "C" {
 #define CL_API_CALL
 #ifdef __APPLE__
 #define CL_API_SUFFIX__VERSION_1_0   AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
-#define CL_EXTENSION_WEAK_LINK       __attribute__((weak_import))
+#define CL_EXTENSION_WEAK_LINK       __attribute__((weak_import))       
 #else
 #define CL_API_SUFFIX__VERSION_1_0
-#define CL_EXTENSION_WEAK_LINK
+#define CL_EXTENSION_WEAK_LINK                         
 #endif
 
 #if (defined (WIN32) && (_MSC_VER))
@@ -63,17 +63,17 @@ typedef double                  cl_double;
 
 
 /*
- * Vector types
+ * Vector types 
  *
- *  Note:   OpenCL requires that all types be naturally aligned.
+ *  Note:   OpenCL requires that all types be naturally aligned. 
  *          This means that vector types must be naturally aligned.
  *          For example, a vector of four floats must be aligned to
- *          a 16 byte boundary (calculated as 4 * the natural 4-byte
+ *          a 16 byte boundary (calculated as 4 * the natural 4-byte 
  *          alignment of the float).  The alignment qualifiers here
  *          will only function properly if your compiler supports them
  *          and if you don't actively work to defeat them.  For example,
  *          in order for a cl_float4 to be 16 byte aligned in a struct,
- *          the start of the struct must itself be 16-byte aligned.
+ *          the start of the struct must itself be 16-byte aligned. 
  *
  *          Maintaining proper alignment is the user's responsibility.
  */
@@ -182,17 +182,17 @@ typedef float           cl_float    __attribute__((aligned(4)));
 typedef double          cl_double   __attribute__((aligned(8)));
 
 /*
- * Vector types
+ * Vector types 
  *
- *  Note:   OpenCL requires that all types be naturally aligned.
+ *  Note:   OpenCL requires that all types be naturally aligned. 
  *          This means that vector types must be naturally aligned.
  *          For example, a vector of four floats must be aligned to
- *          a 16 byte boundary (calculated as 4 * the natural 4-byte
+ *          a 16 byte boundary (calculated as 4 * the natural 4-byte 
  *          alignment of the float).  The alignment qualifiers here
  *          will only function properly if your compiler supports them
  *          and if you don't actively work to defeat them.  For example,
  *          in order for a cl_float4 to be 16 byte aligned in a struct,
- *          the start of the struct must itself be 16-byte aligned.
+ *          the start of the struct must itself be 16-byte aligned. 
  *
  *          Maintaining proper alignment is the user's responsibility.
  */
@@ -289,8 +289,8 @@ typedef double          cl_double16[16] __attribute__((aligned(128)));
 #endif
 
 #include <stddef.h>
-
-
+  
+  
 #ifdef __cplusplus
 }
 #endif

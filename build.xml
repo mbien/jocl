@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
-<!-- (If you delete it and reopen the project it will be recreated.) -->
-<!-- By default, only the Clean and Build commands use this build script. -->
-<!-- Commands such as Run, Debug, and Test only use this build script if -->
-<!-- the Compile on Save feature is turned off for the project. -->
-<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
-<!-- in the project's Project Properties dialog box.-->
+
+<!-- JOCL's main build file-->
 <project name="JOCL" default="default" basedir=".">
 
     <description>Builds, tests, and runs the project JOCL.</description>
@@ -22,7 +16,7 @@
     <!-- Pull in GlueGen cpptasks build file -->
     <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
 
-    <target name="-pre-compile" depends="prepare-build">
+    <target name="-pre-compile" depends="prepare-build,preprocess-headers">
 
         <path id="gluegen.classpath">
             <pathelement location="${gluegen.root}/build/gluegen.jar" />
@@ -74,22 +68,16 @@
 
         <!--compile build utilities-->
         <mkdir dir="${etc.build.dir}"/>
-        <mkdir dir="${headers.dest}"/>
         
         <javac destdir="${etc.build.dir}" classpath="${ant.core.lib}" source="1.5" debug="true" debuglevel="lines,vars,source">
             <src path="${basedir}/etc/src"/>
         </javac>
 
+        <taskdef name="update-headers"            classname="com.mbien.ant.HeaderFileDownloader"     classpath="${etc.build.dir}"/>
         <taskdef name="uncomment-function-params" classname="com.mbien.ant.FunctionParamUncommenter" classpath="${etc.build.dir}"/>
 
-        <!--uncomment function names in c headers and copy modified files into include path-->
-        <uncomment-function-params src="${headers.orig}/cl.h" dest="${headers.dest}/cl.h"/>
-        <uncomment-function-params src="${headers.orig}/cl_gl.h" dest="${headers.dest}/cl_gl.h"/>
-
-        <!--nothing to uncomment in cl_platform.h-->
-        <copy file="${headers.orig}/cl_platform.h" toDir="${headers.dest}" overwrite="true"/>
-
     </target>
+
 
     <target name="-post-compile" depends="c.configure.all">
 
@@ -202,6 +190,30 @@
         <delete dir="gensrc"/>
         <delete dir="${etc.build.dir}"/>
         <delete dir="${headers.dest}"/>
+    </target>
+
+    <target name="update-headers" depends="prepare-build">
+
+        <property name="registry.url" value="http://www.khronos.org/registry/cl/api/1.0/"/>
+
+        <!-- download new headers from OpenCL registry if necessary -->
+        <update-headers header="${headers.orig}/cl.h" url="${registry.url}cl.h"/>
+        <update-headers header="${headers.orig}/cl_gl.h" url="${registry.url}cl_gl.h"/>
+        <update-headers header="${headers.orig}/cl_platform.h" url="${registry.url}cl_platform.h"/>
+
+    </target>
+
+    <target name="preprocess-headers" depends="prepare-build">
+
+        <mkdir dir="${headers.dest}"/>
+
+        <!--uncomment function names in c headers and copy modified files into include path-->
+        <uncomment-function-params src="${headers.orig}/cl.h" dest="${headers.dest}/cl.h"/>
+        <uncomment-function-params src="${headers.orig}/cl_gl.h" dest="${headers.dest}/cl_gl.h"/>
+
+        <!--nothing to uncomment in cl_platform.h-->
+        <copy file="${headers.orig}/cl_platform.h" toDir="${headers.dest}" overwrite="true"/>
+
     </target>
 
     <!--

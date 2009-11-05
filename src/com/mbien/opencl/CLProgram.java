@@ -141,7 +141,10 @@ public class CLProgram {
 
         // Build the program
         int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
-        checkForError(ret, "error building program");
+
+        if(ret != CL.CL_SUCCESS) {
+            checkForError(ret, "\n"+getBuildLog());
+        }
 
         return this;
     }
@@ -218,8 +221,9 @@ public class CLProgram {
         CLDevice[] devices = getCLDevices();
         for (int i = 0; i < devices.length; i++) {
             CLDevice device = devices[i];
-            sb.append(device).append(" build log:");
-            sb.append(getBuildLog(device));
+            sb.append(device).append(" build log:\n");
+            String log = getBuildLog(device).trim();
+            sb.append(log.isEmpty()?"    <empty>":log);
             if(i != devices.length-1)
                 sb.append("\n");
         }

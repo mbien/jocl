@@ -68,8 +68,16 @@ public class CLKernel {
         return this;
     }
 
+    private final Buffer wrap(float value) {
+        return BufferFactory.newDirectByteBuffer(4).putFloat(value).rewind();
+    }
+
     private final Buffer wrap(double value) {
         return BufferFactory.newDirectByteBuffer(8).putDouble(value).rewind();
+    }
+
+    private final Buffer wrap(int value) {
+        return BufferFactory.newDirectByteBuffer(4).putInt(value).rewind();
     }
 
     private final Buffer wrap(long value) {

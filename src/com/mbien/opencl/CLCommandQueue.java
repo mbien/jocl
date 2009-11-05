@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -37,7 +38,7 @@ public class CLCommandQueue {
 
         int ret = cl.clEnqueueWriteBuffer(
                 ID, writeBuffer.ID, blockingWrite ? CL.CL_TRUE : CL.CL_FALSE,
-                0, writeBuffer.buffer.capacity(), writeBuffer.buffer,
+                0, writeBuffer.getSizeInBytes(), writeBuffer.buffer,
 //                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
                 0, null, 0, null, 0); //TODO events
 
@@ -51,13 +52,27 @@ public class CLCommandQueue {
 
         int ret = cl.clEnqueueReadBuffer(
                 ID, readBuffer.ID, blockingRead ? CL.CL_TRUE : CL.CL_FALSE,
-                0, readBuffer.buffer.capacity(), readBuffer.buffer,
+                0, readBuffer.getSizeInBytes(), readBuffer.buffer,
 //                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
                 0, null, 0, null, 0); //TODO events
 
         if(ret != CL.CL_SUCCESS)
             throw new CLException(ret, "can not enqueue ReadBuffer: " + readBuffer);
         
+        return this;
+    }
+
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, Buffer buffer, boolean blockingRead) {
+
+        int ret = cl.clEnqueueReadBuffer(
+                ID, readBuffer.ID, blockingRead ? CL.CL_TRUE : CL.CL_FALSE,
+                0, readBuffer.getSizeInBytes(), buffer,
+//                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
+                0, null, 0, null, 0); //TODO events
+
+        if(ret != CL.CL_SUCCESS)
+            throw new CLException(ret, "can not enqueue ReadBuffer: " + readBuffer);
+
         return this;
     }
 
@@ -130,7 +145,7 @@ public class CLCommandQueue {
         return this;
     }
 */
-    
+
     public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
         return this.putNDRangeKernel(
                 kernel, workDimension,
@@ -142,7 +157,7 @@ public class CLCommandQueue {
     public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long[] globalWorkOffset, long[] globalWorkSize, long[] localWorkSize) {
 
        int ret = cl.clEnqueueNDRangeKernel(
-                ID, kernel.ID, 1,
+                ID, kernel.ID, workDimension,
                 globalWorkOffset, 0,
                 globalWorkSize, 0,
                 localWorkSize, 0,
@@ -155,6 +170,28 @@ public class CLCommandQueue {
 
         return this;
     }
+
+
+    public CLCommandQueue putAcquireGLObject(long glObject) {
+        CLGLI xl = (CLGLI) cl;
+        int ret = xl.clEnqueueAcquireGLObjects(ID, 1, new long[] {glObject}, 0, 0, null, 0, null, 0);
+
+        if(ret != CL.CL_SUCCESS)
+            throw new CLException(ret, "can not aquire GLObject: " + glObject);
+
+        return this;
+    }
+
+    public CLCommandQueue putReleaseGLObject(long glObject) {
+        CLGLI xl = (CLGLI) cl;
+        int ret = xl.clEnqueueReleaseGLObjects(ID, 1, new long[] {glObject}, 0, 0, null, 0, null, 0);
+
+        if(ret != CL.CL_SUCCESS)
+            throw new CLException(ret, "can not release GLObject: " + glObject);
+
+        return this;
+    }
+
 
     public CLCommandQueue finish() {
         int ret = cl.clFinish(ID);

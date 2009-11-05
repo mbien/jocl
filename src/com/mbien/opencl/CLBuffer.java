@@ -1,6 +1,12 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.BufferFactory;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import static com.mbien.opencl.CLException.*;
 
 /**
@@ -31,7 +37,8 @@ public class CLBuffer<B extends Buffer> {
         int[] intArray = new int[1];
 
         if(glBuffer == 0) {
-            this.ID = cl.clCreateBuffer(context.ID, flags, directBuffer.capacity(), null, intArray, 0);
+            this.ID = cl.clCreateBuffer(context.ID, flags,
+                    sizeOfBufferElem(directBuffer)*directBuffer.capacity(), null, intArray, 0);
         }else{
             CLGLI clgli = (CLGLI)cl;
             this.ID = clgli.clCreateFromGLBuffer(context.ID, flags, glBuffer, intArray, 0);
@@ -45,6 +52,28 @@ public class CLBuffer<B extends Buffer> {
         context.onBufferReleased(this);
         checkForError(ret, "can not release mem object");
     }
+
+    //stolen from JOGL project... think about merging
+    private final int sizeOfBufferElem(Buffer buffer) {
+
+        if (buffer instanceof ByteBuffer) {
+            return BufferFactory.SIZEOF_BYTE;
+        } else if (buffer instanceof IntBuffer) {
+            return BufferFactory.SIZEOF_INT;
+        } else if (buffer instanceof ShortBuffer) {
+            return BufferFactory.SIZEOF_SHORT;
+        } else if (buffer instanceof FloatBuffer) {
+            return BufferFactory.SIZEOF_FLOAT;
+        } else if (buffer instanceof DoubleBuffer) {
+            return BufferFactory.SIZEOF_DOUBLE;
+        }
+        throw new RuntimeException("Unexpected buffer type " + buffer.getClass().getName());
+    }
+
+    int getSizeInBytes() {
+        return sizeOfBufferElem(buffer)*buffer.capacity();
+    }
+
 
     @Override
     public boolean equals(Object obj) {

@@ -167,7 +167,11 @@ public class CLException extends RuntimeException {
                 return "CL_INVALID_MIP_LEVEL";
 
             case CL.CL_INVALID_GLOBAL_WORK_SIZE:
-                return "CL_INVALID_GLOBAL_WORK_SIZE";
+                return "CL_INVALID_GLOBAL_WORK_SIZE or CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
+
+// error-code conflict with CL_INVALID_GLOBAL_WORK_SIZE
+//            case CL.CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR:
+//                return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
 
             default:
                 return "unknown cause: error " + error;

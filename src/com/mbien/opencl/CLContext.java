@@ -11,6 +11,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,10 +112,10 @@ public final class CLContext {
             }
         }
 
-        IntBuffer properties = null;
+        LongBuffer properties = null;
         if(platform != null) {
-            properties = IntBuffer.allocate(3);
-            properties.put(CL.CL_CONTEXT_PLATFORM).put((int)platform.ID).put(0); // TODO check if this has to be int or long
+            properties = LongBuffer.allocate(3);
+            properties.put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0); // 0 terminated array
             properties.rewind();
         }
 
@@ -133,17 +134,17 @@ public final class CLContext {
             deviceIDs[i] = devices[i].ID;
         }
 
-        IntBuffer properties = null;
+        LongBuffer properties = null;
         if(platform != null) {
-            properties = IntBuffer.allocate(3);
-            properties.put(CL.CL_CONTEXT_PLATFORM).put((int)platform.ID).put(0); // TODO check if this has to be int or long
+            properties = LongBuffer.allocate(3);
+            properties.put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0); // 0 terminated array
             properties.rewind();
         }
 
         return createContext(properties, deviceIDs);
     }
 
-    private static final CLContext createContextFromType(IntBuffer properties, long deviceType) {
+    private static final CLContext createContextFromType(LongBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(properties, deviceType, null, null, status);
@@ -153,7 +154,7 @@ public final class CLContext {
         return new CLContext(context);
     }
 
-    private static final CLContext createContext(IntBuffer properties, long[] devices) {
+    private static final CLContext createContext(LongBuffer properties, long[] devices) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, devices, null, null, status);

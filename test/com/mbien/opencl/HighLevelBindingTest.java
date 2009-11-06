@@ -86,8 +86,8 @@ public class HighLevelBindingTest {
 
         out.println(" - - - highLevelTest; global memory kernel - - - ");
 
-//        CLPlatform[] clPlatforms = CLPlatform.listCLPlatforms();
-        CLContext context = CLContext.create(/*clPlatforms[0]*/);
+        CLPlatform[] clPlatforms = CLPlatform.listCLPlatforms();
+        CLContext context = CLContext.create(clPlatforms[0]);
 
         CLDevice[] contextDevices = context.getCLDevices();
 

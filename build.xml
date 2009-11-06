@@ -211,8 +211,9 @@
         <uncomment-function-params src="${headers.orig}/cl.h" dest="${headers.dest}/cl.h"/>
         <uncomment-function-params src="${headers.orig}/cl_gl.h" dest="${headers.dest}/cl_gl.h"/>
 
-        <!--nothing to uncomment in cl_platform.h-->
+        <!--nothing to uncomment in this headers-->
         <copy file="${headers.orig}/cl_platform.h" toDir="${headers.dest}" overwrite="true"/>
+        <copy file="${headers.orig}/cl_ext.h" toDir="${headers.dest}" overwrite="true"/>
 
     </target>
 

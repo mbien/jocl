@@ -190,8 +190,8 @@ public class HighLevelBindingTest {
         CLContext context = CLContext.create();
 
          // the CL.MEM_* flag is probably completly irrelevant in our case since we do not use a kernel in this test
-        CLBuffer<ByteBuffer> clBufferA = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
-        CLBuffer<ByteBuffer> clBufferB = context.createBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
+        CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
+        CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
 
         // fill only first read buffer -> we will copy the payload to the second later.
         fillBuffer(clBufferA.buffer, 12345);

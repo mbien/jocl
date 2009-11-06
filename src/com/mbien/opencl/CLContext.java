@@ -1,7 +1,6 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.CLBuffer.Mem;
-import com.sun.gluegen.runtime.BufferFactory;
 import com.sun.gluegen.runtime.CPU;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,8 +9,11 @@ import java.io.InputStreamReader;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static com.mbien.opencl.CLException.*;
+import static com.sun.gluegen.runtime.BufferFactory.*;
 
 /**
  * CLContext is responsible for managing objects such as command-queues, memory,
@@ -98,7 +101,6 @@ public final class CLContext {
         return create(platform, CLDevice.Type.ALL);
     }
 
-    // TODO check if driver bug, otherwise find the reason why this is not working (INVALID_VALUE with NV driver)
     /**
      * Creates a context on the specified platform and with the specified
      * device types.
@@ -194,40 +196,75 @@ public final class CLContext {
     }
 
     /**
-     * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
+     * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
      */
-    public <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, Mem... flags) {
-        return createBuffer(directBuffer, Mem.flagsToInt(flags));
+    public final CLBuffer<ShortBuffer> createShortBuffer(int size, Mem... flags) {
+        return createBuffer(newDirectByteBuffer(size*SIZEOF_SHORT).asShortBuffer(), flags);
     }
-    
+
+    /**
+     * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
+     */
+    public final CLBuffer<IntBuffer> createIntBuffer(int size, Mem... flags) {
+        return createBuffer(newDirectByteBuffer(size*SIZEOF_INT).asIntBuffer(), flags);
+    }
+
+    /**
+     * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
+     */
+    public final CLBuffer<LongBuffer> createLongBuffer(int size, Mem... flags) {
+        return createBuffer(newDirectByteBuffer(size*SIZEOF_LONG).asLongBuffer(), flags);
+    }
+
+    /**
+     * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
+     */
+    public final CLBuffer<FloatBuffer> createFloatBuffer(int size, Mem... flags) {
+        return createBuffer(newDirectByteBuffer(size*SIZEOF_FLOAT).asFloatBuffer(), flags);
+    }
+
+    /**
+     * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
+     */
+    public final CLBuffer<DoubleBuffer> createDoubleBuffer(int size, Mem... flags) {
+        return createBuffer(newDirectByteBuffer(size*SIZEOF_DOUBLE).asDoubleBuffer(), flags);
+    }
+
     /**
      * Creates a CLBuffer with the specified flags and buffer size in bytes. No flags creates a MEM.READ_WRITE buffer.
      */
-    public CLBuffer<ByteBuffer> createBuffer(int size, Mem... flags) {
-        return createBuffer(size, Mem.flagsToInt(flags));
+    public final CLBuffer<ByteBuffer> createByteBuffer(int size, Mem... flags) {
+        return createByteBuffer(size, Mem.flagsToInt(flags));
     }
 
     /**
      * Creates a CLBuffer with the specified flags and buffer size in bytes.
      */
-    public CLBuffer<ByteBuffer> createBuffer(int size, int flags) {
-        return createBuffer(BufferFactory.newDirectByteBuffer(size), flags);
+    public final CLBuffer<ByteBuffer> createByteBuffer(int size, int flags) {
+        return createBuffer(newDirectByteBuffer(size), flags);
+    }
+
+    /**
+     * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
+     */
+    public final <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, Mem... flags) {
+        return createBuffer(directBuffer, Mem.flagsToInt(flags));
     }
 
     /**
      * Creates a CLBuffer with the specified flags.
      */
-    public <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, int flags) {
+    public final <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, int flags) {
         CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, flags);
         buffers.add(buffer);
         return buffer;
     }
 
-    public <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
+    public final <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
         return createFromGLBuffer(directBuffer, glBuffer, Mem.flagsToInt(flags));
     }
     
-    public <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
+    public final <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
         CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, glBuffer, flags);
         buffers.add(buffer);
         return buffer;

@@ -13,7 +13,7 @@ import static com.mbien.opencl.CLException.*;
  *
  * @author Michael Bien
  */
-public class CLBuffer<B extends Buffer> {
+public class CLBuffer<B extends Buffer> implements CLResource {
 
     public final B buffer;
     public final long ID;

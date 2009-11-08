@@ -8,13 +8,18 @@ import java.nio.ByteOrder;
 import static com.mbien.opencl.CLException.*;
 
 /**
- *
+ * High level abstraction for an OpenCL Kernel.
+ * "A kernel is a function declared in a program. A kernel is identified by the __kernel qualifier
+ * applied to any function in a program. A kernel object encapsulates the specific __kernel
+ * function declared in a program and the argument values to be used when executing this
+ * __kernel function."
  * @author Michael Bien
  */
-public class CLKernel {
+public class CLKernel implements CLResource {
 
     public final long ID;
     public final String name;
+    public final int numArgs;
 
     private final CLProgram program;
     private final CL cl;
@@ -26,6 +31,7 @@ public class CLKernel {
 
         long[] longArray = new long[1];
 
+        // get function name
         int ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_FUNCTION_NAME, 0, null, longArray, 0);
         checkForError(ret, "error while asking for kernel function name");
 
@@ -36,36 +42,51 @@ public class CLKernel {
 
         this.name = new String(bb.array(), 0, bb.capacity()).trim();
 
+        // get number of arguments
+        ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_NUM_ARGS, 0, null, longArray, 0);
+        checkForError(ret, "error while asking for number of function arguments.");
+
+        numArgs = (int)longArray[0];
+
     }
 
     public CLKernel setArg(int argumentIndex, CLBuffer<?> value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
-        checkForError(ret, "error on clSetKernelArg");
+        setArgument(argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
         return this;
     }
 
     public CLKernel setArg(int argumentIndex, int value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, 4, wrap(value));
-        checkForError(ret, "error on clSetKernelArg");
+        setArgument(argumentIndex, 4, wrap(value));
         return this;
     }
 
     public CLKernel setArg(int argumentIndex, long value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, 8, wrap(value));
-        checkForError(ret, "error on clSetKernelArg");
+        setArgument(argumentIndex, 8, wrap(value));
         return this;
     }
 
     public CLKernel setArg(int argumentIndex, float value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, 4, wrap(value));
-        checkForError(ret, "error on clSetKernelArg");
+        setArgument(argumentIndex, 4, wrap(value));
         return this;
     }
 
     public CLKernel setArg(int argumentIndex, double value) {
-        int ret = cl.clSetKernelArg(ID, argumentIndex, 8, wrap(value));
-        checkForError(ret, "error on clSetKernelArg");
+        setArgument(argumentIndex, 8, wrap(value));
         return this;
+    }
+
+    private final void setArgument(int argumentIndex, int size, Buffer value) {
+        if(argumentIndex >= numArgs || argumentIndex < 0) {
+            throw new IndexOutOfBoundsException("kernel "+ toString() +" has "+numArgs+
+                    " arguments, can not set argument number "+argumentIndex);
+        }
+        if(!program.isExecutable()) {
+            throw new IllegalStateException("can not set program" +
+                    " arguments for a not excecutable program. "+program);
+        }
+
+        int ret = cl.clSetKernelArg(ID, argumentIndex, size, value);
+        checkForError(ret, "error on clSetKernelArg");
     }
 
     private final Buffer wrap(float value) {

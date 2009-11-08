@@ -29,7 +29,7 @@ import static com.sun.gluegen.runtime.BufferFactory.*;
  * specified in the context.
  * @author Michael Bien
  */
-public final class CLContext {
+public final class CLContext implements CLResource {
 
     final CL cl;
     public final long ID;
@@ -180,7 +180,10 @@ public final class CLContext {
      * @throws IOException when a IOException occurred while reading or closing the stream.
      */
     public CLProgram createProgram(InputStream sources) throws IOException {
-        
+
+        if(sources == null)
+            throw new IllegalArgumentException("input stream for program sources must not be null");
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(sources));
         StringBuilder sb = new StringBuilder();
 

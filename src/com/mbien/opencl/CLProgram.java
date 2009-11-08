@@ -12,22 +12,22 @@ import static com.mbien.opencl.CLException.*;
  *
  * @author Michael Bien
  */
-public class CLProgram {
+public class CLProgram implements CLResource {
     
     public final CLContext context;
     public final long ID;
     
     private final CL cl;
 
-    private final Map<String, CLKernel> kernels;
-    
+    private Map<String, CLKernel> kernels;
+    private Map<CLDevice, Status> buildStatusMap;
+
+    private boolean executable;
 
     CLProgram(CLContext context, String src, long contextID) {
         
         this.cl = context.cl;
         this.context = context;
-
-        this.kernels = new HashMap<String, CLKernel>();
 
         int[] intArray = new int[1];
         // Create the program
@@ -37,19 +37,49 @@ public class CLProgram {
 
     private final void initKernels() {
 
-        if(kernels.isEmpty()) {
-            int[] intArray = new int[1];
-            int ret = cl.clCreateKernelsInProgram(ID, 0, null, 0, intArray, 0);
+        if(kernels == null) {
+
+            int[] numKernels = new int[1];
+            int ret = cl.clCreateKernelsInProgram(ID, 0, null, 0, numKernels, 0);
             checkForError(ret, "can not create kernels for program");
 
-            long[] kernelIDs = new long[intArray[0]];
-            ret = cl.clCreateKernelsInProgram(ID, kernelIDs.length, kernelIDs, 0, null, 0);
-            checkForError(ret, "can not create kernels for program");
+            if(numKernels[0] > 0) {
+                HashMap<String, CLKernel> map = new HashMap<String, CLKernel>();
 
-            for (int i = 0; i < intArray[0]; i++) {
-                CLKernel kernel = new CLKernel(this, kernelIDs[i]);
-                kernels.put(kernel.name, kernel);
+                long[] kernelIDs = new long[numKernels[0]];
+                ret = cl.clCreateKernelsInProgram(ID, kernelIDs.length, kernelIDs, 0, null, 0);
+                checkForError(ret, "can not create kernels for program");
+
+                for (int i = 0; i < kernelIDs.length; i++) {
+                    CLKernel kernel = new CLKernel(this, kernelIDs[i]);
+                    map.put(kernel.name, kernel);
+                }
+                this.kernels = map;
+            }else{
+                initBuildStatus();
+                if(!isExecutable()) {
+                    // It is illegal to create kernels from a not executable program.
+                    // For consistency between AMD and NVIDIA drivers throw an exception at this point.
+                    throw new CLException(CL.CL_INVALID_PROGRAM_EXECUTABLE,
+                            "can not initialize kernels, program is not executable. status: "+buildStatusMap);
+                }
             }
+        }
+    }
+
+    private final void initBuildStatus() {
+
+        if(buildStatusMap == null) {
+            Map<CLDevice, Status> map = new HashMap<CLDevice, Status>();
+            CLDevice[] devices = getCLDevices();
+            for (CLDevice device : devices) {
+                Status status = getBuildStatus(device);
+                if(status == Status.BUILD_SUCCESS) {
+                    executable = true;
+                }
+                map.put(device, status);
+            }
+            this.buildStatusMap = Collections.unmodifiableMap(map);
         }
     }
 
@@ -125,11 +155,18 @@ public class CLProgram {
     }
 
     /**
-     * Builds this program for the given devices and with the specified build options.
+     * Builds this program for the given devices and with the specified build options. In case this program was
+     * already built and there are kernels associated with this program they will be released first before rebuild.
      * @return this
      * @param devices A list of devices this program should be build on or null for all devices of its context.
      */
     public CLProgram build(CLDevice[] devices, String options) {
+
+        if(kernels != null) {
+            //No changes to the program executable are allowed while there are
+            //kernel objects associated with a program object.
+            releaseKernels();
+        }
 
         long[] deviceIDs = null;
         if(devices != null) {
@@ -138,6 +175,10 @@ public class CLProgram {
                 deviceIDs[i] = devices[i].ID;
             }
         }
+
+        // invalidate build status
+        buildStatusMap = null;
+        executable = false;
 
         // Build the program
         int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
@@ -154,21 +195,25 @@ public class CLProgram {
     }
 
     /**
-     * Releases this program.
+     * Releases this program with its kernels.
      */
     public void release() {
 
-        if(!kernels.isEmpty()) {
-            String[] names = kernels.keySet().toArray(new String[kernels.size()]);
-            for (String name : names) {
-                kernels.get(name).release();
-            }
-        }
+        releaseKernels();
 
         int ret = cl.clReleaseProgram(ID);
         context.onProgramReleased(this);
         checkForError(ret, "can not release program");
-        
+    }
+
+    private void releaseKernels() {
+        if(kernels != null) {
+            String[] names = kernels.keySet().toArray(new String[kernels.size()]);
+            for (String name : names) {
+                kernels.get(name).release();
+            }
+            kernels = null;
+        }
     }
 
     /**
@@ -234,12 +279,17 @@ public class CLProgram {
      * Returns the build status enum of this program for each device as Map.
      */
     public Map<CLDevice,Status> getBuildStatus() {
-        Map<CLDevice,Status> statusMap = new HashMap<CLDevice, Status>();
-        CLDevice[] devices = getCLDevices();
-        for (CLDevice device : devices) {
-            statusMap.put(device, getBuildStatus(device));
-        }
-        return Collections.unmodifiableMap(statusMap);
+        initBuildStatus();
+        return buildStatusMap;
+    }
+
+    /**
+     * Returns true if the build status 'BUILD_SUCCESS' for at least one device
+     * of this program exists.
+     */
+    public boolean isExecutable() {
+        initBuildStatus();
+        return executable;
     }
 
     /**
@@ -295,6 +345,12 @@ public class CLProgram {
         }
 
         return map;
+    }
+
+    @Override
+    public String toString() {
+        return "CLProgram [id: " + ID
+                       + " status: "+getBuildStatus()+"]";
     }
 
     @Override

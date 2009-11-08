@@ -225,5 +225,45 @@ public class HighLevelBindingTest {
         out.println("results are valid");
 
     }
+
+    @Test
+    public void rebuildProgramTest() throws IOException {
+
+        out.println(" - - - highLevelTest; rebuild program test - - - ");
+
+        CLContext context = CLContext.create();
+        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"));
+
+        try{
+            program.getCLKernels();
+            fail("expected exception but got none :(");
+        }catch(CLException ex) {
+            out.println("got expected exception:\n"+ex.getMessage());
+            assertTrue(ex.errorcode == CL.CL_INVALID_PROGRAM_EXECUTABLE);
+        }
+
+        program.build();
+        assertTrue(program.isExecutable());
+        out.println(program.getBuildStatus());
+
+        Map<String, CLKernel> kernels = program.getCLKernels();
+        assertNotNull(kernels);
+        assertTrue("kernel map is empty", kernels.size() > 0);
+
+        // rebuild
+        // 1. release kernels (internally)
+        // 2. build program
+        program.build();
+        assertTrue(program.isExecutable());
+        out.println(program.getBuildStatus());
+
+        // try again with rebuilt program
+        kernels = program.getCLKernels();
+        assertNotNull(kernels);
+        assertTrue("kernel map is empty", kernels.size() > 0);
+        assertTrue(kernels.size() > 0);
+
+        context.release();
+    }
     
 }

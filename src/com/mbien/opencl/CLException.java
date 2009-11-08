@@ -6,20 +6,23 @@ package com.mbien.opencl;
  */
 public class CLException extends RuntimeException {
 
-    public CLException(Throwable cause) {
-        super(cause);
-    }
+    public final int errorcode;
 
-    public CLException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public CLException(String message) {
-        super(message);
-    }
+//    public CLException(Throwable cause) {
+//        super(cause);
+//    }
+//
+//    public CLException(String message, Throwable cause) {
+//        super(message, cause);
+//    }
+//
+//    public CLException(String message) {
+//        super(message);
+//    }
 
     public CLException(int error, String message) {
         super(identifyError(error) + ": " + message);
+        errorcode = error;
     }
 
     public static final void checkForError(int status, String message) {

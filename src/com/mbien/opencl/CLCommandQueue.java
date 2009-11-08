@@ -15,7 +15,7 @@ import static com.mbien.opencl.CLException.*;
  * perform appropriate synchronization.
  * @author Michael Bien
  */
-public class CLCommandQueue {
+public class CLCommandQueue implements CLResource {
 
     public final long ID;
     private final CLContext context;
@@ -146,9 +146,9 @@ public class CLCommandQueue {
     }
 */
 
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
+    public CLCommandQueue put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
         return this.putNDRangeKernel(
-                kernel, workDimension,
+                kernel, 1,
                 globalWorkOffset==0 ? null : new long[] {globalWorkOffset},
                 globalWorkSize  ==0 ? null : new long[] {globalWorkSize  },
                 localWorkSize   ==0 ? null : new long[] {localWorkSize   }  );

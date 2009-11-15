@@ -129,49 +129,45 @@
     </target>
 
 
-    <target name="c.compile" depends="c.setup.build">
-
-        <echo message=" - - - compiling JOCL natives - - - "/>
-        <echo message="${compiler.cfg.id}"/>
-        <echo message="${linker.cfg.id}"/>
+    <target name="c.compile" depends="c.configure.build">
 
         <mkdir dir="${obj.jocl.dir}/${namespace}" />
         <mkdir dir="${natives.jocl.dir}/${namespace}" />
 
-        <cc outtype="shared"
-            objdir="${obj.jocl.dir}/${namespace}"
-            outfile="${natives.jocl.dir}/${namespace}/${output.lib.name}"
-            optimize="${c.compiler.optimise}"
-            debug="${c.compiler.debug}"
-            multithreaded="true"
-            exceptions="false"
-            rtti="false">
+        <echo message=" - - - compiling JOCL natives - - - "/>
 
+        <apply dir="${obj.jocl.dir}/${namespace}" executable="${c.compiler.name}" dest="." skipemptyfilesets="true" failonerror="true">
+            <arg line="-O2 -Wall -c -fPIC -std=c99 -Wunused ${c.compiler.args.ext}"/>
+            <arg value="-I${java.includes.dir}"/>
+            <arg value="-I${java.includes.dir.platform}"/>
+            <arg value="-I${basedir}/resources/includes"/>
+            <mapper type="glob" from="*.c" to="*.o"/>
             <fileset dir="gensrc/native" includes="*.c"/>
+        </apply>
 
-            <compiler extends="${compiler.cfg.id}" >
+        <echo message=" - - - linking JOCL natives - - - "/>
 
-                <includepath path="${java.includes.dir}"/>
-                <includepath path="${java.includes.dir.platform}"/>
+        <apply dir="${natives.jocl.dir}/${namespace}" executable="${c.compiler.name}" parallel="true" failonerror="true">
+            <srcfile/>
+            <arg line="-shared -O2 -Wall -o ${output.lib.name.platform}"/>
+            <arg line="${c.linker.args.ext}"/>
+            <arg value="-L${java.lib.dir.platform}"/>
+            <fileset dir="${obj.jocl.dir}/${namespace}" includes="*.o"/>
+        </apply>
 
-                <!-- TODO should we use our own or jogl's GL headers?  -->
-                <includepath path="${basedir}/resources/includes"/>
-            <!--
-                <includepath path="${jogl.root}/make/stub_includes/opengl/GL3"/>
-                <includepath path="${jogl.root}/make/stub_includes/opengl"/>
-            -->
+        <echo message=" - - - JOCL natives compiled and linked - - - "/>
 
-            </compiler>
-
-            <linker extends="${linker.cfg.id}"/>
-
-        </cc>
-        
-        <echo message=" - - - JOCL natives compiled - - - "/>
+        <!--  
+        <apply dir="${natives.jocl.dir}" executable="strip" parallel="true" failonerror="true">
+            <fileset file="${natives.jocl.dir}/libjocl.so"/>
+        </apply>
+        -->
 
     </target>
 
-    <target name="c.setup.build" depends="gluegen.cpptasks.configure.compiler, gluegen.cpptasks.declare.compiler, c.configure.default, jocl.configure.linker">
+    <target name="c.configure.build" depends="c.setup.build, gluegen.cpptasks.configure.compiler, gluegen.cpptasks.declare.compiler, c.configure.default"/>
+
+    <target name="c.setup.build">
 
         <property name="obj.dir" value="${build.dir}/obj"/>
         <property name="natives.dir" value="${build.dir}/natives"/>
@@ -180,26 +176,16 @@
         <property name="obj.jocl.dir" value="${obj.dir}/${output.lib.name}"/>
         <property name="natives.jocl.dir" value="${build.dir}/natives/${output.lib.name}"/>
 
-        <property name="c.compiler.optimise" value="none"/>
-        <property name="c.compiler.debug" value="false"/>
+        <property name="c.compiler.name" value="gcc"/>
         <property name="namespace" value=""/>
 
     </target>
 
-    <!-- linker configuration -->
-    <target name="jocl.configure.linker">
-        <linker id="linker.cfg.linux.jocl" extends="linker.cfg.linux">
-            <syslibset dir="${basedir}/lib/OpenCL/linux/x86" libs="OpenCL" if="crosscompile"/>
-            <syslibset dir="/usr/lib" libs="OpenCL"/>
-        </linker>
-
-        <linker id="linker.cfg.linux.amd64.jocl" extends="linker.cfg.linux.amd64" >
-            <syslibset dir="${basedir}/lib/OpenCL/linux/amd64" libs="OpenCL" if="crosscompile"/>
-            <syslibset dir="/usr/lib" libs="OpenCL"/>
-        </linker>
+    <!-- 
+    <target name="jocl.setup.linker">
 
         <linker id="linker.cfg.win32.mingw.jocl" extends="linker.cfg.win32.mingw">
-            <linkerarg value="-Wl,--kill-at" /> <!-- remove @ from function names -->
+            <linkerarg value="-Wl,- -kill-at" />
             <syslibset libs="OpenCL"/>
         </linker>
 
@@ -208,6 +194,7 @@
             <linkerarg value="OpenCL" />
         </linker>
     </target>
+-->
 
     <!-- configure for current platform -->
     <target name="c.configure.default" depends="c.configure.os" />
@@ -217,28 +204,34 @@
 
     <target name="c.configure.win32.mingw" if="isMingW">
         <echo message="Win32.MingW" />
-        <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
-        <property name="linker.cfg.id"    value="linker.cfg.win32.mingw.jocl" />
+
+        <property name="output.lib.name.platform" value="${output.lib.name}.dll"/>
     </target>
-    <target name="c.configure.linux.x86"   if="isLinuxX86">
+
+    <target name="c.configure.linux.x86"  if="isLinuxX86">
         <echo message="Linux.x86" />
-        <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
-        <property name="linker.cfg.id"    value="linker.cfg.linux.jocl" />
+        <property name="c.compiler.args.ext"  value="-m32" />
+        <property name="c.linker.args.ext"  value="-L/usr/lib -lOpenCL -m32" />
+        <property name="output.lib.name.platform" value="lib${output.lib.name}.so"/>
     </target>
+
     <target name="c.configure.linux.amd64" if="isLinuxAMD64">
         <echo message="Linux.AMD64" />
-        <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
-        <property name="linker.cfg.id"    value="linker.cfg.linux.amd64.jocl" />
+        <property name="c.compiler.args.ext"  value="-m64" />
+        <property name="c.linker.args.ext"  value="-L/usr/lib64 -lOpenCL -m64" />
+        <property name="output.lib.name.platform" value="lib${output.lib.name}.so"/>
     </target>
-    <target name="c.configure.linux.ia64"  if="isLinuxIA64">
+
+    <target name="c.configure.linux.ia64" if="isLinuxIA64">
         <echo message="Linux.IA64" />
-        <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
-        <property name="linker.cfg.id"    value="linker.cfg.linux.jocl" />
+        <property name="c.compiler.args.ext"  value="-m64" />
+
     </target>
-    <target name="c.configure.macosx"      if="isOSX">
+
+    <target name="c.configure.macosx"     if="isOSX">
         <echo message="MacOS" />
-        <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
-        <property name="linker.cfg.id"    value="linker.cfg.macosx.jocl" />
+
+
     </target>
 
     <target name="-post-clean">

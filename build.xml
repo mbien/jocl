@@ -9,7 +9,7 @@
 
     <property name="gluegen.root" value="${basedir}/../gluegen" />
     <property name="jogl.root" value="${basedir}/../jogl" />
-    
+
     <property name="etc.build.dir" value="${basedir}/etc/build" />
     <property name="headers.dest" value="${basedir}/resources/includes/CL" />
 
@@ -68,7 +68,7 @@
 
         <!--compile build utilities-->
         <mkdir dir="${etc.build.dir}"/>
-        
+
         <javac destdir="${etc.build.dir}" classpath="${ant.core.lib}" source="1.5" debug="true" debuglevel="lines,vars,source">
             <src path="${basedir}/etc/src"/>
         </javac>
@@ -83,9 +83,9 @@
 
     <target name="c.compile.default" depends="gluegen.cpptasks.detect.os, c.compile" />
 
-    <!-- crosscompiles to other platforms TODO: win32, win64 -->
-    <target name="cross-compile-on-linux64" if="crosscompile">
-   
+    <!-- crosscompiles to other platforms, requirement: linux64 host os -->
+    <target name="cross-compile-on-linux64" if="crosscompile" depends="init">
+
         <echo message=" - - - cross-compiling JOCL natives - - - "/>
 
         <antcall target="c.compile" inheritall="false">
@@ -108,21 +108,39 @@
             <param name="isX11" value="true"/>
         </antcall>
 
-<!--
+        <!-- TODO remove hardcoded path -->
+        <property name="java.includes.dir.windows" value="/media/store/JOCLSetup/win32"/>
+
+        <!-- use mingw crosscompiler to compile for win32 and win64 (linux64 only) -->
         <antcall target="c.compile" inheritall="false">
-            <param name="namespace" value="win-x86"/>
+            <param name="namespace" value="linux-amd64"/>
             <param name="crosscompile" value="true"/>
             <param name="build.dir" value="${build.dir}"/>
-            <param name="isWindows" value="true"/>
+            <param name="isLinuxAMD64" value="true"/>
+            <param name="isLinux" value="true"/>
+            <param name="isUnix" value="true"/>
+            <param name="isX11" value="true"/>
+
+             <!-- overwrite -->
+            <param name="java.includes.dir.platform" value="${java.includes.dir.windows}"/>
+            <param name="compiler.cfg.id" value="compiler.cfg.linux64.mingw64"/>
+            <param name="linker.cfg.id" value="linker.cfg.linux64.mingw64.jocl"/>
         </antcall>
-        
+
         <antcall target="c.compile" inheritall="false">
-            <param name="namespace" value="win-amd64"/>
+            <param name="namespace" value="linux-x86"/>
             <param name="crosscompile" value="true"/>
             <param name="build.dir" value="${build.dir}"/>
-            <param name="isWindows" value="true"/>
+            <param name="isLinuxX86" value="true"/>
+            <param name="isLinux" value="true"/>
+            <param name="isUnix" value="true"/>
+            <param name="isX11" value="true"/>
+
+             <!-- overwrite -->
+            <param name="java.includes.dir.platform" value="${java.includes.dir.windows}"/>
+            <param name="compiler.cfg.id" value="compiler.cfg.linux64.mingw32"/>
+            <param name="linker.cfg.id" value="linker.cfg.linux64.mingw32.jocl"/>
         </antcall>
--->
 
         <echo message=" - - - JOCL natives cross-compiled - - - "/>
 
@@ -166,7 +184,7 @@
             <linker extends="${linker.cfg.id}"/>
 
         </cc>
-        
+
         <echo message=" - - - JOCL natives compiled - - - "/>
 
     </target>
@@ -189,12 +207,10 @@
     <!-- linker configuration -->
     <target name="jocl.configure.linker">
         <linker id="linker.cfg.linux.jocl" extends="linker.cfg.linux">
-            <syslibset dir="${basedir}/lib/OpenCL/linux/x86" libs="OpenCL" if="crosscompile"/>
             <syslibset dir="/usr/lib" libs="OpenCL"/>
         </linker>
 
         <linker id="linker.cfg.linux.amd64.jocl" extends="linker.cfg.linux.amd64" >
-            <syslibset dir="${basedir}/lib/OpenCL/linux/amd64" libs="OpenCL" if="crosscompile"/>
             <syslibset dir="/usr/lib" libs="OpenCL"/>
         </linker>
 
@@ -207,20 +223,28 @@
             <linkerarg value="-framework" />
             <linkerarg value="OpenCL" />
         </linker>
+
+        <linker id="linker.cfg.linux64.mingw64.jocl" extends="linker.cfg.linux64.mingw64">
+            <syslibset dir="${basedir}/lib/OpenCL/linux/amd64" libs="OpenCL"/>
+        </linker>
+
+        <linker id="linker.cfg.linux64.mingw32.jocl" extends="linker.cfg.linux64.mingw32">
+            <syslibset dir="${basedir}/lib/OpenCL/linux/x86" libs="OpenCL"/>
+        </linker>
     </target>
 
     <!-- configure for current platform -->
     <target name="c.configure.default" depends="c.configure.os" />
-    <target name="c.configure.os"      depends="c.configure.win32, c.configure.linux, c.configure.macosx" />
-    <target name="c.configure.win32"   depends="c.configure.win32.mingw"                                                if="isWindows" />
-    <target name="c.configure.linux"   depends="c.configure.linux.x86, c.configure.linux.amd64, c.configure.linux.ia64" if="isLinux" />
+    <target name="c.configure.os"      depends="c.configure.win, c.configure.linux, c.configure.macosx" />
+    <target name="c.configure.win"     depends="c.configure.win.mingw"                          if="isWindows" />
+    <target name="c.configure.linux"   depends="c.configure.linux.x86, c.configure.linux.amd64" if="isLinux" />
 
-    <target name="c.configure.win32.mingw" if="isMingW">
-        <echo message="Win32.MingW" />
+    <target name="c.configure.win.mingw" if="isMingW">
+        <echo message="Win.MingW" />
         <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
         <property name="linker.cfg.id"    value="linker.cfg.win32.mingw.jocl" />
     </target>
-    <target name="c.configure.linux.x86"   if="isLinuxX86">
+    <target name="c.configure.linux.x86" if="isLinuxX86">
         <echo message="Linux.x86" />
         <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
         <property name="linker.cfg.id"    value="linker.cfg.linux.jocl" />
@@ -229,11 +253,6 @@
         <echo message="Linux.AMD64" />
         <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
         <property name="linker.cfg.id"    value="linker.cfg.linux.amd64.jocl" />
-    </target>
-    <target name="c.configure.linux.ia64"  if="isLinuxIA64">
-        <echo message="Linux.IA64" />
-        <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
-        <property name="linker.cfg.id"    value="linker.cfg.linux.jocl" />
     </target>
     <target name="c.configure.macosx"      if="isOSX">
         <echo message="MacOS" />
@@ -272,65 +291,4 @@
 
     </target>
 
-    <!--
-
-    There exist several targets which are by default empty and which can be
-    used for execution of your tasks. These targets are usually executed
-    before and after some main targets. They are:
-
-      -pre-init:                 called before initialization of project properties
-      -post-init:                called after initialization of project properties
-      -pre-compile:              called before javac compilation
-      -post-compile:             called after javac compilation
-      -pre-compile-single:       called before javac compilation of single file
-      -post-compile-single:      called after javac compilation of single file
-      -pre-compile-test:         called before javac compilation of JUnit tests
-      -post-compile-test:        called after javac compilation of JUnit tests
-      -pre-compile-test-single:  called before javac compilation of single JUnit test
-      -post-compile-test-single: called after javac compilation of single JUunit test
-      -pre-jar:                  called before JAR building
-      -post-jar:                 called after JAR building
-      -post-clean:               called after cleaning build products
-
-    (Targets beginning with '-' are not intended to be called on their own.)
-
-    Example of inserting an obfuscator after compilation could look like this:
-
-        <target name="-post-compile">
-            <obfuscate>
-                <fileset dir="${build.classes.dir}"/>
-            </obfuscate>
-        </target>
-
-    For list of available properties check the imported
-    nbproject/build-impl.xml file.
-
-
-    Another way to customize the build is by overriding existing main targets.
-    The targets of interest are:
-
-      -init-macrodef-javac:     defines macro for javac compilation
-      -init-macrodef-junit:     defines macro for junit execution
-      -init-macrodef-debug:     defines macro for class debugging
-      -init-macrodef-java:      defines macro for class execution
-      -do-jar-with-manifest:    JAR building (if you are using a manifest)
-      -do-jar-without-manifest: JAR building (if you are not using a manifest)
-      run:                      execution of project
-      -javadoc-build:           Javadoc generation
-      test-report:              JUnit report generation
-
-    An example of overriding the target for project execution could look like this:
-
-        <target name="run" depends="JOCL-impl.jar">
-            <exec dir="bin" executable="launcher.exe">
-                <arg file="${dist.jar}"/>
-            </exec>
-        </target>
-
-    Notice that the overridden target depends on the jar target and not only on
-    the compile target as the regular run target does. Again, for a list of available
-    properties which you can use, check the target you are overriding in the
-    nbproject/build-impl.xml file.
-
-    -->
 </project>

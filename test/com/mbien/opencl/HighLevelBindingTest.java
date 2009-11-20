@@ -24,7 +24,9 @@ public class HighLevelBindingTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         out.println("OS: " + System.getProperty("os.name"));
+        out.println("ARCH: " + System.getProperty("os.arch"));
         out.println("VM: " + System.getProperty("java.vm.name"));
+        out.println("lib path: " + System.getProperty("java.library.path"));
     }
 
     @Test

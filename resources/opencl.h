@@ -1,7 +1,7 @@
 
 #include    <CL/cl_platform.h>
 #include    <CL/cl.h>
-#include    <CL/cl_ext.h>
+//#include    <CL/cl_ext.h>
 
 #ifdef _WIN32
 #include    <windows.h>    

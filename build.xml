@@ -80,7 +80,7 @@
 
     <target name="-post-compile" depends="c.compile.default" />
 
-    <target name="c.compile.default" depends="gluegen.cpptasks.detect.os, jocl.c.compile" />
+    <target name="c.compile.default" depends="gluegen.cpptasks.detect.os, gluegen.cpptasks.detect.compiler, jocl.c.compile, c.rename.lib.mingw" />
 
     <target name="jocl.c.compile" depends="c.setup.build">
 
@@ -152,7 +152,7 @@
 
         <linker id="linker.cfg.win32.mingw.jocl" extends="linker.cfg.win32.mingw">
             <linkerarg value="-Wl,--kill-at" /> <!-- remove @ from function names -->
-            <syslibset libs="OpenCL"/>
+            <syslibset dir="C:/NVIDIAComputingSDK/OpenCL/common/lib/Win32" libs="OpenCL"/>
         </linker>
 
         <linker id="linker.cfg.macosx.jocl">
@@ -218,6 +218,13 @@
         <copy file="${headers.orig}/cl_platform.h" toDir="${headers.dest}" overwrite="true"/>
         <copy file="${headers.orig}/cl_ext.h" toDir="${headers.dest}" overwrite="true"/>
 
+    </target>
+
+    <!--cut and paste from gluegen -->
+    <target name="c.rename.lib.mingw" if="isMingW">
+      <!-- FIXME: this is a hack; the cpptask should have an option to change the
+           suffix or at least understand the override from .so to .dll -->
+      <move file="${natives.jocl.dir}/${namespace}/libjocl.so" tofile="${natives.jocl.dir}/${namespace}/jocl.dll" />
     </target>
 
 </project>

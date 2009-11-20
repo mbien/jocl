@@ -12,37 +12,16 @@
     <import file="build.xml"/>
 
     <!-- TODO remove hardcoded path -->
-    <property name="java.includes.dir.windows" value="/media/store/JOCLSetup/win32"/>
+    <property name="java.includes.dir.windows" value="/home/buildadmin/project/common/platform-libs/jre-include/win32"/>
+    <property name="opencl.platform.dir"       value="/home/buildadmin/project/common/platform-libs/OpenCL"/>
 
     <!-- crosscompiles to other platforms, requirement: linux64 host os -->
-    <target name="jocl.cross-compile" depends="init, configure.crosscompiler">
+    <target name="jocl.cross-compile" depends="init">
 
         <echo message=" - - - cross-compiling JOCL natives - - - "/>
 
         <antcall target="jocl.c.compile" inheritall="false">
             <param name="namespace" value="linux-amd64"/>
-            <param name="crosscompile" value="true"/>
-            <param name="build.dir" value="${build.dir}"/>
-            <param name="isLinuxAMD64" value="true"/>
-            <param name="isLinux" value="true"/>
-            <param name="isUnix" value="true"/>
-            <param name="isX11" value="true"/>
-        </antcall>
-
-        <antcall target="jocl.c.compile" inheritall="false">
-            <param name="namespace" value="linux-x86"/>
-            <param name="crosscompile" value="true"/>
-            <param name="build.dir" value="${build.dir}"/>
-            <param name="isLinuxX86" value="true"/>
-            <param name="isLinux" value="true"/>
-            <param name="isUnix" value="true"/>
-            <param name="isX11" value="true"/>
-        </antcall>
-
-        <!-- use mingw crosscompiler to compile for win32 and win64 (linux64 only) -->
-        <antcall target="jocl.c.compile" inheritall="false">
-            <param name="namespace" value="linux-amd64"/>
-            <param name="crosscompile" value="true"/>
             <param name="build.dir" value="${build.dir}"/>
             <param name="isLinuxAMD64" value="true"/>
             <param name="isLinux" value="true"/>
@@ -50,14 +29,24 @@
             <param name="isX11" value="true"/>
 
              <!-- overwrite -->
-            <param name="java.includes.dir.platform" value="${java.includes.dir.windows}"/>
-            <param name="compiler.cfg.id" value="compiler.cfg.linux64.mingw64"/>
-            <param name="linker.cfg.id" value="linker.cfg.linux64.mingw64.jocl"/>
+            <param name="linker.cfg.id" value="linker.cfg.linux64.amd64.jocl"/>
         </antcall>
 
         <antcall target="jocl.c.compile" inheritall="false">
             <param name="namespace" value="linux-x86"/>
-            <param name="crosscompile" value="true"/>
+            <param name="build.dir" value="${build.dir}"/>
+            <param name="isLinuxX86" value="true"/>
+            <param name="isLinux" value="true"/>
+            <param name="isUnix" value="true"/>
+            <param name="isX11" value="true"/>
+
+             <!-- overwrite -->
+            <param name="linker.cfg.id" value="linker.cfg.linux64.x86.jocl"/>
+        </antcall>
+
+        <!-- use mingw crosscompiler to compile for win32 and win64 -->
+        <antcall target="jocl.c.compile" inheritall="false">
+            <param name="namespace" value="win-x86"/>
             <param name="build.dir" value="${build.dir}"/>
             <param name="isLinuxX86" value="true"/>
             <param name="isLinux" value="true"/>
@@ -70,19 +59,43 @@
             <param name="linker.cfg.id" value="linker.cfg.linux64.mingw32.jocl"/>
         </antcall>
 
+        <antcall target="jocl.c.compile" inheritall="false">
+            <param name="namespace" value="win-amd64"/>
+            <param name="build.dir" value="${build.dir}"/>
+            <param name="isLinuxAMD64" value="true"/>
+            <param name="isLinux" value="true"/>
+            <param name="isUnix" value="true"/>
+            <param name="isX11" value="true"/>
+
+             <!-- overwrite -->
+            <param name="java.includes.dir.platform" value="${java.includes.dir.windows}"/>
+            <param name="compiler.cfg.id" value="compiler.cfg.linux64.mingw64"/>
+            <param name="linker.cfg.id" value="linker.cfg.linux64.mingw64.jocl"/>
+        </antcall>
+
         <echo message=" - - - JOCL natives cross-compiled - - - "/>
 
     </target>
 
 
-    <target name="configure.crosscompiler">
-        <linker id="linker.cfg.linux64.mingw64.jocl" extends="linker.cfg.linux64.mingw64">
-            <syslibset dir="${basedir}/lib/OpenCL/linux/amd64" libs="OpenCL"/>
+    <target name="jocl.configure.linker">
+
+        <linker id="linker.cfg.linux64.x86.jocl" extends="linker.cfg.linux">
+            <syslibset dir="${opencl.platform.dir}/linux/x86" libs="OpenCL"/>
+        </linker>
+
+        <linker id="linker.cfg.linux64.amd64.jocl" extends="linker.cfg.linux.amd64" >
+            <syslibset dir="${opencl.platform.dir}/linux/amd64" libs="OpenCL"/>
         </linker>
 
         <linker id="linker.cfg.linux64.mingw32.jocl" extends="linker.cfg.linux64.mingw32">
-            <syslibset dir="${basedir}/lib/OpenCL/linux/x86" libs="OpenCL"/>
+            <syslibset dir="${opencl.platform.dir}/win/win32" libs="OpenCL"/>
         </linker>
+
+        <linker id="linker.cfg.linux64.mingw64.jocl" extends="linker.cfg.linux64.mingw64">
+            <syslibset dir="${opencl.platform.dir}/win/x64" libs="OpenCL"/>
+        </linker>
+
     </target>
 
 </project>

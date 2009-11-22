@@ -227,4 +227,37 @@
       <move file="${natives.jocl.dir}/${namespace}/libjocl.so" tofile="${natives.jocl.dir}/${namespace}/jocl.dll" />
     </target>
 
+    <target name="-javadoc-build" depends="init">
+
+        <mkdir dir="${dist.javadoc.dir}"/>
+
+        <javadoc author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}"
+            docencoding="UTF-8" encoding="${javadoc.encoding.used}" failonerror="true"
+            noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}"
+            private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}"
+            use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}"
+            windowtitle="${javadoc.windowtitle}">
+
+            <arg line="${javadoc.additionalparam} -J-Dnativetaglet.mapping=${basedir}/resources/native-taglet.properties"/>
+            <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/build/gluegen.jar:/home/mbien/NetBeansProjects/JOGL/jocl/"/>
+
+            <classpath>
+                <pathelement path="${javac.classpath}"/>
+            </classpath>
+            
+            <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${src.java.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${src.native.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
+            <fileset dir="${build.generated.sources.dir}" erroronmissingdir="false">
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+
 </project>

@@ -1,27 +1,17 @@
 package com.mbien.opencl;
 
 /**
- * Main Exception type for runtime OpenCL errors and unsuccessfull function calls (e.g. returning other values than CL_SUCCESS).
+ * Main Exception type for runtime OpenCL errors and unsuccessful function calls (e.g. returning other values than CL_SUCCESS).
  * @author Michael Bien
  */
 public class CLException extends RuntimeException {
 
     public final int errorcode;
 
-//    public CLException(Throwable cause) {
-//        super(cause);
-//    }
-//
-//    public CLException(String message, Throwable cause) {
-//        super(message, cause);
-//    }
-//
-//    public CLException(String message) {
-//        super(message);
-//    }
+    private final static String ERROR_CODE_DOC = "http://www.khronos.org/opencl/sdk/1.0/docs/man/xhtml/errors.html";
 
     public CLException(int error, String message) {
-        super(identifyError(error) + ": " + message);
+        super(message + "\nerror: " + identifyError(error) + " (man page: "+ERROR_CODE_DOC+")");
         errorcode = error;
     }
 
@@ -177,7 +167,7 @@ public class CLException extends RuntimeException {
 //                return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
 
             default:
-                return "unknown cause: error " + error;
+                return "unknown cause: code" + error;
         }
     }
 

@@ -19,8 +19,8 @@
     <target name="-pre-compile" depends="prepare-build,preprocess-headers">
 
         <path id="gluegen.classpath">
-            <pathelement location="${gluegen.root}/build/gluegen.jar" />
-            <pathelement location="${gluegen.root}/build/antlr-2.7.7.jar" />
+            <pathelement location="${file.reference.gluegen.jar}" />
+            <pathelement location="${antlr.jar}" />
         </path>
 
         <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
@@ -62,7 +62,7 @@
 
     </target>
 
-    <target name="prepare-build">
+    <target name="prepare-build" depends="gluegen.properties.load.user">
 
         <property name="headers.orig" value="${basedir}/resources/includes/CL_orig" />
 
@@ -155,7 +155,7 @@
             <syslibset dir="C:/NVIDIAComputingSDK/OpenCL/common/lib/Win32" libs="OpenCL"/>
         </linker>
 
-        <linker id="linker.cfg.macosx.jocl">
+        <linker id="linker.cfg.macosx.jocl" extends="linker.cfg.macosx">
             <linkerarg value="-framework" />
             <linkerarg value="OpenCL" />
         </linker>

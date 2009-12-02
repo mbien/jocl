@@ -97,7 +97,7 @@ public class CLProgram implements CLResource {
         ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null, 0);
         checkForError(ret, "on clGetProgramBuildInfo");
 
-        return new String(bb.array(), 0, (int)longArray[0]);
+        return CLUtils.clString2JavaString(bb.array(), (int)longArray[0]);
     }
 
     private final String getProgramInfoString(int flag) {
@@ -112,7 +112,7 @@ public class CLProgram implements CLResource {
         ret = cl.clGetProgramInfo(ID, flag, bb.capacity(), bb, null, 0);
         checkForError(ret, "on clGetProgramInfo");
 
-        return new String(bb.array(), 0, (int)longArray[0]);
+        return CLUtils.clString2JavaString(bb.array(), (int)longArray[0]);
     }
 
 //    private int getProgramInfoInt(int flag) {
@@ -184,7 +184,7 @@ public class CLProgram implements CLResource {
         int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
 
         if(ret != CL.CL_SUCCESS) {
-            checkForError(ret, "\n"+getBuildLog());
+            throw new CLException(ret, "\n"+getBuildLog());
         }
 
         return this;

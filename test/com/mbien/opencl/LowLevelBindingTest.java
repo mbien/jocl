@@ -10,6 +10,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
+import static com.mbien.opencl.CLUtils.*;
 import static com.sun.gluegen.runtime.BufferFactory.*;
 
 /**
@@ -78,19 +79,19 @@ public class LowLevelBindingTest {
 
             ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_PROFILE, bb.capacity(), bb, longBuffer, 0);
             checkForError(ret);
-            out.println("    profile: "+new String(bb.array(), 0, (int)longBuffer[0]));
+            out.println("    profile: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
 
             ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VERSION, bb.capacity(), bb, longBuffer, 0);
             checkForError(ret);
-            out.println("    version: "+new String(bb.array(), 0, (int)longBuffer[0]));
+            out.println("    version: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
 
             ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_NAME, bb.capacity(), bb, longBuffer, 0);
             checkForError(ret);
-            out.println("    name: "+new String(bb.array(), 0, (int)longBuffer[0]));
+            out.println("    name: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
 
             ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VENDOR, bb.capacity(), bb, longBuffer, 0);
             checkForError(ret);
-            out.println("    vendor: "+new String(bb.array(), 0, (int)longBuffer[0]));
+            out.println("    vendor: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
 
             //find all devices
             ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
@@ -105,7 +106,7 @@ public class LowLevelBindingTest {
                 long device = devices[j];
                 ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, bb.capacity(), bb, longBuffer, 0);
                 checkForError(ret);
-                out.println("    device: "+new String(bb.array(), 0, (int)longBuffer[0]));
+                out.println("    device: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
 
                 ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, bb.capacity(), bb, longBuffer, 0);
                 checkForError(ret);
@@ -247,7 +248,7 @@ public class LowLevelBindingTest {
         bb.rewind();
         ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, bb.capacity(), bb, null, 0);
         checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
-        out.println("program source:\n"+new String(bb.array(), 0, (int)longArray[0]));
+        out.println("program source:\n" + clString2JavaString(bb.array(), (int)longArray[0]));
 
         // Check program status
         Arrays.fill(longArray, 42);
@@ -266,7 +267,7 @@ public class LowLevelBindingTest {
         bb.rewind();
         ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, bb.capacity(), bb, null, 0);
         checkError("on clGetProgramBuildInfo3", ret);
-        out.println("log:\n" + new String(bb.array(), 0, (int)longArray[0]));
+        out.println("log:\n" + clString2JavaString(bb.array(), (int)longArray[0]));
 
         // Create the kernel
         Arrays.fill(intArray, 42);

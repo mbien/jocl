@@ -338,7 +338,7 @@ public final class CLDevice {
         
         checkForError(ret, "can not receive device info string");
 
-        return new String(bb.array(), 0, (int)longBuffer[0]);
+        return CLUtils.clString2JavaString(bb.array(), (int)longBuffer[0]);
         
     }
 

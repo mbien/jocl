@@ -40,7 +40,7 @@ public class CLKernel implements CLResource {
         ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null, 0);
         checkForError(ret, "error while asking for kernel function name");
 
-        this.name = new String(bb.array(), 0, bb.capacity()).trim();
+        this.name = CLUtils.clString2JavaString(bb.array(), bb.capacity());
 
         // get number of arguments
         ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_NUM_ARGS, 0, null, longArray, 0);

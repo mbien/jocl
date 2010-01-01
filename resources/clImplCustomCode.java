@@ -51,3 +51,14 @@
         /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
         private native int clBuildProgram1(long program, int devices, Object deviceList, String options, BuildProgramCallback cb, Object userData);
 
+        
+        private final static void convert32To64(long[] values) {
+            if(values.length%2 == 1) {
+                values[values.length-1] = values[values.length/2]>>>32;
+            }
+            for (int i = values.length - 1 - values.length%2; i >= 0; i-=2) {
+                long temp = values[i/2];
+                values[i-1] = temp>>>32;
+                values[i  ] = temp & 0x00000000FFFFFFFFL;
+            }
+		}

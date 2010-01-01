@@ -20,26 +20,26 @@ import static com.sun.gluegen.runtime.BufferFactory.*;
 public class LowLevelBindingTest {
 
     private final static String programSource =
-              " // OpenCL Kernel Function for element by element vector addition                                                \n"
-            + "__kernel void VectorAdd(__global const int* a, __global const int* b, __global int* c, int iNumElements) {       \n"
-            + "    // get index into global data array                                                                          \n"
-            + "    int iGID = get_global_id(0);                                                                                 \n"
-            + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code                           \n"
-            + "    if (iGID >= iNumElements)  {                                                                                 \n"
-            + "        return;                                                                                                  \n"
-            + "    }                                                                                                            \n"
-            + "    // add the vector elements                                                                                   \n"
-            + "    c[iGID] = a[iGID] + b[iGID];                                                                                 \n"
-            + "}                                                                                                                \n"
-            + "__kernel void Test(__global const int* a, __global const int* b, __global int* c, int iNumElements) {            \n"
-            + "    // get index into global data array                                                                          \n"
-            + "    int iGID = get_global_id(0);                                                                                 \n"
-            + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code                           \n"
-            + "    if (iGID >= iNumElements)  {                                                                                 \n"
-            + "        return;                                                                                                  \n"
-            + "    }                                                                                                            \n"
-            + "    c[iGID] = iGID;                                                                                              \n"
-            + "}                                                                                                                \n";
+              " // OpenCL Kernel Function for element by element vector addition                                  \n"
+            + "kernel void VectorAdd(global const int* a, global const int* b, global int* c, int iNumElements) { \n"
+            + "    // get index into global data array                                                            \n"
+            + "    int iGID = get_global_id(0);                                                                   \n"
+            + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code             \n"
+            + "    if (iGID >= iNumElements)  {                                                                   \n"
+            + "        return;                                                                                    \n"
+            + "    }                                                                                              \n"
+            + "    // add the vector elements                                                                     \n"
+            + "    c[iGID] = a[iGID] + b[iGID];                                                                   \n"
+            + "}                                                                                                  \n"
+            + "kernel void Test(global const int* a, global const int* b, global int* c, int iNumElements) {      \n"
+            + "    // get index into global data array                                                            \n"
+            + "    int iGID = get_global_id(0);                                                                   \n"
+            + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code             \n"
+            + "    if (iGID >= iNumElements)  {                                                                   \n"
+            + "        return;                                                                                    \n"
+            + "    }                                                                                              \n"
+            + "    c[iGID] = iGID;                                                                                \n"
+            + "}                                                                                                  \n";
 
 
     @BeforeClass

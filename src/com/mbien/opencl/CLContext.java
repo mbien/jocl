@@ -29,19 +29,19 @@ import static com.sun.gluegen.runtime.BufferFactory.*;
  * specified in the context.
  * @author Michael Bien
  */
-public final class CLContext implements CLResource {
+public class CLContext implements CLResource {
 
     final CL cl;
     public final long ID;
 
-    private CLDevice[] devices;
+    protected CLDevice[] devices;
 
-    private final List<CLProgram> programs;
-    private final List<CLBuffer<? extends Buffer>> buffers;
-    private final Map<CLDevice, List<CLCommandQueue>> queuesMap;
+    protected final List<CLProgram> programs;
+    protected final List<CLBuffer<? extends Buffer>> buffers;
+    protected final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
 
-    private CLContext(long contextID) {
+    protected CLContext(long contextID) {
         this.cl = CLPlatform.getLowLevelBinding();
         this.ID = contextID;
         this.programs = new ArrayList<CLProgram>();
@@ -75,7 +75,7 @@ public final class CLContext implements CLResource {
      * The platform to be used is implementation dependent.
      */
     public static final CLContext create() {
-        return createContextFromType(null, CL.CL_DEVICE_TYPE_ALL);
+        return new CLContext(createContextFromType(null, CL.CL_DEVICE_TYPE_ALL));
     }
 
     /**
@@ -121,7 +121,7 @@ public final class CLContext implements CLResource {
             properties.rewind();
         }
 
-        return createContextFromType(properties, type);
+        return new CLContext(createContextFromType(properties, type));
     }
 
     /**
@@ -143,27 +143,27 @@ public final class CLContext implements CLResource {
             properties.rewind();
         }
 
-        return createContext(properties, deviceIDs);
+        return new CLContext(createContext(properties, deviceIDs));
     }
 
-    private static final CLContext createContextFromType(LongBuffer properties, long deviceType) {
+    protected static final long createContextFromType(LongBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(properties, deviceType, null, null, status);
 
         checkForError(status.get(), "can not create CL context");
 
-        return new CLContext(context);
+        return context;
     }
 
-    private static final CLContext createContext(LongBuffer properties, long[] devices) {
+    protected static final long createContext(LongBuffer properties, long[] devices) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, devices, null, null, status);
 
         checkForError(status.get(), "can not create CL context");
 
-        return new CLContext(context);
+        return context;
     }
 
     /**
@@ -259,16 +259,6 @@ public final class CLContext implements CLResource {
      */
     public final <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, int flags) {
         CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, flags);
-        buffers.add(buffer);
-        return buffer;
-    }
-
-    public final <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
-        return createFromGLBuffer(directBuffer, glBuffer, Mem.flagsToInt(flags));
-    }
-    
-    public final <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
-        CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, glBuffer, flags);
         buffers.add(buffer);
         return buffer;
     }

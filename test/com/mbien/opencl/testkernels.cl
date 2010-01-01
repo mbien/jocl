@@ -1,6 +1,6 @@
 
     // OpenCL Kernel Function for element by element vector addition
-    __kernel void VectorAddGM(__global const int* a, __global const int* b, __global int* c, int iNumElements) {
+    kernel void VectorAddGM(global const int* a, global const int* b, global int* c, int iNumElements) {
         // get index into global data array
         int iGID = get_global_id(0);
         // bound check (equivalent to the limit on a 'for' loop for standard/serial C code
@@ -11,7 +11,7 @@
         c[iGID] = a[iGID] + b[iGID];
     }
 
-    __kernel void Test(__global const int* a, __global const int* b, __global int* c, int iNumElements) {
+    kernel void Test(global const int* a, global const int* b, global int* c, int iNumElements) {
         // get index into global data array
         int iGID = get_global_id(0);
         // bound check (equivalent to the limit on a 'for' loop for standard/serial C code

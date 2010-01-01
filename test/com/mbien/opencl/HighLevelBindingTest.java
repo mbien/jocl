@@ -241,7 +241,7 @@ public class HighLevelBindingTest {
             fail("expected exception but got none :(");
         }catch(CLException ex) {
             out.println("got expected exception:\n"+ex.getMessage());
-            assertTrue(ex.errorcode == CL.CL_INVALID_PROGRAM_EXECUTABLE);
+            assertEquals(ex.errorcode, CL.CL_INVALID_PROGRAM_EXECUTABLE);
         }
 
         program.build();

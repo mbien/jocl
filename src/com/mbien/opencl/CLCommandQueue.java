@@ -154,6 +154,16 @@ public class CLCommandQueue implements CLResource {
                 localWorkSize   ==0 ? null : new long[] {localWorkSize   }  );
     }
 
+    public CLCommandQueue put2DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY,
+                                                            long globalWorkSizeX, long globalWorkSizeY,
+                                                            long localWorkSizeX, long localWorkSizeY) {
+        return this.putNDRangeKernel(
+                kernel, 2,
+                globalWorkOffsetX==0 && globalWorkOffsetY==0 ? null : new long[] {globalWorkOffsetX, globalWorkOffsetY},
+                globalWorkSizeX  ==0 && globalWorkSizeY  ==0 ? null : new long[] {globalWorkSizeX,   globalWorkSizeY  },
+                localWorkSizeX   ==0 && localWorkSizeY   ==0 ? null : new long[] {localWorkSizeX,    localWorkSizeY   }  );
+    }
+
     public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, long[] globalWorkOffset, long[] globalWorkSize, long[] localWorkSize) {
 
        int ret = cl.clEnqueueNDRangeKernel(

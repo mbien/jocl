@@ -26,7 +26,6 @@ public final class CLGLContext extends CLContext {
 
     public static CLGLContext create(GLContext glContext) {
 
-        long glID = glContext.getContext();
 
 //UNIX
 //cl_context_properties props[] = {
@@ -45,6 +44,8 @@ public final class CLGLContext extends CLContext {
 //         CL_CGL_SHAREGROUP_KHR, (cl_context_properties)TODO 0,
 //         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
 
+        long glID = 0;
+
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
 
         DefaultGraphicsConfiguration config = (DefaultGraphicsConfiguration)ctxImpl.getDrawableImpl()
@@ -53,6 +54,7 @@ public final class CLGLContext extends CLContext {
         LongBuffer properties = LongBuffer.allocate(5);
         if(glContext instanceof X11GLXContext) {
             long handle = config.getScreen().getDevice().getHandle();
+            glID = ((X11GLXContext)glContext).getContext();
             properties.put(CLGLI.CL_GL_CONTEXT_KHR).put(glID)
                       .put(CLGLI.CL_GLX_DISPLAY_KHR).put(handle);
         }else if(glContext instanceof WindowsWGLContext) {
@@ -61,6 +63,8 @@ public final class CLGLContext extends CLContext {
         }else if(glContext instanceof MacOSXCGLContext) {
             // TODO test on mac
             throw new RuntimeException("cl-gl interoperability on mac not yet implemented");
+        }else{
+            throw new RuntimeException("unsupported GLContext: "+glContext);
         }
         
         properties.put(0).rewind(); // 0 terminated array

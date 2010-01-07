@@ -1,6 +1,8 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.CLBuffer.Mem;
+import com.mbien.opencl.CLSampler.AddressingMode;
+import com.mbien.opencl.CLSampler.FilteringMode;
 import com.sun.gluegen.runtime.CPU;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,6 +39,7 @@ public class CLContext implements CLResource {
     protected CLDevice[] devices;
 
     protected final List<CLProgram> programs;
+    protected final List<CLSampler> samplers;
     protected final List<CLBuffer<? extends Buffer>> buffers;
     protected final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
@@ -45,6 +48,7 @@ public class CLContext implements CLResource {
         this.cl = CLPlatform.getLowLevelBinding();
         this.ID = contextID;
         this.programs = new ArrayList<CLProgram>();
+        this.samplers = new ArrayList<CLSampler>();
         this.buffers = new ArrayList<CLBuffer<? extends Buffer>>();
         this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
     }
@@ -110,7 +114,7 @@ public class CLContext implements CLResource {
         long type = 0;
         if(deviceTypes != null) {
             for (int i = 0; i < deviceTypes.length; i++) {
-                type |= deviceTypes[i].CL_TYPE;
+                type |= deviceTypes[i].TYPE;
             }
         }
 
@@ -170,7 +174,7 @@ public class CLContext implements CLResource {
      * Creates a program from the given sources, the program is not build yet.
      */
     public CLProgram createProgram(String src) {
-        CLProgram program = new CLProgram(this, src, ID);
+        CLProgram program = new CLProgram(this, src);
         programs.add(program);
         return program;
     }
@@ -277,6 +281,12 @@ public class CLContext implements CLResource {
         return queue;
     }
 
+    public CLSampler createSampler(AddressingMode addrMode, FilteringMode filtMode, boolean normalizedCoords) {
+        CLSampler sampler = new CLSampler(this, addrMode, filtMode, normalizedCoords);
+        samplers.add(sampler);
+        return sampler;
+    }
+
     void onProgramReleased(CLProgram program) {
         programs.remove(program);
     }
@@ -293,6 +303,10 @@ public class CLContext implements CLResource {
             queuesMap.remove(device);
     }
 
+    void onSamplerReleased(CLSampler sampler) {
+        samplers.remove(sampler);
+    }
+
     /**
      * Releases the context and all resources.
      */
@@ -304,6 +318,18 @@ public class CLContext implements CLResource {
 
         while(!buffers.isEmpty())
             buffers.get(0).release();
+
+        while(!samplers.isEmpty())
+            samplers.get(0).release();
+
+        for (CLDevice device : devices) {
+            List<CLCommandQueue> list = queuesMap.get(device);
+            if(list != null) {
+                while(!list.isEmpty()) {
+                    list.get(0).release();
+                }
+            }
+        }
 
         int ret = cl.clReleaseContext(ID);
         checkForError(ret, "error releasing context");

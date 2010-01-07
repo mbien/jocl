@@ -6,10 +6,11 @@ import com.sun.opengl.impl.GLContextImpl;
 import com.sun.opengl.impl.macosx.cgl.MacOSXCGLContext;
 import com.sun.opengl.impl.windows.wgl.WindowsWGLContext;
 import com.sun.opengl.impl.x11.glx.X11GLXContext;
-import com.sun.opengl.impl.x11.glx.X11GLXGraphicsConfiguration;
 import java.nio.LongBuffer;
 import javax.media.nativewindow.DefaultGraphicsConfiguration;
 import javax.media.opengl.GLContext;
+
+import static com.mbien.opencl.CL.*;
 
 /**
  *
@@ -69,7 +70,7 @@ public final class CLGLContext extends CLContext {
         
         properties.put(0).rewind(); // 0 terminated array
 
-        long clID = createContextFromType(properties, CL.CL_DEVICE_TYPE_ALL);
+        long clID = createContextFromType(properties, CL_DEVICE_TYPE_ALL);
 
         return new CLGLContext(clID, glID);
     }

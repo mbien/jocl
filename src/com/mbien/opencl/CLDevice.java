@@ -1,7 +1,6 @@
 package com.mbien.opencl;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-import static com.mbien.opencl.CLException.*;
+import static com.mbien.opencl.CL.*;
 
 /**
  * 
@@ -20,6 +19,8 @@ public final class CLDevice {
 
     private final CL cl;
     private CLContext context;
+    
+    private final CLDeviceInfoAccessor deviceInfo;
 
     /**
      * OpenCL device id for this device.
@@ -29,12 +30,14 @@ public final class CLDevice {
     CLDevice(CL cl, long id) {
         this.cl = cl;
         this.ID = id;
+        this.deviceInfo = new CLDeviceInfoAccessor();
     }
 
     CLDevice(CLContext context, long id) {
         this.context = context;
         this.cl = context.cl;
         this.ID = id;
+        this.deviceInfo = new CLDeviceInfoAccessor();
     }
 
     public CLCommandQueue createCommandQueue() {
@@ -42,14 +45,14 @@ public final class CLDevice {
     }
 
     public CLCommandQueue createCommandQueue(CLCommandQueue.Mode property) {
-        return createCommandQueue(property.CL_QUEUE_MODE);
+        return createCommandQueue(property.QUEUE_MODE);
     }
 
     public CLCommandQueue createCommandQueue(CLCommandQueue.Mode... properties) {
         int flags = 0;
         if(properties != null) {
             for (int i = 0; i < properties.length; i++) {
-                flags |= properties[i].CL_QUEUE_MODE;
+                flags |= properties[i].QUEUE_MODE;
             }
         }
         return createCommandQueue(flags);
@@ -70,28 +73,28 @@ public final class CLDevice {
      * Returns the name of this device.
      */
     public String getName() {
-        return getInfoString(CL.CL_DEVICE_NAME);
+        return deviceInfo.getString(CL_DEVICE_NAME);
     }
 
     /**
      * Returns the OpenCL profile of this device.
      */
     public String getProfile() {
-        return getInfoString(CL.CL_DEVICE_PROFILE);
+        return deviceInfo.getString(CL_DEVICE_PROFILE);
     }
 
     /**
      * Returns the vendor of this device.
      */
     public String getVendor() {
-        return getInfoString(CL.CL_DEVICE_VENDOR);
+        return deviceInfo.getString(CL_DEVICE_VENDOR);
     }
 
     /**
      * Returns the type of this device.
      */
     public Type getType() {
-        return Type.valueOf((int)getInfoLong(CL.CL_DEVICE_TYPE));
+        return Type.valueOf((int)deviceInfo.getLong(CL_DEVICE_TYPE));
     }
 
     /**
@@ -99,7 +102,7 @@ public final class CLDevice {
      * The minimum value is 1.
      */
     public int getMaxComputeUnits() {
-        return (int) getInfoLong(CL.CL_DEVICE_MAX_COMPUTE_UNITS);
+        return (int) deviceInfo.getLong(CL_DEVICE_MAX_COMPUTE_UNITS);
     }
 
     /**
@@ -108,14 +111,14 @@ public final class CLDevice {
      * The minimum value is 1.
      */
     public int getMaxWorkGroupSize() {
-        return (int) getInfoLong(CL.CL_DEVICE_MAX_WORK_GROUP_SIZE);
+        return (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_GROUP_SIZE);
     }
 
     /**
      * Returns the maximum configured clock frequency of the device in MHz.
      */
     public int getMaxClockFrequency() {
-        return (int) (getInfoLong(CL.CL_DEVICE_MAX_CLOCK_FREQUENCY));
+        return (int) (deviceInfo.getLong(CL_DEVICE_MAX_CLOCK_FREQUENCY));
     }
 
     /**
@@ -124,21 +127,21 @@ public final class CLDevice {
      * The minimum value is 3.
      */
     public int getMaxWorkItemDimensions() {
-        return (int) getInfoLong(CL.CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
+        return (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
     }
 
     /**
      * Returns the global memory size in bytes.
      */
     public long getGlobalMemSize() {
-        return getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_SIZE);
+        return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_SIZE);
     }
 
     /**
      * Returns the local memory size in bytes.
      */
     public long getLocalMemSize() {
-        return getInfoLong(CL.CL_DEVICE_LOCAL_MEM_SIZE);
+        return deviceInfo.getLong(CL_DEVICE_LOCAL_MEM_SIZE);
     }
 
     /**
@@ -146,28 +149,28 @@ public final class CLDevice {
      * The minimum value is 64 KB.
      */
     public long getMaxConstantBufferSize() {
-        return getInfoLong(CL.CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE);
+        return deviceInfo.getLong(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE);
     }
 
     /**
      * Returns the size of global memory cache line in bytes.
      */
     public long getGlobalMemCachlineSize() {
-        return getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE);
+        return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE);
     }
 
     /**
      * Returns the size of global memory cache in bytes.
      */
     public long getGlobalMemCachSize() {
-        return getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
+        return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
     }
 
     /**
      * Returns true if images are supported by the OpenCL device and false otherwise.
      */
     public boolean isImageSupportAvailable() {
-        return getInfoLong(CL.CL_DEVICE_IMAGE_SUPPORT) == CL.CL_TRUE;
+        return deviceInfo.getLong(CL_DEVICE_IMAGE_SUPPORT) == CL_TRUE;
     }
 
     /**
@@ -175,7 +178,7 @@ public final class CLDevice {
      * The minimum value is 128 if image support is available.
      */
     public int getMaxReadImageArgs() {
-        return (int)getInfoLong(CL.CL_DEVICE_MAX_READ_IMAGE_ARGS);
+        return (int)deviceInfo.getLong(CL_DEVICE_MAX_READ_IMAGE_ARGS);
     }
 
     /**
@@ -183,7 +186,7 @@ public final class CLDevice {
      * The minimum value is 8 if image support is available.
      */
     public int getMaxWriteImageArgs() {
-        return (int)getInfoLong(CL.CL_DEVICE_MAX_WRITE_IMAGE_ARGS);
+        return (int)deviceInfo.getLong(CL_DEVICE_MAX_WRITE_IMAGE_ARGS);
     }
 
     /**
@@ -191,7 +194,7 @@ public final class CLDevice {
      * image support is available.
      */
     public int getMaxImage2dWidth() {
-        return (int)getInfoLong(CL.CL_DEVICE_IMAGE2D_MAX_WIDTH);
+        return (int)deviceInfo.getLong(CL_DEVICE_IMAGE2D_MAX_WIDTH);
     }
 
     /**
@@ -199,7 +202,7 @@ public final class CLDevice {
      * image support is available.
      */
     public int getMaxImage2dHeight() {
-        return (int)getInfoLong(CL.CL_DEVICE_IMAGE2D_MAX_HEIGHT);
+        return (int)deviceInfo.getLong(CL_DEVICE_IMAGE2D_MAX_HEIGHT);
     }
 
     /**
@@ -207,7 +210,7 @@ public final class CLDevice {
      * image support is available.
      */
     public int getMaxImage3dWidth() {
-        return (int)getInfoLong(CL.CL_DEVICE_IMAGE3D_MAX_WIDTH);
+        return (int)deviceInfo.getLong(CL_DEVICE_IMAGE3D_MAX_WIDTH);
     }
 
     /**
@@ -215,7 +218,7 @@ public final class CLDevice {
      * image support is available.
      */
     public int getMaxImage3dHeight() {
-        return (int)getInfoLong(CL.CL_DEVICE_IMAGE3D_MAX_HEIGHT);
+        return (int)deviceInfo.getLong(CL_DEVICE_IMAGE3D_MAX_HEIGHT);
     }
 
     /**
@@ -223,7 +226,7 @@ public final class CLDevice {
      * image support is available.
      */
     public int getMaxImage3dDepth() {
-        return (int)getInfoLong(CL.CL_DEVICE_IMAGE3D_MAX_DEPTH);
+        return (int)deviceInfo.getLong(CL_DEVICE_IMAGE3D_MAX_DEPTH);
     }
 
     /**
@@ -231,49 +234,49 @@ public final class CLDevice {
      * minimum value is 16 if image support is available.
      */
     public int getMaxSamplers() {
-        return (int)getInfoLong(CL.CL_DEVICE_MAX_SAMPLERS);
+        return (int)deviceInfo.getLong(CL_DEVICE_MAX_SAMPLERS);
     }
 
     /**
      * Returns the resolution of device timer. This is measured in nanoseconds.
      */
     public long getProfilingTimerResolution() {
-        return getInfoLong(CL.CL_DEVICE_PROFILING_TIMER_RESOLUTION);
+        return deviceInfo.getLong(CL_DEVICE_PROFILING_TIMER_RESOLUTION);
     }
 
     /**
      * Returns the single precision floating-point capability of the device.
      */
     public EnumSet<SingleFPConfig> getSingleFPConfig() {
-        return SingleFPConfig.valuesOf((int)getInfoLong(CL.CL_DEVICE_SINGLE_FP_CONFIG));
+        return SingleFPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_SINGLE_FP_CONFIG));
     }
 
     /**
      * Returns the local memory type.
      */
     public LocalMemType getLocalMemType() {
-        return LocalMemType.valueOf((int)getInfoLong(CL.CL_DEVICE_LOCAL_MEM_TYPE));
+        return LocalMemType.valueOf((int)deviceInfo.getLong(CL_DEVICE_LOCAL_MEM_TYPE));
     }
 
     /**
      * Returns the type of global memory cache supported.
      */
     public GlobalMemCacheType getGlobalMemCacheType() {
-        return GlobalMemCacheType.valueOf((int)getInfoLong(CL.CL_DEVICE_GLOBAL_MEM_CACHE_TYPE));
+        return GlobalMemCacheType.valueOf((int)deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHE_TYPE));
     }
 
     /**
      * Returns the command-queue properties properties supported by the device.
      */
     public EnumSet<CLCommandQueue.Mode> getQueueProperties() {
-        return CLCommandQueue.Mode.valuesOf((int)getInfoLong(CL.CL_DEVICE_QUEUE_PROPERTIES));
+        return CLCommandQueue.Mode.valuesOf((int)deviceInfo.getLong(CL_DEVICE_QUEUE_PROPERTIES));
     }
 
     /**
      * Returns true if this device is available.
      */
     public boolean isAvailable() {
-        return getInfoLong(CL.CL_DEVICE_AVAILABLE) == CL.CL_TRUE;
+        return deviceInfo.getLong(CL_DEVICE_AVAILABLE) == CL_TRUE;
     }
 
     /**
@@ -282,14 +285,14 @@ public final class CLDevice {
      * This can be false for the OpenCL ES profile only.
      */
     public boolean isCompilerAvailable() {
-        return getInfoLong(CL.CL_DEVICE_COMPILER_AVAILABLE) == CL.CL_TRUE;
+        return deviceInfo.getLong(CL_DEVICE_COMPILER_AVAILABLE) == CL_TRUE;
     }
 
     /**
      * Returns true if the OpenCL device is a little endian device and false otherwise.
      */
     public boolean isLittleEndianAvailable() {
-        return getInfoLong(CL.CL_DEVICE_ENDIAN_LITTLE) == CL.CL_TRUE;
+        return deviceInfo.getLong(CL_DEVICE_ENDIAN_LITTLE) == CL_TRUE;
     }
 
     /**
@@ -298,7 +301,7 @@ public final class CLDevice {
      * implement error correction.
      */
     public boolean isErrorCorrectionSupported() {
-        return getInfoLong(CL.CL_DEVICE_ERROR_CORRECTION_SUPPORT) == CL.CL_TRUE;
+        return deviceInfo.getLong(CL_DEVICE_ERROR_CORRECTION_SUPPORT) == CL_TRUE;
     }
 
     /**
@@ -306,7 +309,7 @@ public final class CLDevice {
      */
     public Set<String> getExtensions() {
 
-        String ext = getInfoString(CL.CL_DEVICE_EXTENSIONS);
+        String ext = deviceInfo.getString(CL_DEVICE_EXTENSIONS);
 
         Scanner scanner = new Scanner(ext);
         Set<String> extSet = new HashSet<String>();
@@ -317,29 +320,14 @@ public final class CLDevice {
         return Collections.unmodifiableSet(extSet);
     }
 
-    private final long getInfoLong(int key) {
 
-        ByteBuffer bb = ByteBuffer.allocate(8);
-        bb.order(ByteOrder.nativeOrder());
+    private class CLDeviceInfoAccessor extends CLInfoAccessor {
 
-        int ret = cl.clGetDeviceInfo(ID, key, bb.capacity(), bb, null, 0);
+        @Override
+        protected int getInfo(int name, long valueSize, Buffer value, long[] valueSizeRet, int valueSizeRetOffset) {
+            return cl.clGetDeviceInfo(ID, name, valueSize, value, valueSizeRet, valueSizeRetOffset);
+        }
 
-        checkForError(ret, "can not receive device info");
-
-        return bb.getLong();
-    }
-
-    public final String getInfoString(int key) {
-
-        long[] longBuffer = new long[1];
-        ByteBuffer bb = ByteBuffer.allocate(512); // TODO use a cache
-
-        int ret = cl.clGetDeviceInfo(ID, key, bb.capacity(), bb, longBuffer, 0);
-        
-        checkForError(ret, "can not receive device info string");
-
-        return CLUtils.clString2JavaString(bb.array(), (int)longBuffer[0]);
-        
     }
 
 
@@ -380,48 +368,48 @@ public final class CLDevice {
         /**
          * CL_DEVICE_TYPE_CPU
          */
-        CPU(CL.CL_DEVICE_TYPE_CPU),
+        CPU(CL_DEVICE_TYPE_CPU),
         /**
          * CL_DEVICE_TYPE_GPU
          */
-        GPU(CL.CL_DEVICE_TYPE_GPU),
+        GPU(CL_DEVICE_TYPE_GPU),
         /**
          * CL_DEVICE_TYPE_ACCELERATOR
          */
-        ACCELERATOR(CL.CL_DEVICE_TYPE_ACCELERATOR),
+        ACCELERATOR(CL_DEVICE_TYPE_ACCELERATOR),
         /**
          * CL_DEVICE_TYPE_DEFAULT. This type can be used for creating a context on
          * the default device, a single device can never have this type.
          */
-        DEFAULT(CL.CL_DEVICE_TYPE_DEFAULT),
+        DEFAULT(CL_DEVICE_TYPE_DEFAULT),
         /**
          * CL_DEVICE_TYPE_ALL. This type can be used for creating a context on
          * all devices, a single device can never have this type.
          */
-        ALL(CL.CL_DEVICE_TYPE_ALL);
+        ALL(CL_DEVICE_TYPE_ALL);
 
         /**
          * Value of wrapped OpenCL device type.
          */
-        public final long CL_TYPE;
+        public final long TYPE;
 
-        private Type(long CL_TYPE) {
-            this.CL_TYPE = CL_TYPE;
+        private Type(long type) {
+            this.TYPE = type;
         }
 
         public static Type valueOf(long clDeviceType) {
 
-            if(clDeviceType == CL.CL_DEVICE_TYPE_ALL)
+            if(clDeviceType == CL_DEVICE_TYPE_ALL)
                 return ALL;
 
             switch((int)clDeviceType) {
-                case(CL.CL_DEVICE_TYPE_DEFAULT):
+                case(CL_DEVICE_TYPE_DEFAULT):
                     return DEFAULT;
-                case(CL.CL_DEVICE_TYPE_CPU):
+                case(CL_DEVICE_TYPE_CPU):
                     return CPU;
-                case(CL.CL_DEVICE_TYPE_GPU):
+                case(CL_DEVICE_TYPE_GPU):
                     return GPU;
-                case(CL.CL_DEVICE_TYPE_ACCELERATOR):
+                case(CL_DEVICE_TYPE_ACCELERATOR):
                     return ACCELERATOR;
             }
             return null;
@@ -437,41 +425,41 @@ public final class CLDevice {
         /**
          * denorms are supported.
          */
-        DENORM(CL.CL_FP_DENORM),
+        DENORM(CL_FP_DENORM),
 
         /**
          * INF and quiet NaNs are supported.
          */
-        INF_NAN(CL.CL_FP_INF_NAN),
+        INF_NAN(CL_FP_INF_NAN),
 
         /**
          * round to nearest rounding mode supported.
          */
-        ROUND_TO_NEAREST(CL.CL_FP_ROUND_TO_NEAREST),
+        ROUND_TO_NEAREST(CL_FP_ROUND_TO_NEAREST),
 
         /**
          * round to +ve and –ve infinity rounding modes supported.
          */
-        ROUND_TO_INF(CL.CL_FP_ROUND_TO_INF),
+        ROUND_TO_INF(CL_FP_ROUND_TO_INF),
 
         /**
          * round to zero rounding mode supported.
          */
-        ROUND_TO_ZERO(CL.CL_FP_ROUND_TO_ZERO),
+        ROUND_TO_ZERO(CL_FP_ROUND_TO_ZERO),
 
         /**
          * IEEE754-2008 fused multiply-add is supported.
          */
-        FMA(CL.CL_FP_FMA);
+        FMA(CL_FP_FMA);
 
 
         /**
          * Value of wrapped OpenCL bitfield.
          */
-        public final int CL_VALUE;
+        public final int CONFIG;
 
-        private SingleFPConfig(int CL_VALUE) {
-            this.CL_VALUE = CL_VALUE;
+        private SingleFPConfig(int config) {
+            this.CONFIG = config;
         }
 
         /**
@@ -481,7 +469,7 @@ public final class CLDevice {
             List<SingleFPConfig> matching = new ArrayList<SingleFPConfig>();
             SingleFPConfig[] values = SingleFPConfig.values();
             for (SingleFPConfig value : values) {
-                if((value.CL_VALUE & bitfield) != 0)
+                if((value.CONFIG & bitfield) != 0)
                     matching.add(value);
             }
             if(matching.isEmpty())
@@ -500,26 +488,26 @@ public final class CLDevice {
         /**
          * Global memory cache not supported.
          */
-        NONE(CL.CL_NONE),
+        NONE(CL_NONE),
 
         /**
          * Read only cache.
          */
-        READ_ONLY(CL.CL_READ_ONLY_CACHE),
+        READ_ONLY(CL_READ_ONLY_CACHE),
 
         /**
          * Read-write cache.
          */
-        READ_WRITE(CL.CL_READ_WRITE_CACHE);
+        READ_WRITE(CL_READ_WRITE_CACHE);
         
 
         /**
          * Value of wrapped OpenCL value.
          */
-        public final int CL_VALUE;
+        public final int TYPE;
 
-        private GlobalMemCacheType(int CL_VALUE) {
-            this.CL_VALUE = CL_VALUE;
+        private GlobalMemCacheType(int type) {
+            this.TYPE = type;
         }
 
         /**
@@ -528,7 +516,7 @@ public final class CLDevice {
         public static GlobalMemCacheType valueOf(int bitfield) {
             GlobalMemCacheType[] values = GlobalMemCacheType.values();
             for (GlobalMemCacheType value : values) {
-                if(value.CL_VALUE == bitfield)
+                if(value.TYPE == bitfield)
                     return value;
             }
             return null;
@@ -543,29 +531,29 @@ public final class CLDevice {
         /**
          * GLOBAL implies that no dedicated memory storage is available (global mem is used instead).
          */
-        GLOBAL(CL.CL_GLOBAL),
+        GLOBAL(CL_GLOBAL),
 
         /**
          * LOCAL implies dedicated local memory storage such as SRAM.
          */
-        LOCAL(CL.CL_LOCAL);
+        LOCAL(CL_LOCAL);
 
         /**
          * Value of wrapped OpenCL value.
          */
-        public final int CL_VALUE;
+        public final int TYPE;
 
-        private LocalMemType(int CL_VALUE) {
-            this.CL_VALUE = CL_VALUE;
+        private LocalMemType(int type) {
+            this.TYPE = type;
         }
 
         /**
          * Returns the matching LocalMemCacheType for the given cl type.
          */
         public static LocalMemType valueOf(int clLocalCacheType) {
-            if(clLocalCacheType == CL.CL_GLOBAL)
+            if(clLocalCacheType == CL_GLOBAL)
                 return LOCAL;
-            else if(clLocalCacheType == CL.CL_LOCAL)
+            else if(clLocalCacheType == CL_LOCAL)
                 return GLOBAL;
             return null;
         }

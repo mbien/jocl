@@ -6,7 +6,9 @@ import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 import static com.mbien.opencl.CLException.*;
+import static com.mbien.opencl.CL.*;
 
 /**
  *
@@ -24,14 +26,14 @@ public class CLProgram implements CLResource {
 
     private boolean executable;
 
-    CLProgram(CLContext context, String src, long contextID) {
+    CLProgram(CLContext context, String src) {
         
         this.cl = context.cl;
         this.context = context;
 
         int[] intArray = new int[1];
         // Create the program
-        ID = cl.clCreateProgramWithSource(contextID, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
+        ID = cl.clCreateProgramWithSource(context.ID, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
         checkForError(intArray[0], "can not create program with source");
     }
 
@@ -60,7 +62,7 @@ public class CLProgram implements CLResource {
                 if(!isExecutable()) {
                     // It is illegal to create kernels from a not executable program.
                     // For consistency between AMD and NVIDIA drivers throw an exception at this point.
-                    throw new CLException(CL.CL_INVALID_PROGRAM_EXECUTABLE,
+                    throw new CLException(CL_INVALID_PROGRAM_EXECUTABLE,
                             "can not initialize kernels, program is not executable. status: "+buildStatusMap);
                 }
             }
@@ -183,7 +185,7 @@ public class CLProgram implements CLResource {
         // Build the program
         int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
 
-        if(ret != CL.CL_SUCCESS) {
+        if(ret != CL_SUCCESS) {
             throw new CLException(ret, "\n"+getBuildLog());
         }
 
@@ -217,11 +219,17 @@ public class CLProgram implements CLResource {
     }
 
     /**
-     * Returns the kernel with the specified name or null if not found.
+     * Returns the kernel with the specified name.
+     * @throws IllegalArgumentException when no kernel with the specified name exists in this program.
      */
     public CLKernel getCLKernel(String kernelName) {
         initKernels();
-        return kernels.get(kernelName);
+        final CLKernel kernel = kernels.get(kernelName);
+        if(kernel == null) {
+            throw new IllegalArgumentException(
+                    this+" does not contain a kernel with the name '"+kernelName+"'");
+        }
+        return kernel;
     }
 
 
@@ -240,11 +248,11 @@ public class CLProgram implements CLResource {
     public CLDevice[] getCLDevices() {
 
         long[] longArray = new long[1];
-        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, 0, null, longArray, 0);
+        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, 0, null, longArray, 0);
         checkForError(ret, "on clGetProgramInfo");
 
         ByteBuffer bb = ByteBuffer.allocate((int) longArray[0]).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
         checkForError(ret, "on clGetProgramInfo");
 
         int count = bb.capacity() / (CPU.is32Bit()?4:8);
@@ -297,23 +305,23 @@ public class CLProgram implements CLResource {
      * of the log are implementation dependent log can be an empty String.
      */
     public String getBuildLog(CLDevice device) {
-        return getBuildInfoString(device.ID, CL.CL_PROGRAM_BUILD_LOG);
+        return getBuildInfoString(device.ID, CL_PROGRAM_BUILD_LOG);
     }
 
     /**
      * Returns the build status enum for this program on the specified device.
      */
     public Status getBuildStatus(CLDevice device) {
-        int clStatus = getBuildInfoInt(device.ID, CL.CL_PROGRAM_BUILD_STATUS);
+        int clStatus = getBuildInfoInt(device.ID, CL_PROGRAM_BUILD_STATUS);
         return Status.valueOf(clStatus);
     }
 
     /**
      * Returns the source code of this program. Note: sources are not cached,
-     * each call of this method calls into OpenCL.
+     * each call of this method calls into Open
      */
     public String getSource() {
-        return getProgramInfoString(CL.CL_PROGRAM_SOURCE);
+        return getProgramInfoString(CL_PROGRAM_SOURCE);
     }
 
     /**
@@ -325,7 +333,7 @@ public class CLProgram implements CLResource {
         CLDevice[] devices = getCLDevices();
 
         ByteBuffer sizes = ByteBuffer.allocate(8*devices.length).order(ByteOrder.nativeOrder());
-        int ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null, 0);
+        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null, 0);
         checkForError(ret, "on clGetProgramInfo");
 
         int binarySize = 0;
@@ -333,7 +341,7 @@ public class CLProgram implements CLResource {
             binarySize += (int)sizes.getLong();
 
         ByteBuffer binaries = ByteBuffer.allocate(binarySize).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(ID, CL.CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null, 0); // TODO crash, driver bug?
+        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null, 0); // TODO crash, driver bug?
         checkForError(ret, "on clGetProgramInfo");
 
         Map<CLDevice, byte[]> map = new HashMap<CLDevice, byte[]>();
@@ -381,32 +389,32 @@ public class CLProgram implements CLResource {
     
     public enum Status {
 
-        BUILD_SUCCESS(CL.CL_BUILD_SUCCESS),
-        BUILD_NONE(CL.CL_BUILD_NONE),
-        BUILD_IN_PROGRESS(CL.CL_BUILD_IN_PROGRESS),
-        BUILD_ERROR(CL.CL_BUILD_ERROR);
+        BUILD_SUCCESS(CL_BUILD_SUCCESS),
+        BUILD_NONE(CL_BUILD_NONE),
+        BUILD_IN_PROGRESS(CL_BUILD_IN_PROGRESS),
+        BUILD_ERROR(CL_BUILD_ERROR);
 
         /**
          * Value of wrapped OpenCL device type.
          */
-        public final int CL_BUILD_STATUS;
+        public final int STATUS;
 
-        private Status(int CL_BUILD_STATUS) {
-            this.CL_BUILD_STATUS = CL_BUILD_STATUS;
+        private Status(int status) {
+            this.STATUS = status;
         }
 
         public static Status valueOf(int clBuildStatus) {
             switch(clBuildStatus) {
-                case(CL.CL_BUILD_SUCCESS):
+                case(CL_BUILD_SUCCESS):
                     return BUILD_SUCCESS;
-                case(CL.CL_BUILD_NONE):
+                case(CL_BUILD_NONE):
                     return BUILD_NONE;
-                case(CL.CL_BUILD_IN_PROGRESS):
+                case(CL_BUILD_IN_PROGRESS):
                     return BUILD_IN_PROGRESS;
-                case(CL.CL_BUILD_ERROR):
+                case(CL_BUILD_ERROR):
                     return BUILD_ERROR;
 // is this a standard state?
-//              case (CL.CL_BUILD_PROGRAM_FAILURE):
+//              case (CL_BUILD_PROGRAM_FAILURE):
 //                    return BUILD_PROGRAM_FAILURE;
             }
             return null;

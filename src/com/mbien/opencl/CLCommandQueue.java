@@ -4,7 +4,9 @@ import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+
 import static com.mbien.opencl.CLException.*;
+import static com.mbien.opencl.CL.*;
 
 /**
  * The command-queue can be used to queue a set of operations in order. Having multiple
@@ -30,19 +32,19 @@ public class CLCommandQueue implements CLResource {
         int[] status = new int[1];
         this.ID = cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
 
-        if(status[0] != CL.CL_SUCCESS)
+        if(status[0] != CL_SUCCESS)
             throw new CLException(status[0], "can not create command queue on "+device);
     }
 
     public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingWrite) {
 
         int ret = cl.clEnqueueWriteBuffer(
-                ID, writeBuffer.ID, blockingWrite ? CL.CL_TRUE : CL.CL_FALSE,
+                ID, writeBuffer.ID, blockingWrite ? CL_TRUE : CL_FALSE,
                 0, writeBuffer.getSizeInBytes(), writeBuffer.buffer,
 //                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
                 0, null, 0, null, 0); //TODO events
 
-        if(ret != CL.CL_SUCCESS)
+        if(ret != CL_SUCCESS)
             throw new CLException(ret, "can not enqueue WriteBuffer: " + writeBuffer);
 
         return this;
@@ -51,12 +53,12 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead) {
 
         int ret = cl.clEnqueueReadBuffer(
-                ID, readBuffer.ID, blockingRead ? CL.CL_TRUE : CL.CL_FALSE,
+                ID, readBuffer.ID, blockingRead ? CL_TRUE : CL_FALSE,
                 0, readBuffer.getSizeInBytes(), readBuffer.buffer,
 //                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
                 0, null, 0, null, 0); //TODO events
 
-        if(ret != CL.CL_SUCCESS)
+        if(ret != CL_SUCCESS)
             throw new CLException(ret, "can not enqueue ReadBuffer: " + readBuffer);
         
         return this;
@@ -65,12 +67,12 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, Buffer buffer, boolean blockingRead) {
 
         int ret = cl.clEnqueueReadBuffer(
-                ID, readBuffer.ID, blockingRead ? CL.CL_TRUE : CL.CL_FALSE,
+                ID, readBuffer.ID, blockingRead ? CL_TRUE : CL_FALSE,
                 0, readBuffer.getSizeInBytes(), buffer,
 //                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
                 0, null, 0, null, 0); //TODO events
 
-        if(ret != CL.CL_SUCCESS)
+        if(ret != CL_SUCCESS)
             throw new CLException(ret, "can not enqueue ReadBuffer: " + readBuffer);
 
         return this;
@@ -175,7 +177,7 @@ public class CLCommandQueue implements CLResource {
                 null, 0,
                 null, 0 );
 
-        if(ret != CL.CL_SUCCESS)
+        if(ret != CL_SUCCESS)
             throw new CLException(ret, "can not enqueue NDRangeKernel: " + kernel);
 
         return this;
@@ -186,7 +188,7 @@ public class CLCommandQueue implements CLResource {
         CLGLI xl = (CLGLI) cl;
         int ret = xl.clEnqueueAcquireGLObjects(ID, 1, new long[] {glObject}, 0, 0, null, 0, null, 0);
 
-        if(ret != CL.CL_SUCCESS)
+        if(ret != CL_SUCCESS)
             throw new CLException(ret, "can not aquire GLObject: " + glObject);
 
         return this;
@@ -196,7 +198,7 @@ public class CLCommandQueue implements CLResource {
         CLGLI xl = (CLGLI) cl;
         int ret = xl.clEnqueueReleaseGLObjects(ID, 1, new long[] {glObject}, 0, 0, null, 0, null, 0);
 
-        if(ret != CL.CL_SUCCESS)
+        if(ret != CL_SUCCESS)
             throw new CLException(ret, "can not release GLObject: " + glObject);
 
         return this;
@@ -252,26 +254,26 @@ public class CLCommandQueue implements CLResource {
         /**
          * CL_DEVICE_TYPE_CPU
          */
-        OUT_OF_ORDER_EXEC_MODE(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE),
+        OUT_OF_ORDER_EXEC_MODE(CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE),
         /**
          * CL_DEVICE_TYPE_GPU
          */
-        PROFILING_MODE(CL.CL_QUEUE_PROFILING_ENABLE);
+        PROFILING_MODE(CL_QUEUE_PROFILING_ENABLE);
 
         /**
          * Value of wrapped OpenCL device type.
          */
-        public final int CL_QUEUE_MODE;
+        public final int QUEUE_MODE;
 
-        private Mode(int CL_VALUE) {
-            this.CL_QUEUE_MODE = CL_VALUE;
+        private Mode(int value) {
+            this.QUEUE_MODE = value;
         }
 
         public static Mode valueOf(int queueMode) {
             switch(queueMode) {
-                case(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE):
+                case(CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE):
                     return OUT_OF_ORDER_EXEC_MODE;
-                case(CL.CL_QUEUE_PROFILING_ENABLE):
+                case(CL_QUEUE_PROFILING_ENABLE):
                     return PROFILING_MODE;
             }
             return null;
@@ -281,7 +283,7 @@ public class CLCommandQueue implements CLResource {
             List<Mode> matching = new ArrayList<Mode>();
             Mode[] values = Mode.values();
             for (Mode value : values) {
-                if((value.CL_QUEUE_MODE & bitfield) != 0)
+                if((value.QUEUE_MODE & bitfield) != 0)
                     matching.add(value);
             }
             if(matching.isEmpty())

@@ -5,7 +5,9 @@ import com.sun.gluegen.runtime.CPU;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
 import static com.mbien.opencl.CLException.*;
+import static com.mbien.opencl.CL.*;
 
 /**
  * High level abstraction for an OpenCL Kernel.
@@ -34,18 +36,18 @@ public class CLKernel implements CLResource {
         long[] longArray = new long[1];
 
         // get function name
-        int ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_FUNCTION_NAME, 0, null, longArray, 0);
+        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, longArray, 0);
         checkForError(ret, "error while asking for kernel function name");
 
         ByteBuffer bb = ByteBuffer.allocate((int)longArray[0]).order(ByteOrder.nativeOrder());
 
-        ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null, 0);
+        ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null, 0);
         checkForError(ret, "error while asking for kernel function name");
 
         this.name = CLUtils.clString2JavaString(bb.array(), bb.capacity());
 
         // get number of arguments
-        ret = cl.clGetKernelInfo(ID, CL.CL_KERNEL_NUM_ARGS, 0, null, longArray, 0);
+        ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, 0, null, longArray, 0);
         checkForError(ret, "error while asking for number of function arguments.");
 
         numArgs = (int)longArray[0];

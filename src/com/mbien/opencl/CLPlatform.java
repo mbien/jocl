@@ -2,7 +2,10 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
 import java.nio.ByteBuffer;
+
 import static com.mbien.opencl.CLException.*;
+import static com.mbien.opencl.CL.*;
+
 /**
  *
  * @author Michael Bien
@@ -65,11 +68,11 @@ public final class CLPlatform {
         int[] intBuffer = new int[1];
 
         //find all devices
-        int ret = cl.clGetDeviceIDs(ID, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
+        int ret = cl.clGetDeviceIDs(ID, CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
         checkForError(ret, "error while enumerating devices");
 
         long[] deviceIDs = new long[intBuffer[0]];
-        ret = cl.clGetDeviceIDs(ID, CL.CL_DEVICE_TYPE_ALL, deviceIDs.length, deviceIDs, 0, null, 0);
+        ret = cl.clGetDeviceIDs(ID, CL_DEVICE_TYPE_ALL, deviceIDs.length, deviceIDs, 0, null, 0);
         checkForError(ret, "error while enumerating devices");
 
         CLDevice[] devices = new CLDevice[deviceIDs.length];
@@ -118,28 +121,28 @@ public final class CLPlatform {
      * Returns the platform name.
      */
     public String getName() {
-        return getInfoString(CL.CL_PLATFORM_NAME);
+        return getInfoString(CL_PLATFORM_NAME);
     }
 
     /**
      * Returns the platform version.
      */
     public String getVersion() {
-        return getInfoString(CL.CL_PLATFORM_VERSION);
+        return getInfoString(CL_PLATFORM_VERSION);
     }
 
     /**
      * Returns the platform profile.
      */
     public String getProfile() {
-        return getInfoString(CL.CL_PLATFORM_PROFILE);
+        return getInfoString(CL_PLATFORM_PROFILE);
     }
 
     /**
      * Returns the platform vendor.
      */
     public String getVendor() {
-        return getInfoString(CL.CL_PLATFORM_VENDOR);
+        return getInfoString(CL_PLATFORM_VENDOR);
     }
 
     /**

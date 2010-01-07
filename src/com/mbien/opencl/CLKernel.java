@@ -24,6 +24,8 @@ public class CLKernel implements CLResource {
     private final CLProgram program;
     private final CL cl;
 
+    private int argIndex;
+
     CLKernel(CLProgram program, long id) {
         this.ID = id;
         this.program = program;
@@ -49,6 +51,37 @@ public class CLKernel implements CLResource {
         numArgs = (int)longArray[0];
 
     }
+    
+    public CLKernel putArg(CLBuffer<?> value) {
+        setArg(argIndex++, value);
+        return this;
+    }
+
+    public CLKernel putArg(int value) {
+        setArg(argIndex++, value);
+        return this;
+    }
+
+    public CLKernel putArg(long value) {
+        setArg(argIndex++, value);
+        return this;
+    }
+
+    public CLKernel putArg(float value) {
+        setArg(argIndex++, value);
+        return this;
+    }
+
+    public CLKernel putArg(double value) {
+        setArg(argIndex++, value);
+        return this;
+    }
+
+    public CLKernel putArgs(CLBuffer<?>... values) {
+        setArgs(argIndex, values);
+        argIndex += values.length;
+        return this;
+    }
 
     public CLKernel setArg(int argumentIndex, CLBuffer<?> value) {
         setArgument(argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
@@ -73,6 +106,17 @@ public class CLKernel implements CLResource {
     public CLKernel setArg(int argumentIndex, double value) {
         setArgument(argumentIndex, 8, wrap(value));
         return this;
+    }
+
+    public CLKernel setArgs(CLBuffer<?>... values) {
+        setArgs(0, values);
+        return this;
+    }
+
+    private final void setArgs(int startIndex, CLBuffer<?>... values) {
+        for (int i = 0; i < values.length; i++) {
+            setArg(i+startIndex, values[i]);
+        }
     }
 
     private final void setArgument(int argumentIndex, int size, Buffer value) {
@@ -103,6 +147,11 @@ public class CLKernel implements CLResource {
 
     private final Buffer wrap(long value) {
         return BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
+    }
+
+    public CLKernel rewind() {
+        argIndex = 0;
+        return this;
     }
 
     /**

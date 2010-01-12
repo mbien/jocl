@@ -36,17 +36,29 @@ public class CLBuffer<B extends Buffer> implements CLResource {
         this.context = context;
         this.cl = context.cl;
 
-        int[] intArray = new int[1];
+        int[] result = new int[1];
 
         if(glBuffer == 0) {
+            B host_ptr = null;
+            if(isHostPointerFlag(flags)) {
+                host_ptr = directBuffer;
+            }
             this.ID = cl.clCreateBuffer(context.ID, flags,
-                    sizeOfBufferElem(directBuffer)*directBuffer.capacity(), null, intArray, 0);
+                    sizeOfBufferElem(directBuffer)*directBuffer.capacity(), host_ptr, result, 0);
         }else{
+            if(isHostPointerFlag(flags)) {
+                throw new IllegalArgumentException(
+                        "CL_MEM_COPY_HOST_PTR or CL_MEM_USE_HOST_PTR can not be used with OpenGL Buffers.");
+            }
             CLGLI clgli = (CLGLI)cl;
-            this.ID = clgli.clCreateFromGLBuffer(context.ID, flags, glBuffer, intArray, 0);
+            this.ID = clgli.clCreateFromGLBuffer(context.ID, flags, glBuffer, result, 0);
         }
-        checkForError(intArray[0], "can not create cl buffer");
+        checkForError(result[0], "can not create cl buffer");
 
+    }
+
+    private final boolean isHostPointerFlag(int flags) {
+        return (flags & CL_MEM_COPY_HOST_PTR) != 0 || (flags & CL_MEM_USE_HOST_PTR) != 0;
     }
 
     public void release() {
@@ -127,26 +139,28 @@ public class CLBuffer<B extends Buffer> implements CLResource {
          * object when used inside a kernel. Writing to a buffer or image object
          * created withREAD_ONLY inside a kernel is undefined.
          */
-        READ_ONLY(CL_MEM_READ_ONLY);
+        READ_ONLY(CL_MEM_READ_ONLY),
 
         /**
+         * Enum representing CL.CL_MEM_USE_HOST_PTR.
          * If specified, it indicates that the application wants the OpenCL
          * implementation to use memory referenced by host_ptr as the storage
          * bits for the memory object. OpenCL implementations are allowed
          * to cache the buffer contents pointed to by host_ptr in device memory.
          * This cached copy can be used when kernels are executed on a device.
          */
-//        USE_HOST_PTR(CL_MEM_USE_HOST_PTR),
+        USE_BUFFER(CL_MEM_USE_HOST_PTR),
 
 //        ALLOC_HOST_PTR(CL_MEM_ALLOC_HOST_PTR), // this is the default in java world anyway
 
         /**
+         * Enum representing CL.CL_MEM_COPY_HOST_PTR.
          * If CL_MEM_COPY_HOST_PTR specified, it indicates that the application
          * wants the OpenCL implementation to allocate memory for the memory object
          * and copy the data from memory referenced by host_ptr.<br/>
          * COPY_HOST_PTR and USE_HOST_PTR are mutually exclusive.
          */
-//        COPY_HOST_PTR(CL_MEM_COPY_HOST_PTR);
+        COPY_BUFFER(CL_MEM_COPY_HOST_PTR);
 
         /**
          * Value of wrapped OpenCL flag.
@@ -163,12 +177,12 @@ public class CLBuffer<B extends Buffer> implements CLResource {
                     return READ_WRITE;
                 case(CL_MEM_READ_ONLY):
                     return READ_ONLY;
-//                case(CL_MEM_USE_HOST_PTR):
-//                    return USE_HOST_PTR;
+                case(CL_MEM_USE_HOST_PTR):
+                    return USE_BUFFER;
 //                case(CL_MEM_ALLOC_HOST_PTR):
 //                    return ALLOC_HOST_PTR;
-//                case(CL_MEM_COPY_HOST_PTR):
-//                    return COPY_HOST_PTR;
+                case(CL_MEM_COPY_HOST_PTR):
+                    return COPY_BUFFER;
             }
             return null;
         }

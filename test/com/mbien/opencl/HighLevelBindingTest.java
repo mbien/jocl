@@ -3,6 +3,7 @@ package com.mbien.opencl;
 import com.mbien.opencl.CLBuffer.Mem;
 import com.mbien.opencl.CLCommandQueue.Mode;
 import com.mbien.opencl.CLDevice.SingleFPConfig;
+import com.sun.opengl.util.BufferUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
@@ -20,6 +21,9 @@ import static com.sun.gluegen.runtime.BufferFactory.*;
  * @author Michael Bien
  */
 public class HighLevelBindingTest {
+
+    //decrease this value on systems with few memory.
+    private final static int NUM_ELEMENTS = 10000000;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -187,7 +191,7 @@ public class HighLevelBindingTest {
 
         out.println(" - - - highLevelTest; copy buffer test - - - ");
 
-        final int elements = 10000000; //many..
+        final int elements = NUM_ELEMENTS;
 
         CLContext context = CLContext.create();
 
@@ -208,24 +212,51 @@ public class HighLevelBindingTest {
 
         context.release();
 
-        ByteBuffer a = clBufferA.buffer;
-        ByteBuffer b = clBufferB.buffer;
-
-        // print first few elements of the resulting buffer to the console.
         out.println("validating computed results...");
-        for(int i = 0; i < elements; i++) {
-            int aVal = a.getInt();
-            int bVal = b.getInt();
-            if(aVal != bVal) {
-                out.println("a: "+aVal);
-                out.println("b: "+bVal);
-                out.println("position: "+a.position());
-                fail("a!=b");
-            }
-
-        }
+        checkIfEqual(clBufferA.buffer, clBufferB.buffer, elements);
         out.println("results are valid");
 
+    }
+
+    @Test
+    public void bufferWithHostPointerTest() throws IOException {
+
+        out.println(" - - - highLevelTest; host pointer test - - - ");
+
+        final int elements = NUM_ELEMENTS;
+
+        CLContext context = CLContext.create();
+
+        ByteBuffer buffer = BufferUtil.newByteBuffer(elements*SIZEOF_INT);
+        // fill only first read buffer -> we will copy the payload to the second later.
+        fillBuffer(buffer, 12345);
+
+        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
+
+        Mem[] bufferConfig = new Mem[] {Mem.COPY_BUFFER, Mem.USE_BUFFER};
+
+        for(int i = 0; i < bufferConfig.length; i++) {
+            
+            out.println("testing with "+bufferConfig[i] + " config");
+
+            CLBuffer<ByteBuffer> clBufferA = context.createBuffer(buffer, Mem.READ_ONLY, bufferConfig[i]);
+            CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
+
+            // asynchronous write of data to GPU device, blocking read later to get the computed results back.
+            queue.putCopyBuffer(clBufferA, clBufferB, clBufferA.buffer.capacity()) // copy A -> B
+                 .putReadBuffer(clBufferB, true)                                   // read B
+                 .finish();
+
+            clBufferA.release();
+            clBufferB.release();
+
+            // uploading worked when a==b.
+            out.println("validating computed results...");
+            checkIfEqual(clBufferA.buffer, clBufferB.buffer, elements);
+            out.println("results are valid");
+        }
+
+        context.release();
     }
 
     @Test
@@ -266,6 +297,22 @@ public class HighLevelBindingTest {
         assertTrue(kernels.size() > 0);
 
         context.release();
+    }
+
+
+    private final void checkIfEqual(ByteBuffer a, ByteBuffer b, int elements) {
+        for(int i = 0; i < elements; i++) {
+            int aVal = a.getInt();
+            int bVal = b.getInt();
+            if(aVal != bVal) {
+                out.println("a: "+aVal);
+                out.println("b: "+bVal);
+                out.println("position: "+a.position());
+                fail("a!=b");
+            }
+        }
+        a.rewind();
+        b.rewind();
     }
     
 }

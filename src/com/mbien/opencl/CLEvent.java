@@ -17,7 +17,7 @@ public class CLEvent implements CLResource {
 
     private final CLEventInfoAccessor eventInfo;
 
-    CLEvent(CLContext context, int id) {
+    CLEvent(CLContext context, long id) {
         this.context = context;
         this.cl = context.cl;
         this.ID = id;
@@ -37,6 +37,41 @@ public class CLEvent implements CLResource {
         int status = (int)eventInfo.getLong(CL_EVENT_COMMAND_TYPE);
         return CommandType.valueOf(status);
     }
+
+    @Override
+    public String toString() {
+        return "CLEvent [id: " + ID
+                      + " name: " + getType()
+                      + " status: " + getStatus()+"]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CLEvent other = (CLEvent) obj;
+        if (this.context != other.context && (this.context == null || !this.context.equals(other.context))) {
+            return false;
+        }
+        if (this.ID != other.ID) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 13 * hash + (this.context != null ? this.context.hashCode() : 0);
+        hash = 13 * hash + (int) (this.ID ^ (this.ID >>> 32));
+        return hash;
+    }
+
+    
 
     private class CLEventInfoAccessor extends CLInfoAccessor {
 

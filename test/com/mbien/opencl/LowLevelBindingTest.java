@@ -1,6 +1,7 @@
 package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.CPU;
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -289,21 +290,19 @@ public class LowLevelBindingTest {
         out.println("used device memory: "+ (srcA.capacity()+srcB.capacity()+dest.capacity())/1000000 +"MB");
 
         // Asynchronous write of data to GPU device
-        ret = cl.clEnqueueWriteBuffer(commandQueue, devSrcA, CL.CL_FALSE, 0, srcA.capacity(), srcA, 0, null, 0, null, 0);
+        ret = cl.clEnqueueWriteBuffer(commandQueue, devSrcA, CL.CL_FALSE, 0, srcA.capacity(), srcA, 0, null, null);
         checkError("on clEnqueueWriteBuffer", ret);
-        ret = cl.clEnqueueWriteBuffer(commandQueue, devSrcB, CL.CL_FALSE, 0, srcB.capacity(), srcB, 0, null, 0, null, 0);
+        ret = cl.clEnqueueWriteBuffer(commandQueue, devSrcB, CL.CL_FALSE, 0, srcB.capacity(), srcB, 0, null, null);
         checkError("on clEnqueueWriteBuffer", ret);
 
         // Launch kernel
-        ret = cl.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, 0,
-                                                                 new long[]{ globalWorkSize }, 0,
-                                                                 new long[]{ localWorkSize }, 0, 0,
-                                                                 null, 0,
-                                                                 null, 0);
+        PointerBuffer gWS = PointerBuffer.allocateDirect(1).put(globalWorkSize).rewind();
+        PointerBuffer lWS = PointerBuffer.allocateDirect(1).put(localWorkSize).rewind();
+        ret = cl.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, gWS, lWS, 0, null, null);
         checkError("on clEnqueueNDRangeKernel", ret);
 
         // Synchronous/blocking read of results
-        ret = cl.clEnqueueReadBuffer(commandQueue, devDst, CL.CL_TRUE, 0, dest.capacity(), dest, 0, null, 0, null, 0);
+        ret = cl.clEnqueueReadBuffer(commandQueue, devDst, CL.CL_TRUE, 0, dest.capacity(), dest, 0, null, null);
         checkError("on clEnqueueReadBuffer", ret);
 
         out.println("a+b=c result snapshot: ");

@@ -153,7 +153,7 @@ public class HighLevelBindingTest {
         // Asynchronous write of data to GPU device, blocking read later
         queue.putWriteBuffer(clBufferA, false)
              .putWriteBuffer(clBufferB, false)
-             .putNDRangeKernel(vectorAddKernel, 1, null, new long[]{ globalWorkSize }, new long[]{ localWorkSize })
+             .put1DRangeKernel(vectorAddKernel, 0, globalWorkSize, localWorkSize)
              .putReadBuffer(clBufferC, true)
              .finish().release();
 

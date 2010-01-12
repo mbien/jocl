@@ -177,7 +177,7 @@ public class CLCommandQueue implements CLResource {
     }
 
     public CLCommandQueue putWaitForEvent(CLEventList list, int index) {
-        int marker = list.IDs.position();
+        int marker = list.IDs.position()-1;
         list.IDs.position(index);
         int ret = cl.clWaitForEvents(1, list.IDs);
         list.IDs.position(marker);
@@ -186,6 +186,7 @@ public class CLCommandQueue implements CLResource {
     }
 
     public CLCommandQueue putWaitForEvents(CLEventList list) {
+        list.IDs.rewind();
         int ret = cl.clWaitForEvents(list.size, list.IDs);
         checkForError(ret, "error while waiting for events");
         return this;
@@ -217,7 +218,7 @@ public class CLCommandQueue implements CLResource {
             locWS = bufferC.put(1, localWorkSize).position(1);
         }
 
-        this.putNDRangeKernel(kernel, 1, globWO, globWS, locWS);
+        this.putNDRangeKernel(kernel, events, 1, globWO, globWS, locWS);
         return this;
     }
 

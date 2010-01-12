@@ -3,6 +3,7 @@ package com.mbien.opencl;
 import java.nio.Buffer;
 
 import static com.mbien.opencl.CL.*;
+import static com.mbien.opencl.CLException.*;
 
 /**
  *
@@ -25,7 +26,8 @@ public class CLEvent implements CLResource {
     }
 
     public void release() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        int ret = cl.clReleaseEvent(ID);
+        checkForError(ret, "can not release event");
     }
 
     public ExecutionStatus getStatus() {

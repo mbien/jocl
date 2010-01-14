@@ -26,12 +26,15 @@ public class CLKernel implements CLResource {
     private final CLProgram program;
     private final CL cl;
 
+    private final ByteBuffer buffer;
+
     private int argIndex;
 
     CLKernel(CLProgram program, long id) {
         this.ID = id;
         this.program = program;
         this.cl = program.context.cl;
+        this.buffer = BufferFactory.newDirectByteBuffer(8);
 
         long[] longArray = new long[1];
 
@@ -136,19 +139,19 @@ public class CLKernel implements CLResource {
     }
 
     private final Buffer wrap(float value) {
-        return BufferFactory.newDirectByteBuffer(4).putFloat(value).rewind();
+        return buffer.putFloat(value).rewind();
     }
 
     private final Buffer wrap(double value) {
-        return BufferFactory.newDirectByteBuffer(8).putDouble(value).rewind();
+        return buffer.putDouble(value).rewind();
     }
 
     private final Buffer wrap(int value) {
-        return BufferFactory.newDirectByteBuffer(4).putInt(value).rewind();
+        return buffer.putInt(value).rewind();
     }
 
     private final Buffer wrap(long value) {
-        return BufferFactory.newDirectByteBuffer(8).putLong(value).rewind();
+        return buffer.putLong(value).rewind();
     }
 
     public CLKernel rewind() {
@@ -195,6 +198,13 @@ public class CLKernel implements CLResource {
         hash = 43 * hash + (int) (this.ID ^ (this.ID >>> 32));
         hash = 43 * hash + (this.program != null ? this.program.hashCode() : 0);
         return hash;
+    }
+    
+    CLKernel copy() {
+        int[] err = new int[1];
+        long newID = cl.clCreateKernel(program.ID, name, err, 0);
+        checkForError(err[0], "can not copy kernel");
+        return new CLKernel(program, newID);
     }
 
 }

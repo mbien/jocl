@@ -48,11 +48,10 @@ public class CLCommandQueue implements CLResource {
     }
 
     public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingRead) {
-        return putWriteBuffer(writeBuffer, null, blockingRead);
+        return putWriteBuffer(writeBuffer, blockingRead, null);
     }
 
-    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, CLEventList events, boolean blockingWrite) {
-        PointerBuffer pb = PointerBuffer.allocateDirect(2);
+    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingWrite, CLEventList events) {
 
         int ret = cl.clEnqueueWriteBuffer(
                 ID, writeBuffer.ID, blockingWrite ? CL_TRUE : CL_FALSE,
@@ -70,11 +69,11 @@ public class CLCommandQueue implements CLResource {
     }
 
     public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead) {
-        putReadBuffer(readBuffer, null, blockingRead);
+        putReadBuffer(readBuffer, blockingRead, null);
         return this;
     }
 
-    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, CLEventList events, boolean blockingRead) {
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead, CLEventList events) {
 
         int ret = cl.clEnqueueReadBuffer(
                 ID, readBuffer.ID, blockingRead ? CL_TRUE : CL_FALSE,
@@ -150,11 +149,6 @@ public class CLCommandQueue implements CLResource {
         return this;
     }
 
-    public CLCommandQueue putTask() {
-
-        return this;
-    }
-
     public CLBuffer putMapBuffer() {
 
         return null;
@@ -198,12 +192,35 @@ public class CLCommandQueue implements CLResource {
         return this;
     }
 
-    public CLCommandQueue put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
-        this.put1DRangeKernel(kernel, null, globalWorkOffset, globalWorkSize, localWorkSize);
+    /**
+     * {@link #putTask} equivalent to calling
+     * {@link #put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize)}
+     * with globalWorkOffset = null, globalWorkSize set to 1, and localWorkSize set to 1.
+     */
+    public CLCommandQueue putTask(CLKernel kernel) {
+        int ret = cl.clEnqueueTask(ID, kernel.ID, 0, null, null);
+        checkForError(ret, "can not enqueue Task");
         return this;
     }
 
-    public CLCommandQueue put1DRangeKernel(CLKernel kernel, CLEventList events, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
+    /**
+     * @see #putTask(com.mbien.opencl.CLKernel)
+     */
+    public CLCommandQueue putTask(CLKernel kernel, CLEventList events) {
+        int ret = cl.clEnqueueTask(ID, kernel.ID, 0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not enqueue Task");
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+
+    public CLCommandQueue put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize) {
+        this.put1DRangeKernel(kernel, globalWorkOffset, globalWorkSize, localWorkSize, null);
+        return this;
+    }
+
+    public CLCommandQueue put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize, CLEventList events) {
         PointerBuffer globWO = null;
         PointerBuffer globWS = null;
         PointerBuffer locWS = null;
@@ -218,25 +235,24 @@ public class CLCommandQueue implements CLResource {
             locWS = bufferC.put(1, localWorkSize).position(1);
         }
 
-        this.putNDRangeKernel(kernel, events, 1, globWO, globWS, locWS);
+        this.putNDRangeKernel(kernel, 1, globWO, globWS, locWS, events);
         return this;
     }
 
     public CLCommandQueue put2DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY,
                                                             long globalWorkSizeX, long globalWorkSizeY,
                                                             long localWorkSizeX, long localWorkSizeY) {
-        this.put2DRangeKernel(kernel, null,
+        this.put2DRangeKernel(kernel,
                 globalWorkOffsetX, globalWorkOffsetY,
                 globalWorkSizeX, globalWorkSizeY,
-                localWorkSizeX, localWorkSizeY);
+                localWorkSizeX, localWorkSizeY, null);
 
         return this;
     }
 
-    public CLCommandQueue put2DRangeKernel(CLKernel kernel, CLEventList events,
-                                                            long globalWorkOffsetX, long globalWorkOffsetY,
+    public CLCommandQueue put2DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY,
                                                             long globalWorkSizeX, long globalWorkSizeY,
-                                                            long localWorkSizeX, long localWorkSizeY) {
+                                                            long localWorkSizeX, long localWorkSizeY, CLEventList events) {
         PointerBuffer globalWorkOffset = null;
         PointerBuffer globalWorkSize = null;
         PointerBuffer localWorkSize = null;
@@ -255,11 +271,11 @@ public class CLCommandQueue implements CLResource {
     }
 
     public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset, PointerBuffer globalWorkSize, PointerBuffer localWorkSize) {
-        this.putNDRangeKernel(kernel, null, workDimension, globalWorkOffset, globalWorkSize, localWorkSize);
+        this.putNDRangeKernel(kernel, workDimension, globalWorkOffset, globalWorkSize, localWorkSize, null);
         return this;
     }
 
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, CLEventList events, int workDimension, PointerBuffer globalWorkOffset, PointerBuffer globalWorkSize, PointerBuffer localWorkSize) {
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset, PointerBuffer globalWorkSize, PointerBuffer localWorkSize, CLEventList events) {
 
        int ret = cl.clEnqueueNDRangeKernel(
                 ID, kernel.ID, workDimension,

@@ -11,10 +11,11 @@ import static com.mbien.opencl.CL.*;
 
 /**
  * High level abstraction for an OpenCL Kernel.
- * "A kernel is a function declared in a program. A kernel is identified by the __kernel qualifier
- * applied to any function in a program. A kernel object encapsulates the specific __kernel
+ * CLKernel is not threadsafe.
+ * "A kernel is a function declared in a program. A kernel is identified by the <code>kernel</code> qualifier
+ * applied to any function in a program. A kernel object encapsulates the specific <code>kernel</code>
  * function declared in a program and the argument values to be used when executing this
- * __kernel function."
+ * <code>kernel</code> function."
  * @author Michael Bien
  */
 public class CLKernel implements CLResource {
@@ -50,10 +51,10 @@ public class CLKernel implements CLResource {
         this.name = CLUtils.clString2JavaString(bb.array(), bb.capacity());
 
         // get number of arguments
-        ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, 0, null, longArray, 0);
+        ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, bb.capacity(), bb, null, 0);
         checkForError(ret, "error while asking for number of function arguments.");
 
-        numArgs = (int)longArray[0];
+        numArgs = bb.getInt(0);
 
     }
     

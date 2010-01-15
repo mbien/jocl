@@ -143,7 +143,7 @@ public class CLProgram implements CLResource {
      * @return this
      */
     public CLProgram build() {
-        build(null, null);
+        build(null, (CLDevice[])null);
         return this;
     }
 
@@ -152,7 +152,16 @@ public class CLProgram implements CLResource {
      * @return this
      */
     public CLProgram build(String options) {
-        build(null, options);
+        build(options, (CLDevice[])null);
+        return this;
+    }
+
+    /**
+     * Builds this program for all devices associated with the context using the specified build options.
+     * @return this
+     */
+    public CLProgram build(Option... options) {
+        build(Option.optionsOf(options), (CLDevice[])null);
         return this;
     }
 
@@ -162,7 +171,7 @@ public class CLProgram implements CLResource {
      * @return this
      * @param devices A list of devices this program should be build on or null for all devices of its context.
      */
-    public CLProgram build(CLDevice[] devices, String options) {
+    public CLProgram build(String options, CLDevice... devices) {
 
         if(kernels != null) {
             //No changes to the program executable are allowed while there are
@@ -419,6 +428,112 @@ public class CLProgram implements CLResource {
             }
             return null;
         }
+    }
+
+    /**
+     * Common compiler optons.
+     */
+    public enum Option {
+
+        /**
+         * Treat double precision floating-point constant as single precision constant.
+         */
+        SINGLE_PRECISION_CONSTANTS("-cl-single-precision-constant"),
+
+        /**
+         * This option controls how single precision and double precision denormalized numbers are handled.
+         * If specified as a build option, the single precision denormalized numbers may be flushed to zero
+         * and if the optional extension for double precision is supported, double precision denormalized numbers
+         * may also be flushed to zero. This is intended to be a performance hint and the OpenCL compiler can choose
+         * not to flush denorms to zero if the device supports single precision (or double precision) denormalized numbers.<br>
+         * This option is ignored for single precision numbers if the device does not support single precision denormalized
+         * numbers i.e. CL_FP_DENORM bit is not set in CL_DEVICE_SINGLE_FP_CONFIG<br>
+         * This option is ignored for double precision numbers if the device does not support double precision or if it does support
+         * double precison but CL_FP_DENORM bit is not set in CL_DEVICE_DOUBLE_FP_CONFIG.<br>
+         * This flag only applies for scalar and vector single precision floating-point variables and computations on
+         * these floating-point variables inside a program. It does not apply to reading from or writing to image objects.
+         */
+        DENORMS_ARE_ZERO("-cl-denorms-are-zero"),
+
+        /**
+         * This option disables all optimizations. The default is optimizations are enabled.
+         */
+        DISABLE_OPT("-cl-opt-disable"),
+
+        /**
+         * This option allows the compiler to assume the strictest aliasing rules.
+         */
+        STRICT_ALIASING("-cl-strict-aliasing"),
+
+        /**
+         * Allow a * b + c to be replaced by a mad. The mad computes a * b + c with reduced accuracy.
+         * For example, some OpenCL devices implement mad as truncate the result of a * b before adding it to c.
+         */
+        ENABLE_MAD("-cl-mad-enable"),
+
+        /**
+         * Allow optimizations for floating-point arithmetic that ignore the signedness of zero.
+         * IEEE 754 arithmetic specifies the behavior of distinct +0.0 and -0.0 values, which then prohibits
+         * simplification of expressions such as x+0.0 or 0.0*x (even with -cl-finite-math-only ({@link #FINITE_MATH_ONLY})).
+         * This option implies that the sign of a zero result isn't significant.
+         */
+        NO_SIGNED_ZEROS("-cl-no-signed-zeros"),
+
+        /**
+         * Allow optimizations for floating-point arithmetic that<br>
+         * (a) assume that arguments and results are valid,<br>
+         * (b) may violate IEEE 754 standard and<br>
+         * (c) may violate the OpenCL numerical compliance requirements as defined in section
+         * 7.4 for single-precision floating-point, section 9.3.9 for double-precision floating-point,
+         * and edge case behavior in section 7.5.<br>
+         * This option includes the -cl-no-signed-zeros ({@link #NO_SIGNED_ZEROS})
+         * and -cl-mad-enable ({@link #ENABLE_MAD}) options.
+         */
+        UNSAFE_MATH("-cl-unsafe-math-optimizations"),
+
+        /**
+         * Allow optimizations for floating-point arithmetic that assume that arguments and results are not NaNs or ±∞.
+         * This option may violate the OpenCL numerical compliance requirements defined in in section 7.4 for
+         * single-precision floating-point, section 9.3.9 for double-precision floating-point, and edge case behavior in section 7.5.
+         */
+        FINITE_MATH_ONLY("-cl-finite-math-only"),
+
+        /**
+         * Sets the optimization options -cl-finite-math-only ({@link #FINITE_MATH_ONLY}) and -cl-unsafe-math-optimizations ({@link #UNSAFE_MATH}).
+         * This allows optimizations for floating-point arithmetic that may violate the IEEE 754
+         * standard and the OpenCL numerical compliance requirements defined in the specification
+         * in section 7.4 for single-precision floating-point, section 9.3.9 for double-precision
+         * floating-point, and edge case behavior in section 7.5. This option causes the preprocessor
+         * macro __FAST_RELAXED_MATH__ to be defined in the OpenCL program.
+         */
+        FAST_RELAXED_MATH("-cl-fast-relaxed-math"),
+
+        /**
+         * Inhibit all warning messages.
+         */
+        DISABLE_WARNINGS("-w"),
+
+        /**
+         * Make all warnings into errors.
+         */
+        WARNINGS_ARE_ERRORS("-Werror");
+
+        private final String option;
+
+        private Option(String option) {
+            this.option = option;
+        }
+
+        public final static String optionsOf(Option... options) {
+            StringBuilder sb = new StringBuilder(options.length * 24);
+            for (int i = 0; i < options.length; i++) {
+                sb.append(options[i].option);
+                if(i!= options.length-1)
+                    sb.append(" ");
+            }
+            return sb.toString();
+        }
+
     }
 
 }

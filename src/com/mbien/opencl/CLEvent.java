@@ -1,12 +1,17 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 
 import static com.mbien.opencl.CL.*;
 import static com.mbien.opencl.CLException.*;
 
 /**
- *
+ * Event objects can be used for synchronizing command queues, e.g you can wait until a
+ * event accures or they can also be used to capture profiling information that
+ * measure execution time of a command.
+ * Profiling of OpenCL commands can be enabled by using a {@link com.mbien.opencl.CLCommandQueue} created with
+ * {@link com.mbien.opencl.CLCommandQueue.Mode#PROFILING_MODE}.
  * @author Michael Bien
  */
 public class CLEvent implements CLResource {
@@ -17,12 +22,14 @@ public class CLEvent implements CLResource {
     private final CL cl;
 
     private final CLEventInfoAccessor eventInfo;
+    private final CLEventProfilingInfoAccessor eventProfilingInfo;
 
     CLEvent(CLContext context, long id) {
         this.context = context;
         this.cl = context.cl;
         this.ID = id;
         this.eventInfo = new CLEventInfoAccessor();
+        this.eventProfilingInfo = new CLEventProfilingInfoAccessor();
     }
 
     public void release() {
@@ -39,6 +46,11 @@ public class CLEvent implements CLResource {
         int status = (int)eventInfo.getLong(CL_EVENT_COMMAND_TYPE);
         return CommandType.valueOf(status);
     }
+
+    public long getProfilingInfo(ProfilingCommand command) {
+        return eventProfilingInfo.getLong(command.COMMAND);
+    }
+
 
     @Override
     public String toString() {
@@ -78,11 +90,76 @@ public class CLEvent implements CLResource {
     private class CLEventInfoAccessor extends CLInfoAccessor {
 
         @Override
-        protected int getInfo(int name, long valueSize, Buffer value, long[] valueSizeRet, int valueSizeRetOffset) {
-            return cl.clGetEventInfo(ID, name, valueSize, value, valueSizeRet, valueSizeRetOffset);
+        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+            return cl.clGetEventInfo(ID, name, valueSize, value, valueSizeRet);
         }
 
     }
+
+    private class CLEventProfilingInfoAccessor extends CLInfoAccessor {
+
+        @Override
+        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+            return cl.clGetEventProfilingInfo(ID, name, valueSize, value, valueSizeRet);
+        }
+
+    }
+
+    // TODO merge with ExecutionStatus?
+
+    public enum ProfilingCommand {
+
+        /**
+         * A 64-bit value that describes the current device time counter in nanoseconds
+         * when the command identified by event is enqueued in a command-queue by the host.
+         */
+        QUEUED(CL_PROFILING_COMMAND_QUEUED),
+
+        /**
+         * A 64-bit value that describes the current device time counter in nanoseconds when
+         * the command identified by event that has been enqueued is submitted by the host to
+         * the device associated with the commandqueue.
+         */
+        SUBMIT(CL_PROFILING_COMMAND_SUBMIT),
+
+        /**
+         * A 64-bit value that describes the current device time counter in nanoseconds when
+         * the command identified by event starts execution on the device.
+         */
+        START(CL_PROFILING_COMMAND_START),
+
+        /**
+         * A 64-bit value that describes the current device time counter in nanoseconds when
+         * the command identified by event has finished execution on the device.
+         */
+        END(CL_PROFILING_COMMAND_END);
+
+        /**
+         * Value of wrapped OpenCL profiling command.
+         */
+        public final int COMMAND;
+
+        private ProfilingCommand(int command) {
+            this.COMMAND = command;
+        }
+
+        public static ProfilingCommand valueOf(int status) {
+            switch(status) {
+                case(CL_PROFILING_COMMAND_QUEUED):
+                    return QUEUED;
+                case(CL_PROFILING_COMMAND_SUBMIT):
+                    return SUBMIT;
+                case(CL_PROFILING_COMMAND_START):
+                    return START;
+                case(CL_PROFILING_COMMAND_END):
+                    return END;
+            }
+            return null;
+        }
+
+    }
+
+
 
     public enum ExecutionStatus {
 

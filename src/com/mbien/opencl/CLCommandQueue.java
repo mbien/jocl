@@ -12,9 +12,9 @@ import static com.mbien.opencl.CL.*;
  * The command-queue can be used to queue a set of operations in order. Having multiple
  * command-queues allows applications to queue multiple independent commands without
  * requiring synchronization. Note that this should work as long as these objects are
- * not being shared.<b/>
+ * not being shared.<br/>
  * Sharing of objects across multiple command-queues or using a CLCommandQueue
- * form multiple Threads will require the application to perform appropriate synchronization.<b/>
+ * form multiple Threads will require the application to perform appropriate synchronization.
  * @author Michael Bien
  */
 public class CLCommandQueue implements CLResource {
@@ -123,6 +123,20 @@ public class CLCommandQueue implements CLResource {
 
         return this;
     }
+
+    /*
+    public CLCommandQueue putWriteImage(CLBuffer<?> writeBuffer, boolean blockingWrite, CLEventList events) {
+        
+        int ret = cl.clEnqueueWriteImage(ID, writeBuffer.ID, blockingWrite ? CL_TRUE : CL_FALSE,
+                                         null,null,0,0,null,    0, null,events==null ? null : events.IDs);
+        checkForError(ret, "can not write Image");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+     */
     
     //TODO implement remaining methods
     /*
@@ -135,11 +149,6 @@ public class CLCommandQueue implements CLResource {
         return this;
     }
     public CLCommandQueue putCopyImageToBuffer() {
-
-        return this;
-    }
-
-    public CLCommandQueue putWriteImage() {
 
         return this;
     }
@@ -389,11 +398,15 @@ public class CLCommandQueue implements CLResource {
      */
     public enum Mode {
         /**
-         * CL_DEVICE_TYPE_CPU
+         * If set, the commands in the command-queue are
+         * executed out-of-order. Otherwise, commands are executed in-order.
          */
         OUT_OF_ORDER_EXEC_MODE(CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE),
+
         /**
-         * CL_DEVICE_TYPE_GPU
+         * Enables profiling of commands in the command-queue.
+         * If set, the profiling of commands is enabled. Otherwise profiling of
+         * commands is disabled. See {@link com.mbien.opencl.CLEvent} for more information.
          */
         PROFILING_MODE(CL_QUEUE_PROFILING_ENABLE);
 

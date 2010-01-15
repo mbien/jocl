@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 
 import static com.mbien.opencl.CLException.*;
@@ -55,8 +56,8 @@ public class CLSampler implements CLResource {
     private class CLSamplerInfoAccessor extends CLInfoAccessor {
 
         @Override
-        protected int getInfo(int name, long valueSize, Buffer value, long[] valueSizeRet, int valueSizeRetOffset) {
-            return cl.clGetSamplerInfo(ID, name, valueSize, value, valueSizeRet, valueSizeRetOffset);
+        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+            return cl.clGetSamplerInfo(ID, name, valueSize, value, valueSizeRet);
         }
 
     }

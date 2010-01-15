@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -8,44 +9,53 @@ import static com.mbien.opencl.CLException.*;
 
 /**
  * Internal utility for common OpenCL clGetFooInfo calls.
+ * Threadsafe.
  * @author Michael Bien
  */
 abstract class CLInfoAccessor {
 
-    private final static ByteBuffer buffer;
-    private final static long[] longBuffer;
+    private final static ThreadLocal<ByteBuffer> localBB = new ThreadLocal<ByteBuffer>() {
 
-    // TODO revisit for command queue concurrency
-    // TODO use direct memory code path as soon gluegen is fixed
-    static{
-        buffer = ByteBuffer.allocate(512);
-        buffer.order(ByteOrder.nativeOrder());
-        longBuffer = new long[1];
-    }
+        @Override
+        protected ByteBuffer initialValue() {
+            return ByteBuffer.allocateDirect(512).order(ByteOrder.nativeOrder());
+        }
 
-    public CLInfoAccessor() {
-    }
+    };
+    private final static ThreadLocal<PointerBuffer> localPB = new ThreadLocal<PointerBuffer>() {
+
+        @Override
+        protected PointerBuffer initialValue() {
+            return PointerBuffer.allocateDirect(1);
+        }
+
+    };
 
     final long getLong(int key) {
 
-        buffer.rewind();
-        int ret = getInfo(key, 8, buffer, null, 0);
+        ByteBuffer buffer = localBB.get();
+        int ret = getInfo(key, 8, buffer, null);
         checkForError(ret, "error while asking for info value");
 
-        return buffer.getLong();
+        return buffer.getLong(0);
     }
 
     final String getString(int key) {
-
-        buffer.rewind();
-        int ret = getInfo(key, buffer.capacity(), buffer, longBuffer, 0);
+        
+        ByteBuffer buffer = localBB.get();
+        PointerBuffer pbuffer = localPB.get();
+        int ret = getInfo(key, buffer.capacity(), buffer, pbuffer);
         checkForError(ret, "error while asking for info string");
 
-        return CLUtils.clString2JavaString(buffer.array(), (int)longBuffer[0]);
+        int clSize = (int)pbuffer.get(0);
+        byte[] array = new byte[clSize-1]; // last char is always null
+        buffer.get(array).rewind();
+
+        return CLUtils.clString2JavaString(array, clSize);
 
     }
 
-    protected abstract int getInfo(int name, long valueSize, Buffer value, long[] valueSizeRet, int valueSizeRetOffset);
+    protected abstract int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet);
 
 
 }

@@ -1,5 +1,8 @@
 package com.mbien.opencl;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -10,9 +13,34 @@ import java.util.concurrent.TimeUnit;
 public class QueueBarrier {
 
     private final CountDownLatch latch;
+    private final Set<CLCommandQueue> queues;
 
     public QueueBarrier(int queueCount) {
         this.latch = new CountDownLatch(queueCount);
+        this.queues = null;
+    }
+
+    public QueueBarrier(CLCommandQueue... allowedQueues) {
+        this.latch = new CountDownLatch(allowedQueues.length);
+
+        HashSet<CLCommandQueue> set = new HashSet<CLCommandQueue>(allowedQueues.length);
+        for (CLCommandQueue queue : allowedQueues) {
+            set.add(queue);
+        }
+        this.queues = Collections.unmodifiableSet(set);
+    }
+
+    /**
+     * Blocks the current Thread until all commands on the CLCommandQueue finished excecution.
+     * This method may be invoked concurrently without synchronization on the QueueBarrier object
+     * as long each Thread passes a distinct CLCommandQueue as parameter to this method.
+     */
+    public QueueBarrier waitFor(CLCommandQueue queue) {
+        checkQueue(queue);
+
+        queue.putBarrier();
+        latch.countDown();
+        return this;
     }
 
     /**
@@ -21,6 +49,8 @@ public class QueueBarrier {
      * as long each Thread passes a distinct CLCommandQueue as parameter to this method.
      */
     public QueueBarrier waitFor(CLCommandQueue queue, CLEventList events) {
+        checkQueue(queue);
+
         queue.putWaitForEvents(events);
         latch.countDown();
         return this;
@@ -35,6 +65,7 @@ public class QueueBarrier {
         latch.await();
         return this;
     }
+    
     /**
      * @see {@link #await()}
      * @param timeout the maximum time to wait
@@ -43,6 +74,12 @@ public class QueueBarrier {
     public QueueBarrier await(long timeout, TimeUnit unit) throws InterruptedException {
         latch.await(timeout, unit);
         return this;
+    }
+
+    private final void checkQueue(CLCommandQueue queue) throws IllegalArgumentException {
+        if (queues != null && !queues.contains(queue)) {
+            throw new IllegalArgumentException(queue + " is not in the allowedQueues Set: " + queues);
+        }
     }
 
 }

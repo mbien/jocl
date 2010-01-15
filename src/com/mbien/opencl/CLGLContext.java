@@ -10,7 +10,7 @@ import java.nio.LongBuffer;
 import javax.media.nativewindow.DefaultGraphicsConfiguration;
 import javax.media.opengl.GLContext;
 
-import static com.mbien.opencl.CL.*;
+import static com.mbien.opencl.CLGLI.*;
 
 /**
  *
@@ -85,4 +85,40 @@ public final class CLGLContext extends CLContext {
         buffers.add(buffer);
         return buffer;
     }
+
+    // TODO move somewhere else
+    public GLObjectType getGLObjectType(CLBuffer<?> buffer) {
+        int[] array = new int[1];
+        int ret = ((CLGLI)cl).clGetGLObjectInfo(buffer.ID, array, 0, null, 0);
+        CLException.checkForError(ret, "error while asking for gl object info");
+        return GLObjectType.valueOf(array[0]);
+    }
+
+    public enum GLObjectType {
+
+        GL_OBJECT_BUFFER(CL_GL_OBJECT_BUFFER),
+        GL_OBJECT_TEXTURE2D(CL_GL_OBJECT_TEXTURE2D),
+        GL_OBJECT_TEXTURE3D(CL_GL_OBJECT_TEXTURE3D),
+        GL_OBJECT_RENDERBUFFER(CL_GL_OBJECT_RENDERBUFFER);
+
+        public final int TYPE;
+
+        private GLObjectType(int type) {
+            this.TYPE = type;
+        }
+
+        public static GLObjectType valueOf(int type) {
+            if(type == CL_GL_OBJECT_BUFFER)
+                return GL_OBJECT_BUFFER;
+            else if(type == CL_GL_OBJECT_TEXTURE2D)
+                return GL_OBJECT_TEXTURE2D;
+            else if(type == CL_GL_OBJECT_TEXTURE3D)
+                return GL_OBJECT_TEXTURE3D;
+            else if(type == CL_GL_OBJECT_RENDERBUFFER)
+                return GL_OBJECT_RENDERBUFFER;
+            return null;
+        }
+    }
+
+
 }

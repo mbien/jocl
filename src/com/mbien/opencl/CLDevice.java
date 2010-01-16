@@ -20,6 +20,7 @@ public final class CLDevice {
 
     private final CL cl;
     private CLContext context;
+    private Set<String> extensions;
     
     private final CLDeviceInfoAccessor deviceInfo;
 
@@ -92,10 +93,41 @@ public final class CLDevice {
     }
 
     /**
+     * Returns the vendor id of this device.
+     */
+    public long getVendorID() {
+        return deviceInfo.getLong(CL_DEVICE_VENDOR_ID);
+    }
+
+    /**
+     * Returns OpenCL version string. Returns the OpenCL version supported by the device.
+     * This version string has the following format:<br>
+     * OpenCL[space][major_version.minor_version][space][vendor-specific information]
+     */
+    public String getVersion() {
+        return deviceInfo.getString(CL_DEVICE_VERSION);
+    }
+
+    /**
+     * Returns OpenCL software driver version string in the form major_number.minor_number.
+     */
+    public String getDriverVersion() {
+        return deviceInfo.getString(CL_DRIVER_VERSION);
+    }
+
+    /**
      * Returns the type of this device.
      */
     public Type getType() {
         return Type.valueOf((int)deviceInfo.getLong(CL_DEVICE_TYPE));
+    }
+
+    /**
+     * The default compute device address space size specified in bits.
+     * Currently supported values are 32 or 64 bits.
+     */
+    public int getAddressBits() {
+        return (int)deviceInfo.getLong(CL_DEVICE_ADDRESS_BITS);
     }
 
     /**
@@ -129,6 +161,21 @@ public final class CLDevice {
      */
     public int getMaxWorkItemDimensions() {
         return (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
+    }
+
+    /**
+     * Returns the max size in bytes of the arguments that can be passed to a kernel.
+     * The minimum value is 256.
+     */
+    public long getMaxParameterSize() {
+        return deviceInfo.getLong(CL_DEVICE_MAX_PARAMETER_SIZE);
+    }
+
+    /**
+     * Returns the maximal allocatable memory on this device.
+     */
+    public long getMaxMemAllocSize() {
+        return deviceInfo.getLong(CL_DEVICE_MAX_MEM_ALLOC_SIZE);
     }
 
     /**
@@ -246,10 +293,41 @@ public final class CLDevice {
     }
 
     /**
-     * Returns the single precision floating-point capability of the device.
+     * Returns the optional half precision floating-point capability of the device.
+     * The required minimum half precision floating-point capabilities as implemented by this
+     * extension are {@link FPConfig#ROUND_TO_ZERO}, {@link FPConfig#ROUND_TO_INF}
+     * and {@link FPConfig#INF_NAN}.
+     * @return An EnumSet containing the extensions, never null.
      */
-    public EnumSet<SingleFPConfig> getSingleFPConfig() {
-        return SingleFPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_SINGLE_FP_CONFIG));
+    public EnumSet<FPConfig> getHalfFPConfig() {
+        if(isHalfFPAvailable())
+            return FPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_HALF_FP_CONFIG));
+        else
+            return EnumSet.noneOf(FPConfig.class);
+    }
+
+    /**
+     * Returns the single precision floating-point capability of the device.
+     * The mandated minimum floating-point capabilities are {@link FPConfig#ROUND_TO_NEAREST} and
+     * {@link FPConfig#INF_NAN}.
+     * @return An EnumSet containing the extensions, never null.
+     */
+    public EnumSet<FPConfig> getSingleFPConfig() {
+        return FPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_SINGLE_FP_CONFIG));
+    }
+
+    /**
+     * Returns the optional double precision floating-point capability of the device.
+     * The mandated minimum double precision floating-point capabilities are {@link FPConfig#FMA},
+     * {@link FPConfig#ROUND_TO_NEAREST}, {@link FPConfig#_ROUND_TO_ZERO},
+     * {@link FPConfig#ROUND_TO_INF}, {@link FPConfig#INF_NAN}, and {@link FPConfig#DENORM}.
+     * @return An EnumSet containing the extensions, never null.
+     */
+    public EnumSet<FPConfig> getDoubleFPConfig() {
+        if(isDoubleFPAvailable())
+            return FPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_DOUBLE_FP_CONFIG));
+        else
+            return EnumSet.noneOf(FPConfig.class);
     }
 
     /**
@@ -306,19 +384,36 @@ public final class CLDevice {
     }
 
     /**
+     * Returns {@link #getExtensions()}.contains("cl_khr_fp16");
+     */
+    public boolean isHalfFPAvailable() {
+        return getExtensions().contains("cl_khr_fp16");
+    }
+
+    /**
+     * Returns {@link #getExtensions()}.contains("cl_khr_fp64");
+     */
+    public boolean isDoubleFPAvailable() {
+        return getExtensions().contains("cl_khr_fp64");
+    }
+
+    /**
      * Returns all device extension names as unmodifiable Set.
      */
     public Set<String> getExtensions() {
 
-        String ext = deviceInfo.getString(CL_DEVICE_EXTENSIONS);
+        if(extensions == null) {
+            extensions = new HashSet<String>();
+            String ext = deviceInfo.getString(CL_DEVICE_EXTENSIONS);
+            Scanner scanner = new Scanner(ext);
 
-        Scanner scanner = new Scanner(ext);
-        Set<String> extSet = new HashSet<String>();
+            while(scanner.hasNext())
+                extensions.add(scanner.next());
 
-        while(scanner.hasNext())
-            extSet.add(scanner.next());
+            extensions = Collections.unmodifiableSet(extensions);
+        }
 
-        return Collections.unmodifiableSet(extSet);
+        return extensions;
     }
 
 
@@ -418,10 +513,10 @@ public final class CLDevice {
     }
 
     /**
-     * Describes single precision floating-point capability of the device.
-     * One or more values are possible.
+     * Describes floating-point capability of the device.
+     * Zero or more values are possible.
      */
-    public enum SingleFPConfig {
+    public enum FPConfig {
 
         /**
          * denorms are supported.
@@ -459,22 +554,22 @@ public final class CLDevice {
          */
         public final int CONFIG;
 
-        private SingleFPConfig(int config) {
+        private FPConfig(int config) {
             this.CONFIG = config;
         }
 
         /**
          * Returns a EnumSet for the given bitfield.
          */
-        public static EnumSet<SingleFPConfig> valuesOf(int bitfield) {
-            List<SingleFPConfig> matching = new ArrayList<SingleFPConfig>();
-            SingleFPConfig[] values = SingleFPConfig.values();
-            for (SingleFPConfig value : values) {
+        public static EnumSet<FPConfig> valuesOf(int bitfield) {
+            List<FPConfig> matching = new ArrayList<FPConfig>();
+            FPConfig[] values = FPConfig.values();
+            for (FPConfig value : values) {
                 if((value.CONFIG & bitfield) != 0)
                     matching.add(value);
             }
             if(matching.isEmpty())
-                return EnumSet.noneOf(SingleFPConfig.class);
+                return EnumSet.noneOf(FPConfig.class);
             else
                 return EnumSet.copyOf(matching);
         }

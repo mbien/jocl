@@ -2,7 +2,7 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.CLBuffer.Mem;
 import com.mbien.opencl.CLCommandQueue.Mode;
-import com.mbien.opencl.CLDevice.SingleFPConfig;
+import com.mbien.opencl.CLDevice.FPConfig;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
@@ -35,10 +35,10 @@ public class HighLevelBindingTest {
         out.println(" - - - highLevelTest; contextless - - - ");
 
         // enum tests
-        final EnumSet<SingleFPConfig> singleFPConfig = SingleFPConfig.valuesOf(CL.CL_FP_DENORM | CL.CL_FP_ROUND_TO_INF);
-        assertEquals(0, SingleFPConfig.valuesOf(0).size());
-        assertTrue(singleFPConfig.contains(SingleFPConfig.DENORM));
-        assertTrue(singleFPConfig.contains(SingleFPConfig.ROUND_TO_INF));
+        final EnumSet<FPConfig> singleFPConfig = FPConfig.valuesOf(CL.CL_FP_DENORM | CL.CL_FP_ROUND_TO_INF);
+        assertEquals(0, FPConfig.valuesOf(0).size());
+        assertTrue(singleFPConfig.contains(FPConfig.DENORM));
+        assertTrue(singleFPConfig.contains(FPConfig.ROUND_TO_INF));
 
         final EnumSet<Mode> queueMode = Mode.valuesOf(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | CL.CL_QUEUE_PROFILING_ENABLE);
         assertEquals(0, Mode.valuesOf(0).size());
@@ -64,8 +64,13 @@ public class HighLevelBindingTest {
                 out.println("    name: "+device.getName());
                 out.println("    profile: "+device.getProfile());
                 out.println("    vendor: "+device.getVendor());
+                out.println("    vendor id: "+device.getVendorID());
+                out.println("    version: "+device.getVersion());
+                out.println("    driver version: "+device.getDriverVersion());
                 out.println("    type: "+device.getType());
                 out.println("    global mem: "+device.getGlobalMemSize()/(1024*1024)+" MB");
+                out.println("    max alloc mem: "+device.getMaxMemAllocSize()/(1024*1024)+" MB");
+                out.println("    max param size: "+device.getMaxParameterSize()+" byte");
                 out.println("    local mem: "+device.getLocalMemSize()/1024+" KB");
                 out.println("    local mem type: "+device.getLocalMemType());
                 out.println("    global mem cache size: "+device.getGlobalMemCachSize());
@@ -74,9 +79,11 @@ public class HighLevelBindingTest {
                 out.println("    queue properties: "+device.getQueueProperties());
                 out.println("    clock: "+device.getMaxClockFrequency()+" MHz");
                 out.println("    timer res: "+device.getProfilingTimerResolution()+" ns");
-                out.println("    single FP config: "+device.getSingleFPConfig());
                 out.println("    max work group size: "+device.getMaxWorkGroupSize());
                 out.println("    max compute units: "+device.getMaxComputeUnits());
+                out.println("    half FP config: "+device.getHalfFPConfig());
+                out.println("    single FP config: "+device.getSingleFPConfig());
+                out.println("    double FP config: "+device.getDoubleFPConfig());
                 out.println("    extensions: "+device.getExtensions());
             }
         }

@@ -1,5 +1,5 @@
 
-        public long clCreateContext(LongBuffer properties, long[] devices, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
+        public long clCreateContext(java.nio.Buffer properties, long[] devices, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
 
             if(pfn_notify != null)
                 throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
@@ -18,7 +18,7 @@
         private native long clCreateContext1(Object cl_context_properties, int props_offset, int deviceCount, long[] devices, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
 
         
-        public long clCreateContextFromType(LongBuffer properties, long device_type, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
+        public long clCreateContextFromType(java.nio.Buffer properties, long device_type, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
 
             if(pfn_notify != null)
                 throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
@@ -61,4 +61,4 @@
                 values[i-1] = temp>>>32;
                 values[i  ] = temp & 0x00000000FFFFFFFFL;
             }
-		}
+        }

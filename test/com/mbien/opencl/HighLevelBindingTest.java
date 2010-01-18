@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.mbien.opencl.CLBuffer.Mem;
+import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLCommandQueue.Mode;
 import com.mbien.opencl.CLDevice.FPConfig;
 import java.io.IOException;
@@ -169,17 +169,17 @@ public class HighLevelBindingTest {
             out.print(dest.getInt()+", ");
         out.println("...; "+dest.remaining()/SIZEOF_INT + " more");
 
-        assertTrue(3 == context.getCLBuffers().size());
+        assertTrue(3 == context.getCLMemoryObjects().size());
         clBufferA.release();
-        assertTrue(2 == context.getCLBuffers().size());
+        assertTrue(2 == context.getCLMemoryObjects().size());
 
-        assertTrue(2 == context.getCLBuffers().size());
+        assertTrue(2 == context.getCLMemoryObjects().size());
         clBufferB.release();
-        assertTrue(1 == context.getCLBuffers().size());
+        assertTrue(1 == context.getCLMemoryObjects().size());
 
-        assertTrue(1 == context.getCLBuffers().size());
+        assertTrue(1 == context.getCLMemoryObjects().size());
         clBufferC.release();
-        assertTrue(0 == context.getCLBuffers().size());
+        assertTrue(0 == context.getCLMemoryObjects().size());
 
 
         assertTrue(1 == context.getCLPrograms().size());

@@ -1,7 +1,7 @@
 package com.mbien.opencl;
 
 import java.nio.Buffer;
-import com.mbien.opencl.CLBuffer.Mem;
+import com.mbien.opencl.CLMemory.Mem;
 import com.sun.opengl.impl.GLContextImpl;
 import com.sun.opengl.impl.macosx.cgl.MacOSXCGLContext;
 import com.sun.opengl.impl.windows.wgl.WindowsWGLContext;
@@ -81,8 +81,8 @@ public final class CLGLContext extends CLContext {
     }
 
     public final <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
-        CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, glBuffer, flags);
-        buffers.add(buffer);
+        CLBuffer<B> buffer = CLBuffer.create(this, directBuffer, flags, glBuffer);
+        memoryObjects.add(buffer);
         return buffer;
     }
 

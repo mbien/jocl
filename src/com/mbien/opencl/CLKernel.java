@@ -58,7 +58,7 @@ public class CLKernel implements CLResource {
 
     }
     
-    public CLKernel putArg(CLBuffer<?> value) {
+    public CLKernel putArg(CLMemory<?> value) {
         setArg(argIndex++, value);
         return this;
     }
@@ -83,13 +83,13 @@ public class CLKernel implements CLResource {
         return this;
     }
 
-    public CLKernel putArgs(CLBuffer<?>... values) {
+    public CLKernel putArgs(CLMemory<?>... values) {
         setArgs(argIndex, values);
         argIndex += values.length;
         return this;
     }
 
-    public CLKernel setArg(int argumentIndex, CLBuffer<?> value) {
+    public CLKernel setArg(int argumentIndex, CLMemory<?> value) {
         setArgument(argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
         return this;
     }
@@ -114,12 +114,12 @@ public class CLKernel implements CLResource {
         return this;
     }
 
-    public CLKernel setArgs(CLBuffer<?>... values) {
+    public CLKernel setArgs(CLMemory<?>... values) {
         setArgs(0, values);
         return this;
     }
 
-    private final void setArgs(int startIndex, CLBuffer<?>... values) {
+    private final void setArgs(int startIndex, CLMemory<?>... values) {
         for (int i = 0; i < values.length; i++) {
             setArg(i+startIndex, values[i]);
         }

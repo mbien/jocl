@@ -62,17 +62,25 @@ public final class CLPlatform {
 
     /**
      * Lists all physical devices available on this platform.
+     * @see #listCLDevices(com.mbien.opencl.CLDevice.Type)
      */
     public CLDevice[] listCLDevices() {
+        return this.listCLDevices(CLDevice.Type.ALL);
+    }
+
+    /**
+     * Lists all physical devices available on this platform matching the given {@link CLDevice.Type}.
+     */
+    public CLDevice[] listCLDevices(CLDevice.Type type) {
 
         int[] intBuffer = new int[1];
 
         //find all devices
-        int ret = cl.clGetDeviceIDs(ID, CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
+        int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, 0, intBuffer, 0);
         checkForError(ret, "error while enumerating devices");
 
         long[] deviceIDs = new long[intBuffer[0]];
-        ret = cl.clGetDeviceIDs(ID, CL_DEVICE_TYPE_ALL, deviceIDs.length, deviceIDs, 0, null, 0);
+        ret = cl.clGetDeviceIDs(ID, type.TYPE, deviceIDs.length, deviceIDs, 0, null, 0);
         checkForError(ret, "error while enumerating devices");
 
         CLDevice[] devices = new CLDevice[deviceIDs.length];
@@ -86,6 +94,10 @@ public final class CLPlatform {
     }
 
     static final CLDevice findMaxFlopsDevice(CLDevice[] devices) {
+        return findMaxFlopsDevice(devices, null);
+    }
+    
+    static final CLDevice findMaxFlopsDevice(CLDevice[] devices, CLDevice.Type type) {
 
         CLDevice maxFLOPSDevice = null;
 
@@ -94,14 +106,19 @@ public final class CLPlatform {
         for (int i = 0; i < devices.length; i++) {
 
             CLDevice device = devices[i];
-            int maxComputeUnits     = device.getMaxComputeUnits();
-            int maxClockFrequency   = device.getMaxClockFrequency();
-            int flops = maxComputeUnits*maxClockFrequency;
 
-            if(flops > maxflops) {
-                maxflops = flops;
-                maxFLOPSDevice = device;
+            if(type == null || type.equals(device.getType())) {
+
+                int maxComputeUnits     = device.getMaxComputeUnits();
+                int maxClockFrequency   = device.getMaxClockFrequency();
+                int flops = maxComputeUnits*maxClockFrequency;
+
+                if(flops > maxflops) {
+                    maxflops = flops;
+                    maxFLOPSDevice = device;
+                }
             }
+
         }
 
         return maxFLOPSDevice;
@@ -109,12 +126,22 @@ public final class CLPlatform {
 
 
     /**
-     * Gets the device with maximal FLOPS from this platform.
+     * Returns the device with maximal FLOPS from this platform.
      * The device speed is estimated by calulating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
+     * @see #getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
      */
     public CLDevice getMaxFlopsDevice() {
         return findMaxFlopsDevice(listCLDevices());
+    }
+
+    /**
+     * Returns the device with maximal FLOPS and the specified type from this platform.
+     * The device speed is estimated by calulating the product of
+     * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
+     */
+    public CLDevice getMaxFlopsDevice(CLDevice.Type type) {
+        return findMaxFlopsDevice(listCLDevices(type));
     }
 
     /**

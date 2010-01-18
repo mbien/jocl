@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.mbien.opencl.CLBuffer.Mem;
+import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
 import com.sun.gluegen.runtime.CPU;
@@ -40,7 +40,7 @@ public class CLContext implements CLResource {
 
     protected final List<CLProgram> programs;
     protected final List<CLSampler> samplers;
-    protected final List<CLBuffer<? extends Buffer>> buffers;
+    protected final List<CLMemory<? extends Buffer>> memoryObjects;
     protected final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
 
@@ -49,7 +49,7 @@ public class CLContext implements CLResource {
         this.ID = contextID;
         this.programs = new ArrayList<CLProgram>();
         this.samplers = new ArrayList<CLSampler>();
-        this.buffers = new ArrayList<CLBuffer<? extends Buffer>>();
+        this.memoryObjects = new ArrayList<CLMemory<? extends Buffer>>();
         this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
     }
 
@@ -79,7 +79,8 @@ public class CLContext implements CLResource {
      * The platform to be used is implementation dependent.
      */
     public static final CLContext create() {
-        return new CLContext(createContextFromType(null, CL.CL_DEVICE_TYPE_ALL));
+        Buffer properties = setupContextProperties(null);
+        return new CLContext(createContextFromType(properties, CL.CL_DEVICE_TYPE_ALL));
     }
 
     /**
@@ -118,13 +119,7 @@ public class CLContext implements CLResource {
             }
         }
 
-        LongBuffer properties = null;
-        if(platform != null) {
-            properties = LongBuffer.allocate(3);
-            properties.put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0); // 0 terminated array
-            properties.rewind();
-        }
-
+        Buffer properties = setupContextProperties(platform);
         return new CLContext(createContextFromType(properties, type));
     }
 
@@ -140,17 +135,11 @@ public class CLContext implements CLResource {
             deviceIDs[i] = devices[i].ID;
         }
 
-        LongBuffer properties = null;
-        if(platform != null) {
-            properties = LongBuffer.allocate(3);
-            properties.put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0); // 0 terminated array
-            properties.rewind();
-        }
-
+        Buffer properties = setupContextProperties(platform);
         return new CLContext(createContext(properties, deviceIDs));
     }
 
-    protected static final long createContextFromType(LongBuffer properties, long deviceType) {
+    protected static final long createContextFromType(Buffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(properties, deviceType, null, null, status);
@@ -160,7 +149,7 @@ public class CLContext implements CLResource {
         return context;
     }
 
-    protected static final long createContext(LongBuffer properties, long[] devices) {
+    protected static final long createContext(Buffer properties, long[] devices) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, devices, null, null, status);
@@ -168,6 +157,31 @@ public class CLContext implements CLResource {
         checkForError(status.get(), "can not create CL context");
 
         return context;
+    }
+
+    private static final Buffer setupContextProperties(CLPlatform platform) {
+
+        if(platform == null) {
+            CLPlatform[] platforms = CLPlatform.listCLPlatforms();
+            if(platforms.length > 0)
+                platform = platforms[0];
+        }
+//        System.out.println(platform.ID);
+//        System.out.println((int)platform.ID);
+
+        Buffer properties = null;
+        if(platform != null) {
+            if(CPU.is32Bit()){
+                int id = (int)platform.ID;// (int)(platform.ID & 0x00000000FFFFFFFFL);
+                properties = ByteBuffer.allocate(4*3).order(ByteOrder.nativeOrder())
+                    .putInt(CL.CL_CONTEXT_PLATFORM).putInt(id).putInt(0); // 0 terminated array
+            }else{
+                properties = LongBuffer.allocate(3)
+                    .put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0); // 0 terminated array
+            }
+            properties.rewind();
+        }
+        return properties;
     }
 
     /**
@@ -262,8 +276,8 @@ public class CLContext implements CLResource {
      * Creates a CLBuffer with the specified flags.
      */
     public final <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, int flags) {
-        CLBuffer<B> buffer = new CLBuffer<B>(this, directBuffer, flags);
-        buffers.add(buffer);
+        CLBuffer<B> buffer = CLBuffer.create(this, directBuffer, flags);
+        memoryObjects.add(buffer);
         return buffer;
     }
 
@@ -291,8 +305,8 @@ public class CLContext implements CLResource {
         programs.remove(program);
     }
 
-    void onBufferReleased(CLBuffer<?> buffer) {
-        buffers.remove(buffer);
+    void onMemoryReleased(CLMemory<?> buffer) {
+        memoryObjects.remove(buffer);
     }
 
     void onCommandQueueReleased(CLDevice device, CLCommandQueue queue) {
@@ -316,8 +330,8 @@ public class CLContext implements CLResource {
         while(!programs.isEmpty())
             programs.get(0).release();
 
-        while(!buffers.isEmpty())
-            buffers.get(0).release();
+        while(!memoryObjects.isEmpty())
+            memoryObjects.get(0).release();
 
         while(!samplers.isEmpty())
             samplers.get(0).release();
@@ -343,20 +357,36 @@ public class CLContext implements CLResource {
     }
 
     /**
-     * Returns a read only view of all buffers associated with this context.
+     * Returns a read only view of all allocated memory objects associated with this context.
      */
-    public List<CLBuffer<? extends Buffer>> getCLBuffers() {
-        return Collections.unmodifiableList(buffers);
+    public List<CLMemory<? extends Buffer>> getCLMemoryObjects() {
+        return Collections.unmodifiableList(memoryObjects);
     }
 
+    /**
+     * Returns a read only view of all samplers associated with this context.
+     */
+    public List<CLSampler> getCLSamplers() {
+        return Collections.unmodifiableList(samplers);
+    }
 
     /**
-     * Gets the device with maximal FLOPS from this context.
+     * Returns the device with maximal FLOPS from this context.
      * The device speed is estimated by calulating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
+     * @see #getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
      */
     public CLDevice getMaxFlopsDevice() {
         return CLPlatform.findMaxFlopsDevice(getCLDevices());
+    }
+
+    /**
+     * Returns the device with maximal FLOPS and the specified type from this context.
+     * The device speed is estimated by calulating the product of
+     * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
+     */
+    public CLDevice getMaxFlopsDevice(CLDevice.Type type) {
+        return CLPlatform.findMaxFlopsDevice(getCLDevices(), type);
     }
 
     /**

@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.mbien.opencl.CLBuffer.Mem;
+import com.mbien.opencl.CLMemory.Mem;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.junit.Test;

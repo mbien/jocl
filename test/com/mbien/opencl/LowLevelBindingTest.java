@@ -186,6 +186,7 @@ public class LowLevelBindingTest {
         int ret = CL.CL_SUCCESS;
         int[] intArray = new int[1];
 
+        //TODO properties not allowed to be null
         long context = cl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, null, null, null);
         out.println("context handle: "+context);
 

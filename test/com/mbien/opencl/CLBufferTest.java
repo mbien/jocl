@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.mbien.opencl.CLBuffer.Mem;
+import com.mbien.opencl.CLMemory.Mem;
 import com.sun.opengl.util.BufferUtil;
 import java.nio.ByteBuffer;
 import org.junit.Test;
@@ -77,11 +77,11 @@ public class CLBufferTest {
                  .putReadBuffer(clBufferB, true)                                   // read B
                  .finish();
 
-            assertEquals(2, context.getCLBuffers().size());
+            assertEquals(2, context.getCLMemoryObjects().size());
             clBufferA.release();
-            assertEquals(1, context.getCLBuffers().size());
+            assertEquals(1, context.getCLMemoryObjects().size());
             clBufferB.release();
-            assertEquals(0, context.getCLBuffers().size());
+            assertEquals(0, context.getCLMemoryObjects().size());
 
             // uploading worked when a==b.
             out.println("validating computed results...");

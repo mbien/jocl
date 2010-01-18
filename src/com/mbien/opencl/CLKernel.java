@@ -2,6 +2,7 @@ package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.BufferFactory;
 import com.sun.gluegen.runtime.CPU;
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -37,21 +38,21 @@ public class CLKernel implements CLResource {
         this.cl = program.context.cl;
         this.buffer = BufferFactory.newDirectByteBuffer(8);
 
-        long[] longArray = new long[1];
+        PointerBuffer pb = PointerBuffer.allocateDirect(1);
 
         // get function name
-        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, longArray, 0);
+        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, pb);
         checkForError(ret, "error while asking for kernel function name");
 
-        ByteBuffer bb = ByteBuffer.allocate((int)longArray[0]).order(ByteOrder.nativeOrder());
+        ByteBuffer bb = ByteBuffer.allocateDirect((int)pb.get(0)).order(ByteOrder.nativeOrder());
 
-        ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null, 0);
+        ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
         checkForError(ret, "error while asking for kernel function name");
 
-        this.name = CLUtils.clString2JavaString(bb.array(), bb.capacity());
+        this.name = CLUtils.clString2JavaString(bb, bb.capacity());
 
         // get number of arguments
-        ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, bb.capacity(), bb, null, 0);
+        ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, bb.capacity(), bb, null);
         checkForError(ret, "error while asking for number of function arguments.");
 
         numArgs = bb.getInt(0);

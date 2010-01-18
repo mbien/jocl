@@ -1,7 +1,10 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
@@ -35,20 +38,20 @@ public final class CLPlatform {
      */
     public static CLPlatform[] listCLPlatforms() {
 
-        int[] intBuffer = new int[1];
+        IntBuffer ib = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         // find all available OpenCL platforms
-        int ret = cl.clGetPlatformIDs(0, null, 0, intBuffer, 0);
+        int ret = cl.clGetPlatformIDs(0, null, ib);
         checkForError(ret, "can not enumerate platforms");
 
         // receive platform ids
-        long[] platformId = new long[intBuffer[0]];
-        ret = cl.clGetPlatformIDs(platformId.length, platformId, 0, null, 0);
+        PointerBuffer platformId = PointerBuffer.allocateDirect(ib.get(0));
+        ret = cl.clGetPlatformIDs(platformId.capacity(), platformId, null);
         checkForError(ret, "can not enumerate platforms");
 
-        CLPlatform[] platforms = new CLPlatform[platformId.length];
+        CLPlatform[] platforms = new CLPlatform[platformId.capacity()];
 
-        for (int i = 0; i < platformId.length; i++)
-            platforms[i] = new CLPlatform(platformId[i]);
+        for (int i = 0; i < platformId.capacity(); i++)
+            platforms[i] = new CLPlatform(platformId.get(i));
 
         return platforms;
     }
@@ -73,21 +76,21 @@ public final class CLPlatform {
      */
     public CLDevice[] listCLDevices(CLDevice.Type type) {
 
-        int[] intBuffer = new int[1];
+        IntBuffer ib = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 
         //find all devices
-        int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, 0, intBuffer, 0);
+        int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, ib);
         checkForError(ret, "error while enumerating devices");
 
-        long[] deviceIDs = new long[intBuffer[0]];
-        ret = cl.clGetDeviceIDs(ID, type.TYPE, deviceIDs.length, deviceIDs, 0, null, 0);
+        PointerBuffer deviceIDs = PointerBuffer.allocateDirect(ib.get(0));
+        ret = cl.clGetDeviceIDs(ID, type.TYPE, deviceIDs.capacity(), deviceIDs, null);
         checkForError(ret, "error while enumerating devices");
 
-        CLDevice[] devices = new CLDevice[deviceIDs.length];
+        CLDevice[] devices = new CLDevice[deviceIDs.capacity()];
 
         //print device info
-        for (int i = 0; i < deviceIDs.length; i++)
-            devices[i] = new CLDevice(cl, deviceIDs[i]);
+        for (int i = 0; i < deviceIDs.capacity(); i++)
+            devices[i] = new CLDevice(cl, deviceIDs.get(i));
 
         return devices;
 
@@ -176,13 +179,13 @@ public final class CLPlatform {
      * Returns a info string in exchange for a key (CL_PLATFORM_*).
      */
     public String getInfoString(int key) {
-        long[] longBuffer = new long[1];
-        ByteBuffer bb = ByteBuffer.allocate(512);
+        PointerBuffer pb = PointerBuffer.allocateDirect(1);
+        ByteBuffer bb = ByteBuffer.allocateDirect(512);
 
-        int ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, longBuffer, 0);
+        int ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, pb);
         checkForError(ret, "can not receive info string");
 
-        return CLUtils.clString2JavaString(bb.array(), (int)longBuffer[0]);
+        return CLUtils.clString2JavaString(bb, (int)pb.get(0));
     }
 
     @Override

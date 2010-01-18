@@ -1,8 +1,10 @@
 package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.CPU;
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,29 +33,30 @@ public class CLProgram implements CLResource {
         this.cl = context.cl;
         this.context = context;
 
-        int[] intArray = new int[1];
+        IntBuffer ib = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
         // Create the program
-        ID = cl.clCreateProgramWithSource(context.ID, 1, new String[] {src}, new long[]{src.length()}, 0, intArray, 0);
-        checkForError(intArray[0], "can not create program with source");
+        ID = cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
+                                                         PointerBuffer.allocateDirect(1).put(src.length()), ib);
+        checkForError(ib.get(), "can not create program with source");
     }
 
     private final void initKernels() {
 
         if(kernels == null) {
 
-            int[] numKernels = new int[1];
-            int ret = cl.clCreateKernelsInProgram(ID, 0, null, 0, numKernels, 0);
+            IntBuffer numKernels = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+            int ret = cl.clCreateKernelsInProgram(ID, 0, null, numKernels);
             checkForError(ret, "can not create kernels for program");
 
-            if(numKernels[0] > 0) {
+            if(numKernels.get(0) > 0) {
                 HashMap<String, CLKernel> map = new HashMap<String, CLKernel>();
 
-                long[] kernelIDs = new long[numKernels[0]];
-                ret = cl.clCreateKernelsInProgram(ID, kernelIDs.length, kernelIDs, 0, null, 0);
+                PointerBuffer kernelIDs = PointerBuffer.allocateDirect(numKernels.get(0));
+                ret = cl.clCreateKernelsInProgram(ID, kernelIDs.capacity(), kernelIDs, null);
                 checkForError(ret, "can not create kernels for program");
 
-                for (int i = 0; i < kernelIDs.length; i++) {
-                    CLKernel kernel = new CLKernel(this, kernelIDs[i]);
+                for (int i = 0; i < kernelIDs.capacity(); i++) {
+                    CLKernel kernel = new CLKernel(this, kernelIDs.get(i));
                     map.put(kernel.name, kernel);
                 }
                 this.kernels = map;
@@ -89,37 +92,37 @@ public class CLProgram implements CLResource {
 
     private final String getBuildInfoString(long device, int flag) {
 
-        long[] longArray = new long[1];
+        PointerBuffer pb = PointerBuffer.allocateDirect(1);
 
-        int ret = cl.clGetProgramBuildInfo(ID, device, flag, 0, null, longArray, 0);
+        int ret = cl.clGetProgramBuildInfo(ID, device, flag, 0, null, pb);
         checkForError(ret, "on clGetProgramBuildInfo");
 
-        ByteBuffer bb = ByteBuffer.allocate((int)longArray[0]).order(ByteOrder.nativeOrder());
+        ByteBuffer bb = ByteBuffer.allocateDirect((int)pb.get(0)).order(ByteOrder.nativeOrder());
 
-        ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null);
         checkForError(ret, "on clGetProgramBuildInfo");
 
-        return CLUtils.clString2JavaString(bb.array(), (int)longArray[0]);
+        return CLUtils.clString2JavaString(bb, (int)pb.get(0));
     }
 
     private final String getProgramInfoString(int flag) {
 
-        long[] longArray = new long[1];
+        PointerBuffer pb = PointerBuffer.allocateDirect(1);
 
-        int ret = cl.clGetProgramInfo(ID, flag, 0, null, longArray, 0);
+        int ret = cl.clGetProgramInfo(ID, flag, 0, null, pb);
         checkForError(ret, "on clGetProgramInfo");
 
-        ByteBuffer bb = ByteBuffer.allocate((int)longArray[0]).order(ByteOrder.nativeOrder());
+        ByteBuffer bb = ByteBuffer.allocateDirect((int)pb.get(0)).order(ByteOrder.nativeOrder());
 
-        ret = cl.clGetProgramInfo(ID, flag, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramInfo(ID, flag, bb.capacity(), bb, null);
         checkForError(ret, "on clGetProgramInfo");
 
-        return CLUtils.clString2JavaString(bb.array(), (int)longArray[0]);
+        return CLUtils.clString2JavaString(bb, (int)pb.get(0));
     }
 
 //    private int getProgramInfoInt(int flag) {
 //
-//        ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
+//        ByteBuffer bb = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
 //
 //        int ret = cl.clGetProgramInfo(programID, flag, bb.capacity(), bb, null, 0);
 //        checkForError(ret, "");
@@ -129,9 +132,9 @@ public class CLProgram implements CLResource {
 
     private int getBuildInfoInt(long device, int flag) {
 
-        ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder());
+        ByteBuffer bb = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
 
-        int ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null, 0);
+        int ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null);
         checkForError(ret, "error on clGetProgramBuildInfo");
 
         return bb.getInt();
@@ -256,12 +259,12 @@ public class CLProgram implements CLResource {
      */
     public CLDevice[] getCLDevices() {
 
-        long[] longArray = new long[1];
-        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, 0, null, longArray, 0);
+        PointerBuffer pb = PointerBuffer.allocateDirect(1);
+        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, 0, null, pb);
         checkForError(ret, "on clGetProgramInfo");
 
-        ByteBuffer bb = ByteBuffer.allocate((int) longArray[0]).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, bb.capacity(), bb, null, 0);
+        ByteBuffer bb = ByteBuffer.allocateDirect((int) pb.get(0)).order(ByteOrder.nativeOrder());
+        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, bb.capacity(), bb, null);
         checkForError(ret, "on clGetProgramInfo");
 
         int count = bb.capacity() / (CPU.is32Bit()?4:8);
@@ -341,16 +344,16 @@ public class CLProgram implements CLResource {
 
         CLDevice[] devices = getCLDevices();
 
-        ByteBuffer sizes = ByteBuffer.allocate(8*devices.length).order(ByteOrder.nativeOrder());
-        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null, 0);
+        ByteBuffer sizes = ByteBuffer.allocateDirect(8*devices.length).order(ByteOrder.nativeOrder());
+        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null);
         checkForError(ret, "on clGetProgramInfo");
 
         int binarySize = 0;
         while(sizes.remaining() != 0)
             binarySize += (int)sizes.getLong();
 
-        ByteBuffer binaries = ByteBuffer.allocate(binarySize).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null, 0); // TODO crash, driver bug?
+        ByteBuffer binaries = ByteBuffer.allocateDirect(binarySize).order(ByteOrder.nativeOrder());
+        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null); // TODO crash, driver bug?
         checkForError(ret, "on clGetProgramInfo");
 
         Map<CLDevice, byte[]> map = new HashMap<CLDevice, byte[]>();

@@ -51,7 +51,8 @@ public class LowLevelBindingTest {
 
     @Test
     public void contextlessTest() {
-
+        System.out.println("low level tests temporary disabled");
+/*
         out.println(" - - - lowLevelTest; contextless binding - - - ");
 
         int ret = CL.CL_SUCCESS;
@@ -117,9 +118,9 @@ public class LowLevelBindingTest {
             }
 
         }
-
+*/
     }
-
+/*
     @Test
     public void createContextTest() {
 
@@ -337,7 +338,7 @@ public class LowLevelBindingTest {
 
     }
 
-//    @Test
+    @Test
     public void loadTest() {
         //for memory leak detection; e.g watch out for "out of host memory" errors
         out.println(" - - - loadTest - - - ");
@@ -346,7 +347,7 @@ public class LowLevelBindingTest {
             lowLevelVectorAddTest();
         }
     }
-
+*/
     private ByteBuffer wrap(long value) {
         return (ByteBuffer) newDirectByteBuffer(8).putLong(value).rewind();
     }

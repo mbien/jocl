@@ -4,6 +4,7 @@ import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
 import com.sun.gluegen.runtime.CPU;
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,13 +59,13 @@ public class CLContext implements CLResource {
         if (devices == null) {
 
             int sizeofDeviceID = CPU.is32Bit() ? 4 : 8;
-            long[] longBuffer = new long[1];
+            PointerBuffer deviceCount = PointerBuffer.allocateDirect(1);
 
-            int ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer, 0);
+            int ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, deviceCount);
             checkForError(ret, "can not enumerate devices");
 
-            ByteBuffer deviceIDs = ByteBuffer.allocate((int) longBuffer[0]).order(ByteOrder.nativeOrder());
-            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null, 0);
+            ByteBuffer deviceIDs = ByteBuffer.allocateDirect((int)deviceCount.get()).order(ByteOrder.nativeOrder());
+            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null);
             checkForError(ret, "can not enumerate devices");
 
             devices = new CLDevice[deviceIDs.capacity() / sizeofDeviceID];
@@ -166,15 +167,12 @@ public class CLContext implements CLResource {
             if(platforms.length > 0)
                 platform = platforms[0];
         }
-//        System.out.println(platform.ID);
-//        System.out.println((int)platform.ID);
 
         Buffer properties = null;
         if(platform != null) {
             if(CPU.is32Bit()){
-                int id = (int)platform.ID;// (int)(platform.ID & 0x00000000FFFFFFFFL);
                 properties = ByteBuffer.allocate(4*3).order(ByteOrder.nativeOrder())
-                    .putInt(CL.CL_CONTEXT_PLATFORM).putInt(id).putInt(0); // 0 terminated array
+                    .putInt(CL.CL_CONTEXT_PLATFORM).putInt((int)platform.ID).putInt(0); // 0 terminated array
             }else{
                 properties = LongBuffer.allocate(3)
                     .put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0); // 0 terminated array

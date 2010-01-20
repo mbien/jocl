@@ -214,7 +214,15 @@ public class CLContext implements CLResource {
         return createProgram(sb.toString());
     }
 
-
+    /**
+     * Creates a program from the given binaries, the program is not build yet.
+     * <br/>Creating a programm will fail if:<br/>
+     * <ul>
+     * <li>the submitted binaries are invalid or can not be loaded from the OpenCL driver</li>
+     * <li>the binaries do not fitt to the CLDevices associated with this context</li>
+     * <li>binaries are missing for one or more CLDevices</li>
+     * </ul>
+     */
     public CLProgram createProgram(Map<CLDevice, byte[]> binaries) {
         CLProgram program = new CLProgram(this, binaries);
         programs.add(program);

@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.BufferFactory;
 import com.sun.gluegen.runtime.CPU;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
+import java.util.Set;
 
 /**
  *
@@ -33,18 +35,55 @@ public class CLProgram implements CLResource {
         this.cl = context.cl;
         this.context = context;
 
-        IntBuffer ib = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer ib = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
         // Create the program
         ID = cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
                                                          PointerBuffer.allocateDirect(1).put(src.length()), ib);
         checkForError(ib.get(), "can not create program with source");
     }
 
+    CLProgram(CLContext context, Map<CLDevice, byte[]> binaries) {
+
+        this.cl = context.cl;
+        this.context = context;
+
+        PointerBuffer devices = PointerBuffer.allocateDirect(binaries.size());
+        PointerBuffer lengths = PointerBuffer.allocateDirect(binaries.size());
+        ByteBuffer[] codeBuffers = new ByteBuffer[binaries.size()];
+
+        int i = 0;
+        Set<CLDevice> keys = binaries.keySet();
+        for (CLDevice device : keys) {
+
+            byte[] bytes = binaries.get(device);
+
+            devices.put(device.ID);
+            lengths.put(bytes.length);
+
+            codeBuffers[i] = BufferFactory.newDirectByteBuffer(bytes.length).put(bytes);
+            codeBuffers[i].rewind();
+            i++;
+        }
+        devices.rewind();
+        lengths.rewind();
+
+        IntBuffer err = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+//        IntBuffer status = BufferFactory.newDirectByteBuffer(binaries.size()*4).asIntBuffer();
+        ID = cl.clCreateProgramWithBinary(context.ID, devices.capacity(), devices, lengths, codeBuffers, /*status*/null, err);
+
+//        while(status.remaining() != 0) {
+//            checkForError(status.get(), "unable to load binaries on all devices");
+//        }
+
+        checkForError(err.get(), "can not create program with binary");
+
+    }
+
     private final void initKernels() {
 
         if(kernels == null) {
 
-            IntBuffer numKernels = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+            IntBuffer numKernels = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
             int ret = cl.clCreateKernelsInProgram(ID, 0, null, numKernels);
             checkForError(ret, "can not create kernels for program");
 
@@ -348,16 +387,27 @@ public class CLProgram implements CLResource {
         int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null);
         checkForError(ret, "on clGetProgramInfo");
 
-        int binarySize = 0;
-        while(sizes.remaining() != 0)
-            binarySize += (int)sizes.getLong();
+        int binariesSize = 0;
+        while(sizes.remaining() != 0) {
+            int size = (int) sizes.getLong();
+            binariesSize += size;
+        }
+        ByteBuffer binaries = ByteBuffer.allocateDirect(binariesSize).order(ByteOrder.nativeOrder());
 
-        ByteBuffer binaries = ByteBuffer.allocateDirect(binarySize).order(ByteOrder.nativeOrder());
-        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, binaries.capacity(), binaries, null); // TODO crash, driver bug?
+        
+        long address = InternalBufferUtil.getDirectBufferAddress(binaries);
+        PointerBuffer addresses = PointerBuffer.allocateDirect(sizes.capacity());
+        sizes.rewind();
+        while(sizes.remaining() != 0) {
+            addresses.put(address);
+            address += sizes.getLong();
+        }
+        
+        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity(), addresses.getBuffer(), null);
         checkForError(ret, "on clGetProgramInfo");
 
         Map<CLDevice, byte[]> map = new HashMap<CLDevice, byte[]>();
-
+        sizes.rewind();
         for (int i = 0; i < devices.length; i++) {
             byte[] bytes = new byte[(int)sizes.getLong()];
             binaries.get(bytes);

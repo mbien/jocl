@@ -67,7 +67,7 @@ public class QueueBarrier {
     }
     
     /**
-     * @see {@link #await()}
+     * @see #await()
      * @param timeout the maximum time to wait
      * @param unit the time unit of the {@code timeout} argument
      */

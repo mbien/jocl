@@ -214,6 +214,13 @@ public class CLContext implements CLResource {
         return createProgram(sb.toString());
     }
 
+
+    public CLProgram createProgram(Map<CLDevice, byte[]> binaries) {
+        CLProgram program = new CLProgram(this, binaries);
+        programs.add(program);
+        return program;
+    }
+
     /**
      * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
      */
@@ -379,8 +386,8 @@ public class CLContext implements CLResource {
     }
 
     /**
-     * Returns the device with maximal FLOPS and the specified type from this context.
-     * The device speed is estimated by calulating the product of
+     * Returns the device with maximal FLOPS of the specified device type from this context.
+     * The device speed is estimated by calculating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      */
     public CLDevice getMaxFlopsDevice(CLDevice.Type type) {

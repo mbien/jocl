@@ -3,7 +3,7 @@ package com.mbien.opencl;
 import static com.mbien.opencl.CL.*;
 
 /**
- * Main Exception type for runtime OpenCL errors and unsuccessful function calls (e.g. returning other values than CL_SUCCESS).
+ * Main Exception type for runtime OpenCL errors and unsuccessful function calls (e.g. returning not CL_SUCCESS).
  * @author Michael Bien
  */
 public class CLException extends RuntimeException {
@@ -17,11 +17,20 @@ public class CLException extends RuntimeException {
         errorcode = error;
     }
 
+    /**
+     * Throws a CLException when <code>status != CL_SUCCESS</code>.
+     */
     public static final void checkForError(int status, String message) {
         if(status != CL_SUCCESS)
             throw new CLException(status, message);
     }
 
+    /**
+     * Returns a human readable String for the OpenCL error code.
+     */
+    public String getCLErrorString() {
+        return identifyError(errorcode);
+    }
 
     private static final String identifyError(int error) {
 

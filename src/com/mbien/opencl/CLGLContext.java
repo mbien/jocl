@@ -76,56 +76,14 @@ public final class CLGLContext extends CLContext {
     }
 
 
-    public final <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
+    public final <B extends Buffer> CLGLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
         return createFromGLBuffer(directBuffer, glBuffer, Mem.flagsToInt(flags));
     }
 
-    public final <B extends Buffer> CLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
-        CLBuffer<B> buffer = CLBuffer.create(this, directBuffer, flags, glBuffer);
+    public final <B extends Buffer> CLGLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
+        CLGLBuffer<B> buffer = CLGLBuffer.create(this, directBuffer, flags, glBuffer);
         memoryObjects.add(buffer);
         return buffer;
     }
-
-    // TODO move somewhere else
-    public GLObjectType getGLObjectType(CLBuffer<?> buffer) {
-        int[] array = new int[1];
-        int ret = ((CLGLI)cl).clGetGLObjectInfo(buffer.ID, array, 0, null, 0);
-        CLException.checkForError(ret, "error while asking for gl object info");
-        return GLObjectType.valueOf(array[0]);
-    }
-
-    public int getGLObjectID(CLBuffer<?> buffer) {
-        int[] array = new int[1];
-        int ret = ((CLGLI)cl).clGetGLObjectInfo(buffer.ID, null, 0, array, 0);
-        CLException.checkForError(ret, "error while asking for gl object info");
-        return array[0];
-    }
-
-    public enum GLObjectType {
-
-        GL_OBJECT_BUFFER(CL_GL_OBJECT_BUFFER),
-        GL_OBJECT_TEXTURE2D(CL_GL_OBJECT_TEXTURE2D),
-        GL_OBJECT_TEXTURE3D(CL_GL_OBJECT_TEXTURE3D),
-        GL_OBJECT_RENDERBUFFER(CL_GL_OBJECT_RENDERBUFFER);
-
-        public final int TYPE;
-
-        private GLObjectType(int type) {
-            this.TYPE = type;
-        }
-
-        public static GLObjectType valueOf(int type) {
-            if(type == CL_GL_OBJECT_BUFFER)
-                return GL_OBJECT_BUFFER;
-            else if(type == CL_GL_OBJECT_TEXTURE2D)
-                return GL_OBJECT_TEXTURE2D;
-            else if(type == CL_GL_OBJECT_TEXTURE3D)
-                return GL_OBJECT_TEXTURE3D;
-            else if(type == CL_GL_OBJECT_RENDERBUFFER)
-                return GL_OBJECT_RENDERBUFFER;
-            return null;
-        }
-    }
-
 
 }

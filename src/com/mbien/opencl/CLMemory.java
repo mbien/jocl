@@ -1,6 +1,7 @@
 package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.BufferFactory;
+import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -83,6 +84,13 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
             return 0;
         }
         return sizeOfBufferElem(buffer) * buffer.capacity();
+    }
+
+    public long getCLSize() {
+        PointerBuffer pb = PointerBuffer.allocateDirect(1);
+        int ret = cl.clGetMemObjectInfo(ID, CL.CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
+        checkForError(ret, "can not optain buffer info");
+        return pb.get();
     }
 
     public void release() {

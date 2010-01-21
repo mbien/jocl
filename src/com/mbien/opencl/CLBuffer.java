@@ -21,7 +21,7 @@ public final class CLBuffer<B extends Buffer> extends CLMemory<B> {
     
     static <B extends Buffer> CLBuffer<B> create(CLContext context, B directBuffer, int flags, int glBuffer) {
 
-        if(!directBuffer.isDirect())
+        if(directBuffer != null && !directBuffer.isDirect())
             throw new IllegalArgumentException("buffer is not a direct buffer");
 
         CL cl = context.cl;

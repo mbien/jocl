@@ -2,6 +2,7 @@ package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -161,6 +162,16 @@ public final class CLDevice {
      */
     public int getMaxWorkItemDimensions() {
         return (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
+    }
+
+    /**
+     * Returns the maximum number of work-items that can be specified in each
+     * dimension of the work-group.
+     * The minimum value is (1, 1, 1).
+     */
+    public int[] getMaxWorkItemSizes() {
+        int n = (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
+        return deviceInfo.getInts(n, CL_DEVICE_MAX_WORK_ITEM_SIZES);
     }
 
     /**
@@ -417,11 +428,26 @@ public final class CLDevice {
     }
 
 
-    private class CLDeviceInfoAccessor extends CLInfoAccessor {
+    private final class CLDeviceInfoAccessor extends CLInfoAccessor {
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
             return cl.clGetDeviceInfo(ID, name, valueSize, value, valueSizeRet);
+        }
+
+        private int[] getInts(int n, int key) {
+
+            ByteBuffer buffer = localBB.get();
+            int ret = getInfo(key, buffer.capacity(), buffer, null);
+            CLException.checkForError(ret, "error while asking device for infos");
+
+            int[] array = new int[n];
+            for(int i = 0; i < array.length; i++) {
+                array[i] = (int)buffer.getLong();
+            }
+            buffer.rewind();
+            
+            return array;
         }
 
     }

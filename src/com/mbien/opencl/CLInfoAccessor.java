@@ -14,7 +14,7 @@ import static com.mbien.opencl.CLException.*;
  */
 abstract class CLInfoAccessor {
 
-    private final static ThreadLocal<ByteBuffer> localBB = new ThreadLocal<ByteBuffer>() {
+    protected final static ThreadLocal<ByteBuffer> localBB = new ThreadLocal<ByteBuffer>() {
 
         @Override
         protected ByteBuffer initialValue() {
@@ -22,7 +22,7 @@ abstract class CLInfoAccessor {
         }
 
     };
-    private final static ThreadLocal<PointerBuffer> localPB = new ThreadLocal<PointerBuffer>() {
+    protected final static ThreadLocal<PointerBuffer> localPB = new ThreadLocal<PointerBuffer>() {
 
         @Override
         protected PointerBuffer initialValue() {

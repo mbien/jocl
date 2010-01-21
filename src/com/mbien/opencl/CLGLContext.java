@@ -94,6 +94,13 @@ public final class CLGLContext extends CLContext {
         return GLObjectType.valueOf(array[0]);
     }
 
+    public int getGLObjectID(CLBuffer<?> buffer) {
+        int[] array = new int[1];
+        int ret = ((CLGLI)cl).clGetGLObjectInfo(buffer.ID, null, 0, array, 0);
+        CLException.checkForError(ret, "error while asking for gl object info");
+        return array[0];
+    }
+
     public enum GLObjectType {
 
         GL_OBJECT_BUFFER(CL_GL_OBJECT_BUFFER),

@@ -29,6 +29,7 @@ public class CLProgram implements CLResource {
     private Map<CLDevice, Status> buildStatusMap;
 
     private boolean executable;
+    private boolean released;
 
     CLProgram(CLContext context, String src) {
         
@@ -127,9 +128,11 @@ public class CLProgram implements CLResource {
         }
     }
 
-    // TODO serialization, program build options
-
     private final String getBuildInfoString(long device, int flag) {
+
+        if(released) {
+            return "";
+        }
 
         PointerBuffer pb = PointerBuffer.allocateDirect(1);
 
@@ -145,6 +148,10 @@ public class CLProgram implements CLResource {
     }
 
     private final String getProgramInfoString(int flag) {
+
+        if(released) {
+            return "";
+        }
 
         PointerBuffer pb = PointerBuffer.allocateDirect(1);
 
@@ -254,6 +261,10 @@ public class CLProgram implements CLResource {
 
         releaseKernels();
 
+        executable = false;
+        released = true;
+        buildStatusMap = null;
+
         int ret = cl.clReleaseProgram(ID);
         context.onProgramReleased(this);
         checkForError(ret, "can not release program");
@@ -274,6 +285,9 @@ public class CLProgram implements CLResource {
      * @throws IllegalArgumentException when no kernel with the specified name exists in this program.
      */
     public CLKernel getCLKernel(String kernelName) {
+        if(released) {
+            return null;
+        }
         initKernels();
         final CLKernel kernel = kernels.get(kernelName);
         if(kernel == null) {
@@ -289,6 +303,9 @@ public class CLProgram implements CLResource {
      * with the kernel function names as keys.
      */
     public Map<String, CLKernel> getCLKernels() {
+        if(released) {
+            return Collections.emptyMap();
+        }
         initKernels();
         return Collections.unmodifiableMap(kernels);
     }
@@ -297,7 +314,9 @@ public class CLProgram implements CLResource {
      * Returns all devices associated with this program.
      */
     public CLDevice[] getCLDevices() {
-
+        if(released) {
+            return new CLDevice[0];
+        }
         PointerBuffer pb = PointerBuffer.allocateDirect(1);
         int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, 0, null, pb);
         checkForError(ret, "on clGetProgramInfo");
@@ -321,6 +340,9 @@ public class CLProgram implements CLResource {
      * implementation dependent.
      */
     public String getBuildLog() {
+        if(released) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         CLDevice[] devices = getCLDevices();
         for (int i = 0; i < devices.length; i++) {
@@ -338,6 +360,9 @@ public class CLProgram implements CLResource {
      * Returns the build status enum of this program for each device as Map.
      */
     public Map<CLDevice,Status> getBuildStatus() {
+        if(released) {
+            return Collections.emptyMap();
+        }
         initBuildStatus();
         return buildStatusMap;
     }
@@ -347,6 +372,9 @@ public class CLProgram implements CLResource {
      * of this program exists.
      */
     public boolean isExecutable() {
+        if(released) {
+            return false;
+        }
         initBuildStatus();
         return executable;
     }
@@ -363,6 +391,9 @@ public class CLProgram implements CLResource {
      * Returns the build status enum for this program on the specified device.
      */
     public Status getBuildStatus(CLDevice device) {
+        if(released) {
+            return Status.BUILD_NONE;
+        }
         int clStatus = getBuildInfoInt(device.ID, CL_PROGRAM_BUILD_STATUS);
         return Status.valueOf(clStatus);
     }
@@ -381,6 +412,10 @@ public class CLProgram implements CLResource {
      */
     public Map<CLDevice, byte[]> getBinaries() {
 
+        if(!isExecutable()) {
+            return Collections.emptyMap();
+        }
+        
         CLDevice[] devices = getCLDevices();
 
         ByteBuffer sizes = ByteBuffer.allocateDirect(8*devices.length).order(ByteOrder.nativeOrder());

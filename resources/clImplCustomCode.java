@@ -1,4 +1,6 @@
 
+        CLProcAddressTable addressTable = new CLProcAddressTable();
+
         public long clCreateContext(java.nio.Buffer properties, long[] devices, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
 
             if(pfn_notify != null)
@@ -51,7 +53,7 @@
         /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
         private native int clBuildProgram1(long program, int devices, Object deviceList, String options, BuildProgramCallback cb, Object userData);
 
-        
+
         private final static void convert32To64(long[] values) {
             if(values.length%2 == 1) {
                 values[values.length-1] = values[values.length/2]>>>32;

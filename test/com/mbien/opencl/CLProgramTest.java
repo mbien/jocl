@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static java.lang.System.*;
-import static com.mbien.opencl.TestUtils.*;
 import static com.sun.gluegen.runtime.BufferFactory.*;
 
 /**
@@ -31,9 +30,11 @@ public class CLProgramTest {
             assertEquals(ex.errorcode, CL.CL_INVALID_PROGRAM_EXECUTABLE);
         }
 
-        program.build();
-        assertTrue(program.isExecutable());
         out.println(program.getBuildStatus());
+        program.build();
+        out.println(program.getBuildStatus());
+
+        assertTrue(program.isExecutable());
 
         Map<String, CLKernel> kernels = program.getCLKernels();
         assertNotNull(kernels);
@@ -76,11 +77,52 @@ public class CLProgramTest {
         // 2. re-create program with old binaries
         program.release();
 
+        assertFalse(program.isExecutable());
+
+        assertNotNull(program.getBinaries());
+        assertEquals(program.getBinaries().size(), 0);
+
+        assertNotNull(program.getBuildLog());
+        assertEquals(program.getBuildLog().length(), 0);
+
+        assertNotNull(program.getSource());
+        assertEquals(program.getSource().length(), 0);
+
+        assertNotNull(program.getCLDevices());
+        assertEquals(program.getCLDevices().length, 0);
+
+        assertNotNull(program.getCLKernels());
+        assertEquals(program.getCLKernels().size(), 0);
+
+        assertNull(program.getCLKernel("foo"));
+
         program = context.createProgram(binaries);
 
+        assertFalse(program.isExecutable());
+
+        assertNotNull(program.getCLDevices());
+        assertTrue(program.getCLDevices().length != 0);
+
+        assertNotNull(program.getBinaries());
+        assertEquals(program.getBinaries().size(), 0);
+
+        assertNotNull(program.getBuildLog());
+        assertTrue(program.getBuildLog().length() != 0);
+
+        assertNotNull(program.getSource());
+        assertEquals(program.getSource().length(), 0);
+
+        try{
+            program.getCLKernels();
+        }catch(CLException ex) {
+            // expected, not build yet
+        }
+
+        out.println(program.getBuildStatus());
+        program.build();
         out.println(program.getBuildStatus());
 
-        program.build();
+        assertNotNull(program.getCLKernel("Test"));
 
         assertTrue(program.isExecutable());
 

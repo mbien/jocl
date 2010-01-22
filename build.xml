@@ -55,7 +55,7 @@
         <gluegen src="resources/opencl.h"
                  config="resources/cl-impl.cfg"
                  includeRefid="jocl.include.path"
-                 emitter="com.sun.gluegen.JavaEmitter">
+                 emitter="com.sun.gluegen.procaddress.ProcAddressEmitter">
             <classpath refid="gluegen.classpath" />
         </gluegen>
         <echo message=" - - - JOCL binding files generated - - - "/>

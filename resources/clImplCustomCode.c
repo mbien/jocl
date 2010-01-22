@@ -28,19 +28,19 @@ JNIEXPORT jlong JNICALL
 Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType1(JNIEnv *env, jobject _unused,
         jobject props, jint props_byte_offset, jlong device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
-    intptr_t * _props_ptr  = NULL;
+    cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
     cl_context _ctx;
 
     if (props != NULL) {
-        _props_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
+        _props_ptr = (cl_context_properties*) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
     }
     if (errcode != NULL) {
         _errcode_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, errcode, NULL)) + errcode_byte_offset);
     }
 
     //TODO callback; payload
-    _ctx = clCreateContextFromType((cl_context_properties *) _props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
+    _ctx = clCreateContextFromType(_props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
 
     if (errcode != NULL) {
         (*env)->ReleasePrimitiveArrayCritical(env, errcode, _errcode_ptr, 0);
@@ -49,7 +49,7 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType1(JNIEnv *env, jobject 
         (*env)->ReleasePrimitiveArrayCritical(env, props, _props_ptr, 0);
     }
 
-    return (jlong)_ctx;
+    return (jlong) (intptr_t)_ctx;
 }
 
 /*
@@ -66,14 +66,14 @@ JNIEXPORT jlong JNICALL
 Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
         jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
-    intptr_t * _props_ptr  = NULL;
+    cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
     size_t * _deviceListPtr = NULL;
 
     cl_context _ctx;
 
     if (props != NULL) {
-        _props_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
+        _props_ptr = (cl_context_properties*) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
     }
     if (deviceList != NULL) {
         _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)) /*+ device_byte_offset*/);
@@ -83,7 +83,7 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
     }
 
     // TODO payload, callback...
-    _ctx = clCreateContext((cl_context_properties *) _props_ptr, numDevices, (cl_device_id *)_deviceListPtr, NULL, NULL, (int32_t *) _errcode_ptr);
+    _ctx = clCreateContext(_props_ptr, numDevices, (cl_device_id *)_deviceListPtr, NULL, NULL, (int32_t *) _errcode_ptr);
 
     if (errcode != NULL) {
         (*env)->ReleasePrimitiveArrayCritical(env, errcode, _errcode_ptr, 0);
@@ -95,7 +95,7 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
         (*env)->ReleasePrimitiveArrayCritical(env, props, _props_ptr, 0);
     }
 
-    return (jlong) _ctx;
+    return (jlong) (intptr_t)_ctx;
 }
 
 /**
@@ -140,5 +140,5 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram1(JNIEnv *env, jobject _unused,
         (*env)->ReleaseStringUTFChars(env, options, _strchars_options);
     }
     
-    return _res;
+    return (jint)_res;
 }

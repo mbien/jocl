@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static java.lang.System.*;
-import static com.sun.gluegen.runtime.BufferFactory.*;
+import static com.mbien.opencl.CLProgram.CompilerOptions.*;
 
 /**
  *
@@ -62,7 +62,8 @@ public class CLProgramTest {
         out.println(" - - - CLProgramTest; down-/upload binaries test - - - ");
 
         CLContext context = CLContext.create();
-        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
+        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"))
+                                   .build(ENABLE_MAD, WARNINGS_ARE_ERRORS);
 
         // optain binaries
         Map<CLDevice, byte[]> binaries = program.getBinaries();

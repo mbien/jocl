@@ -15,7 +15,7 @@ import static com.mbien.opencl.CL.*;
 import java.util.Set;
 
 /**
- *
+ * Represents a OpenCL program executed on one or more {@link CLDevice}s.
  * @author Michael Bien
  */
 public class CLProgram implements CLResource {
@@ -188,16 +188,27 @@ public class CLProgram implements CLResource {
 
 
     /**
-     * Builds this program for all devices associated with the context and implementation specific build options.
+     * Builds this program for all devices associated with the context.
      * @return this
      */
     public CLProgram build() {
         build(null, (CLDevice[])null);
         return this;
     }
+    
+    /**
+     * Builds this program for the given devices.
+     * @return this
+     * @param devices A list of devices this program should be build on or null for all devices of its context.
+     */
+    public CLProgram build(CLDevice... devices) {
+        build(null, devices);
+        return this;
+    }
 
     /**
      * Builds this program for all devices associated with the context using the specified build options.
+     * @see CompilerOptions
      * @return this
      */
     public CLProgram build(String options) {
@@ -207,16 +218,18 @@ public class CLProgram implements CLResource {
 
     /**
      * Builds this program for all devices associated with the context using the specified build options.
+     * @see CompilerOptions
      * @return this
      */
-    public CLProgram build(Option... options) {
-        build(Option.optionsOf(options), (CLDevice[])null);
+    public CLProgram build(String... options) {
+        build(optionsOf(options), (CLDevice[])null);
         return this;
     }
 
     /**
      * Builds this program for the given devices and with the specified build options. In case this program was
      * already built and there are kernels associated with this program they will be released first before rebuild.
+     * @see CompilerOptions
      * @return this
      * @param devices A list of devices this program should be build on or null for all devices of its context.
      */
@@ -452,6 +465,19 @@ public class CLProgram implements CLResource {
         return map;
     }
 
+    /**
+     * Utility method which builds a properly seperated option string.
+     */
+    public static String optionsOf(String... options) {
+        StringBuilder sb = new StringBuilder(options.length * 24);
+        for (int i = 0; i < options.length; i++) {
+            sb.append(options[i]);
+            if(i!= options.length-1)
+                sb.append(" ");
+        }
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         return "CLProgram [id: " + ID
@@ -519,14 +545,14 @@ public class CLProgram implements CLResource {
     }
 
     /**
-     * Common compiler optons.
+     * Common compiler options for the OpenCL compiler.
      */
-    public enum Option {
+    public interface CompilerOptions {
 
         /**
          * Treat double precision floating-point constant as single precision constant.
          */
-        SINGLE_PRECISION_CONSTANTS("-cl-single-precision-constant"),
+        public final static String SINGLE_PRECISION_CONSTANTS = "-cl-single-precision-constant";
 
         /**
          * This option controls how single precision and double precision denormalized numbers are handled.
@@ -535,29 +561,29 @@ public class CLProgram implements CLResource {
          * may also be flushed to zero. This is intended to be a performance hint and the OpenCL compiler can choose
          * not to flush denorms to zero if the device supports single precision (or double precision) denormalized numbers.<br>
          * This option is ignored for single precision numbers if the device does not support single precision denormalized
-         * numbers i.e. CL_FP_DENORM bit is not set in CL_DEVICE_SINGLE_FP_CONFIG<br>
+         * numbers i.e. {@link CLDevice.FPConfig#DENORM} is not present in the set returned by {@link CLDevice#getSingleFPConfig()}<br>
          * This option is ignored for double precision numbers if the device does not support double precision or if it does support
-         * double precison but CL_FP_DENORM bit is not set in CL_DEVICE_DOUBLE_FP_CONFIG.<br>
+         * double precison but {@link CLDevice.FPConfig#DENORM} is not present in the set returned by {@link CLDevice#getDoubleFPConfig()}.<br>
          * This flag only applies for scalar and vector single precision floating-point variables and computations on
          * these floating-point variables inside a program. It does not apply to reading from or writing to image objects.
          */
-        DENORMS_ARE_ZERO("-cl-denorms-are-zero"),
+        public final static String DENORMS_ARE_ZERO = "-cl-denorms-are-zero";
 
         /**
          * This option disables all optimizations. The default is optimizations are enabled.
          */
-        DISABLE_OPT("-cl-opt-disable"),
+        public final static String DISABLE_OPT = "-cl-opt-disable";
 
         /**
          * This option allows the compiler to assume the strictest aliasing rules.
          */
-        STRICT_ALIASING("-cl-strict-aliasing"),
+        public final static String STRICT_ALIASING = "-cl-strict-aliasing";
 
         /**
          * Allow a * b + c to be replaced by a mad. The mad computes a * b + c with reduced accuracy.
          * For example, some OpenCL devices implement mad as truncate the result of a * b before adding it to c.
          */
-        ENABLE_MAD("-cl-mad-enable"),
+        public final static String ENABLE_MAD = "-cl-mad-enable";
 
         /**
          * Allow optimizations for floating-point arithmetic that ignore the signedness of zero.
@@ -565,7 +591,7 @@ public class CLProgram implements CLResource {
          * simplification of expressions such as x+0.0 or 0.0*x (even with -cl-finite-math-only ({@link #FINITE_MATH_ONLY})).
          * This option implies that the sign of a zero result isn't significant.
          */
-        NO_SIGNED_ZEROS("-cl-no-signed-zeros"),
+        public final static String NO_SIGNED_ZEROS = "-cl-no-signed-zeros";
 
         /**
          * Allow optimizations for floating-point arithmetic that<br>
@@ -573,18 +599,18 @@ public class CLProgram implements CLResource {
          * (b) may violate IEEE 754 standard and<br>
          * (c) may violate the OpenCL numerical compliance requirements as defined in section
          * 7.4 for single-precision floating-point, section 9.3.9 for double-precision floating-point,
-         * and edge case behavior in section 7.5.<br>
+         * and edge case behavior in section 7.5.
          * This option includes the -cl-no-signed-zeros ({@link #NO_SIGNED_ZEROS})
          * and -cl-mad-enable ({@link #ENABLE_MAD}) options.
          */
-        UNSAFE_MATH("-cl-unsafe-math-optimizations"),
+        public final static String UNSAFE_MATH = "-cl-unsafe-math-optimizations";
 
         /**
          * Allow optimizations for floating-point arithmetic that assume that arguments and results are not NaNs or ±∞.
          * This option may violate the OpenCL numerical compliance requirements defined in in section 7.4 for
          * single-precision floating-point, section 9.3.9 for double-precision floating-point, and edge case behavior in section 7.5.
          */
-        FINITE_MATH_ONLY("-cl-finite-math-only"),
+        public final static String FINITE_MATH_ONLY = "-cl-finite-math-only";
 
         /**
          * Sets the optimization options -cl-finite-math-only ({@link #FINITE_MATH_ONLY}) and -cl-unsafe-math-optimizations ({@link #UNSAFE_MATH}).
@@ -594,33 +620,17 @@ public class CLProgram implements CLResource {
          * floating-point, and edge case behavior in section 7.5. This option causes the preprocessor
          * macro __FAST_RELAXED_MATH__ to be defined in the OpenCL program.
          */
-        FAST_RELAXED_MATH("-cl-fast-relaxed-math"),
+        public final static String FAST_RELAXED_MATH = "-cl-fast-relaxed-math";
 
         /**
          * Inhibit all warning messages.
          */
-        DISABLE_WARNINGS("-w"),
+        public final static String DISABLE_WARNINGS = "-w";
 
         /**
          * Make all warnings into errors.
          */
-        WARNINGS_ARE_ERRORS("-Werror");
-
-        private final String option;
-
-        private Option(String option) {
-            this.option = option;
-        }
-
-        public final static String optionsOf(Option... options) {
-            StringBuilder sb = new StringBuilder(options.length * 24);
-            for (int i = 0; i < options.length; i++) {
-                sb.append(options[i].option);
-                if(i!= options.length-1)
-                    sb.append(" ");
-            }
-            return sb.toString();
-        }
+        public final static String WARNINGS_ARE_ERRORS = "-Werror";
 
     }
 

@@ -51,7 +51,7 @@ public class QueueBarrier {
     public QueueBarrier waitFor(CLCommandQueue queue, CLEventList events) {
         checkQueue(queue);
 
-        queue.putWaitForEvents(events);
+        queue.putWaitForEvents(events, true);
         latch.countDown();
         return this;
     }

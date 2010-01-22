@@ -331,7 +331,7 @@ public final class CLDevice {
     /**
      * Returns the optional double precision floating-point capability of the device.
      * The mandated minimum double precision floating-point capabilities are {@link FPConfig#FMA},
-     * {@link FPConfig#ROUND_TO_NEAREST}, {@link FPConfig#_ROUND_TO_ZERO},
+     * {@link FPConfig#ROUND_TO_NEAREST}, {@link FPConfig#ROUND_TO_ZERO},
      * {@link FPConfig#ROUND_TO_INF}, {@link FPConfig#INF_NAN}, and {@link FPConfig#DENORM}.
      * @return An EnumSet containing the extensions, never null.
      */

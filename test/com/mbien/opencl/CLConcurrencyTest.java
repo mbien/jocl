@@ -48,7 +48,7 @@ public class CLConcurrencyTest {
              .putWriteBuffer(clBufferB, false, events);      // write B
 
         assertEquals(2, events.size());
-        queue.putWaitForEvents(events);
+        queue.putWaitForEvents(events, true);
 
         events.release();
         assertEquals(0, events.size());
@@ -60,8 +60,8 @@ public class CLConcurrencyTest {
         queue.put1DRangeKernel(vectorAddKernel, 0, elements, 256, events);
 
         assertEquals(2, events.size());
-        queue.putWaitForEvent(events, 0)
-             .putWaitForEvent(events, 1);
+        queue.putWaitForEvent(events, 0, false)
+             .putWaitForEvent(events, 1, true);
 
         queue.putReadBuffer(clBufferC, false)
              .putReadBuffer(clBufferD, true);

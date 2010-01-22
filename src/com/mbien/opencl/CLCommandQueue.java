@@ -179,18 +179,20 @@ public class CLCommandQueue implements CLResource {
         return this;
     }
 
-    public CLCommandQueue putWaitForEvent(CLEventList list, int index) {
+    public CLCommandQueue putWaitForEvent(CLEventList list, int index, boolean blockingWait) {
         int marker = list.IDs.position()-1;
         list.IDs.position(index);
-        int ret = cl.clWaitForEvents(1, list.IDs);
+        int ret = blockingWait ? cl.clWaitForEvents(1, list.IDs)
+                               : cl.clEnqueueWaitForEvents(ID, 1, list.IDs);
         list.IDs.position(marker);
         checkForError(ret, "error while waiting for events");
         return this;
     }
 
-    public CLCommandQueue putWaitForEvents(CLEventList list) {
+    public CLCommandQueue putWaitForEvents(CLEventList list, boolean blockingWait) {
         list.IDs.rewind();
-        int ret = cl.clWaitForEvents(list.size, list.IDs);
+        int ret = blockingWait ? cl.clWaitForEvents(list.size, list.IDs)
+                               : cl.clEnqueueWaitForEvents(ID, list.size, list.IDs);
         checkForError(ret, "error while waiting for events");
         return this;
     }

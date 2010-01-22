@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.sun.gluegen.runtime.CPU;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -443,7 +444,11 @@ public final class CLDevice {
 
             int[] array = new int[n];
             for(int i = 0; i < array.length; i++) {
-                array[i] = (int)buffer.getLong();
+                if(CPU.is32Bit()) {
+                    array[i] = buffer.getInt();
+                }else{
+                    array[i] = (int)buffer.getLong();
+                }
             }
             buffer.rewind();
             

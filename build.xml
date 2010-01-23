@@ -251,12 +251,11 @@
             <fileset dir="${src.java.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.native.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
             <fileset dir="${build.generated.sources.dir}" erroronmissingdir="false">
                 <include name="**/*.java"/>
             </fileset>
+
+            <excludepackage name="com.mbien.opencl.impl"/>
         </javadoc>
     </target>
 

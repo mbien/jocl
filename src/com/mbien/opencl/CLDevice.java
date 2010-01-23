@@ -133,6 +133,54 @@ public final class CLDevice {
     }
 
     /**
+     * Preferred native vector width size for built-in short vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getPreferedShortVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT);
+    }
+
+    /**
+     * Preferred native vector width size for built-in char vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getPreferedCharVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR);
+    }
+
+    /**
+     * Preferred native vector width size for built-in int vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getPreferedIntVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT);
+    }
+
+    /**
+     * Preferred native vector width size for built-in long vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getPreferedLongVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG);
+    }
+
+    /**
+     * Preferred native vector width size for built-in float vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getPreferedFloatVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT);
+    }
+
+    /**
+     * Preferred native vector width size for built-in double vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getPreferedDoubleVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE);
+    }
+
+    /**
      * Returns the number of parallel compute cores on the OpenCL device.
      * The minimum value is 1.
      */
@@ -224,6 +272,14 @@ public final class CLDevice {
      */
     public long getGlobalMemCachSize() {
         return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
+    }
+
+    /**
+     * Returns the max number of arguments declared with the <code>constant</code>
+     * qualifier in a kernel. The minimum value is 8.
+     */
+    public long getMaxConstantArgs() {
+        return deviceInfo.getLong(CL_DEVICE_MAX_CONSTANT_ARGS);
     }
 
     /**

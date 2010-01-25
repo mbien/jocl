@@ -12,8 +12,8 @@ import static com.mbien.opencl.CLException.*;
  */
 public final class CLImage2d<B extends Buffer> extends CLImage<B> {
 
-    private CLImage2d(CLContext context, B directBuffer, CLImageFormat format, long id) {
-        super(context, directBuffer, format, id);
+    private CLImage2d(CLContext context, B directBuffer, CLImageFormat format, int width, int height, long id) {
+        super(context, directBuffer, format, width, height, id);
     }
 
     static <B extends Buffer> CLImage2d<B> createImage(CLContext context, B directBuffer,
@@ -25,12 +25,12 @@ public final class CLImage2d<B extends Buffer> extends CLImage<B> {
         long id = cl.clCreateImage2D(context.ID, flags, format, width, height, rowPitch, directBuffer, err);
         checkForError(err.get(), "can not create 2d image");
 
-        return new CLImage2d<B>(context, directBuffer, format, id);
+        return new CLImage2d<B>(context, directBuffer, format, width, height, id);
     }
 
     @Override
     public <T extends Buffer> CLImage2d<T> cloneWith(T directBuffer) {
-        return new CLImage2d<T>(context, directBuffer, format, ID);
+        return new CLImage2d<T>(context, directBuffer, format, width, height, ID);
     }
 
 }

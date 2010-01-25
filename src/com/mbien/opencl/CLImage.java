@@ -15,10 +15,15 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
 
     final CLInfoAccessor imageInfo;
 
-    protected CLImage(CLContext context, B directBuffer, CLImageFormat format, long id) {
+    public final int width;
+    public final int height;
+
+    protected CLImage(CLContext context, B directBuffer, CLImageFormat format, int width, int height, long id) {
         super(context, directBuffer, id);
         this.imageInfo = new CLImageInfoAccessor();
         this.format = format;
+        this.width = width;
+        this.height = height;
     }
 
     /**
@@ -47,14 +52,14 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
      * Returns width of this image in pixels.
      */
     public int getWidth() {
-        return (int)imageInfo.getLong(CL_IMAGE_WIDTH);
+        return width;
     }
 
     /**
      * Returns the height of this image in pixels.
      */
     public int getHeight() {
-        return (int)imageInfo.getLong(CL_IMAGE_HEIGHT);
+        return height;
     }
 
 

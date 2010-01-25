@@ -36,9 +36,9 @@ public class CLCommandQueue implements CLResource {
         this.cl = context.cl;
         this.device = device;
 
-        this.bufferA = PointerBuffer.allocateDirect(2);
-        this.bufferB = PointerBuffer.allocateDirect(2);
-        this.bufferC = PointerBuffer.allocateDirect(2);
+        this.bufferA = PointerBuffer.allocateDirect(3);
+        this.bufferB = PointerBuffer.allocateDirect(3);
+        this.bufferC = PointerBuffer.allocateDirect(3);
 
         int[] status = new int[1];
         this.ID = cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
@@ -124,11 +124,29 @@ public class CLCommandQueue implements CLResource {
         return this;
     }
 
-    /*
-    public CLCommandQueue putWriteImage(CLBuffer<?> writeBuffer, boolean blockingWrite, CLEventList events) {
-        
-        int ret = cl.clEnqueueWriteImage(ID, writeBuffer.ID, blockingWrite ? CL_TRUE : CL_FALSE,
-                                         null,null,0,0,null,    0, null,events==null ? null : events.IDs);
+    //2D
+    public CLCommandQueue putWriteImage(CLImage2d<?> writeImage, boolean blockingWrite) {
+        return putWriteImage(writeImage, 0, 0, 0, writeImage.width, writeImage.height, blockingWrite, null);
+    }
+
+    public CLCommandQueue putWriteImage(CLImage2d<?> writeImage, boolean blockingWrite, CLEventList events) {
+        return putWriteImage(writeImage, 0, 0, 0, writeImage.width, writeImage.height, blockingWrite, events);
+    }
+
+    public CLCommandQueue putWriteImage(CLImage2d<?> writeImage, int inputRowPitch,
+            int originX, int originY, int rangeX, int rangeY, boolean blockingWrite) {
+        return putWriteImage(writeImage, inputRowPitch, originX, originY, rangeX, rangeY, blockingWrite, null);
+    }
+
+    public CLCommandQueue putWriteImage(CLImage2d<?> writeImage, int inputRowPitch,
+            int originX, int originY, int rangeX, int rangeY, boolean blockingWrite, CLEventList events) {
+
+        bufferA.position(1).put(originX).put(originY).position(1);
+        bufferB.position(1).put(rangeX).put(rangeY).position(1);
+
+        int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, blockingWrite ? CL_TRUE : CL_FALSE,
+                                         bufferA, bufferB, inputRowPitch, 0, writeImage.buffer,
+                                         0, null, events==null ? null : events.IDs);
         checkForError(ret, "can not write Image");
 
         if(events != null) {
@@ -136,24 +154,179 @@ public class CLCommandQueue implements CLResource {
         }
         return this;
     }
-     */
+
+    //3D
+    public CLCommandQueue putWriteImage(CLImage3d<?> writeImage, boolean blockingWrite) {
+        return putWriteImage(writeImage, 0, 0, 0, 0, 0, writeImage.width, writeImage.height, writeImage.depth, blockingWrite, null);
+    }
+
+    public CLCommandQueue putWriteImage(CLImage3d<?> writeImage, boolean blockingWrite, CLEventList events) {
+        return putWriteImage(writeImage, 0, 0, 0, 0, 0, writeImage.width, writeImage.height, writeImage.depth, blockingWrite, events);
+    }
+
+    public CLCommandQueue putWriteImage(CLImage3d<?> writeImage, int inputRowPitch, int inputSlicePitch,
+            int originX, int originY, int originZ, int rangeX, int rangeY, int rangeZ, boolean blockingWrite) {
+        return putWriteImage(writeImage, inputRowPitch, inputSlicePitch, originX, originY, originZ, rangeX, rangeY, rangeZ, blockingWrite, null);
+    }
+
+    public CLCommandQueue putWriteImage(CLImage3d<?> writeImage, int inputRowPitch, int inputSlicePitch,
+            int originX, int originY, int originZ, int rangeX, int rangeY, int rangeZ, boolean blockingWrite, CLEventList events) {
+
+        bufferA.rewind().put(originX).put(originY).put(originZ).rewind();
+        bufferB.rewind().put(rangeX).put(rangeY).put(rangeZ).rewind();
+
+        int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, blockingWrite ? CL_TRUE : CL_FALSE,
+                                         bufferA, bufferB, inputRowPitch, inputSlicePitch, writeImage.buffer,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not write Image");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+
+    //2D
+    public CLCommandQueue putReadImage(CLImage2d<?> readImage, boolean blockingRead) {
+        return putReadImage(readImage, 0, 0, 0, readImage.width, readImage.height, blockingRead, null);
+    }
+
+    public CLCommandQueue putReadImage(CLImage2d<?> readImage, boolean blockingRead, CLEventList events) {
+        return putReadImage(readImage, 0, 0, 0, readImage.width, readImage.height, blockingRead, events);
+    }
+
+    public CLCommandQueue putReadImage(CLImage2d<?> readImage, int inputRowPitch,
+            int originX, int originY, int rangeX, int rangeY, boolean blockingRead) {
+        return putReadImage(readImage, inputRowPitch, originX, originY, rangeX, rangeY, blockingRead, null);
+    }
+
+    public CLCommandQueue putReadImage(CLImage2d<?> readImage, int inputRowPitch,
+            int originX, int originY, int rangeX, int rangeY, boolean blockingRead, CLEventList events) {
+
+        bufferA.position(1).put(originX).put(originY).position(1);
+        bufferB.position(1).put(rangeX).put(rangeY).position(1);
+
+        int ret = cl.clEnqueueReadImage(ID, readImage.ID, blockingRead ? CL_TRUE : CL_FALSE,
+                                         bufferA, bufferB, inputRowPitch, 0, readImage.buffer,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not read Image");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+
+    //3D
+    public CLCommandQueue putReadImage(CLImage3d<?> readImage, boolean blockingRead) {
+        return putReadImage(readImage, 0, 0, 0, 0, 0, readImage.width, readImage.height, readImage.depth, blockingRead, null);
+    }
+
+    public CLCommandQueue putReadImage(CLImage3d<?> readImage, boolean blockingRead, CLEventList events) {
+        return putReadImage(readImage, 0, 0, 0, 0, 0, readImage.width, readImage.height, readImage.depth, blockingRead, events);
+    }
+
+    public CLCommandQueue putReadImage(CLImage3d<?> readImage, int inputRowPitch, int inputSlicePitch,
+            int originX, int originY, int originZ, int rangeX, int rangeY, int rangeZ, boolean blockingRead) {
+        return putReadImage(readImage, inputRowPitch, inputSlicePitch, originX, originY, originZ, rangeX, rangeY, rangeZ, blockingRead, null);
+    }
+
+    public CLCommandQueue putReadImage(CLImage3d<?> readImage, int inputRowPitch, int inputSlicePitch,
+            int originX, int originY, int originZ, int rangeX, int rangeY, int rangeZ, boolean blockingRead, CLEventList events) {
+
+        bufferA.rewind().put(originX).put(originY).put(originZ).rewind();
+        bufferB.rewind().put(rangeX).put(rangeY).put(rangeZ).rewind();
+
+        int ret = cl.clEnqueueReadImage(ID, readImage.ID, blockingRead ? CL_TRUE : CL_FALSE,
+                                         bufferA, bufferB, inputRowPitch, inputSlicePitch, readImage.buffer,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not read Image");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+
+    //2D
+    public CLCommandQueue putCopyImage(CLImage2d<?> srcImage, CLImage2d<?> dstImage) {
+        return putCopyImage(srcImage, dstImage, 0, 0, 0, 0, srcImage.width, srcImage.height, null);
+    }
+
+    public CLCommandQueue putCopyImage(CLImage2d<?> srcImage, CLImage2d<?> dstImage, CLEventList events) {
+        return putCopyImage(srcImage, dstImage, 0, 0, 0, 0, srcImage.width, srcImage.height, events);
+    }
+
+    public CLCommandQueue putCopyImage(CLImage2d<?> srcImage, CLImage2d<?> dstImage,
+                                        int srcOriginX, int srcOriginY,
+                                        int dstOriginX, int dstOriginY,
+                                        int rangeX, int rangeY) {
+        return putCopyImage(srcImage, dstImage, srcOriginX, srcOriginY, dstOriginX, dstOriginY, rangeX, rangeY, null);
+    }
+
+    public CLCommandQueue putCopyImage(CLImage2d<?> srcImage, CLImage2d<?> dstImage,
+                                        int srcOriginX, int srcOriginY,
+                                        int dstOriginX, int dstOriginY,
+                                        int rangeX, int rangeY, CLEventList events) {
+
+        bufferA.position(1).put(srcOriginX).put(srcOriginY).position(1);
+        bufferB.position(1).put(dstOriginX).put(dstOriginY).position(1);
+        bufferC.position(1).put(rangeX).put(rangeY).position(1);
+
+        int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, bufferA, bufferB, bufferC,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not copy Image");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+
+    //3D
+    public CLCommandQueue putCopyImage(CLImage3d<?> srcImage, CLImage3d<?> dstImage) {
+        return putCopyImage(srcImage, dstImage, 0, 0, 0, 0, 0, 0, srcImage.width, srcImage.height, srcImage.depth, null);
+    }
+
+    public CLCommandQueue putCopyImage(CLImage3d<?> srcImage, CLImage3d<?> dstImage, CLEventList events) {
+        return putCopyImage(srcImage, dstImage, 0, 0, 0, 0, 0, 0, srcImage.width, srcImage.height, srcImage.depth, events);
+    }
+
+    public CLCommandQueue putCopyImage(CLImage3d<?> srcImage, CLImage3d<?> dstImage,
+                                        int srcOriginX, int srcOriginY, int srcOriginZ,
+                                        int dstOriginX, int dstOriginY, int dstOriginZ,
+                                        int rangeX, int rangeY, int rangeZ) {
+        return putCopyImage(srcImage, dstImage, srcOriginX, srcOriginY, srcOriginZ,
+                                                dstOriginX, dstOriginY, dstOriginZ,
+                                                rangeX, rangeY, rangeZ, null);
+    }
+
+    public CLCommandQueue putCopyImage(CLImage3d<?> srcImage, CLImage3d<?> dstImage,
+                                        int srcOriginX, int srcOriginY, int srcOriginZ,
+                                        int dstOriginX, int dstOriginY, int dstOriginZ,
+                                        int rangeX, int rangeY, int rangeZ, CLEventList events) {
+
+        bufferA.rewind().put(srcOriginX).put(srcOriginY).put(srcOriginZ).rewind();
+        bufferB.rewind().put(dstOriginX).put(dstOriginY).put(dstOriginZ).rewind();
+        bufferC.rewind().put(rangeX).put(rangeY).put(rangeZ).rewind();
+
+        int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, bufferA, bufferB, bufferC,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not copy Image");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
     
     //TODO implement remaining methods
     /*
-    public CLCommandQueue putCopyImage() {
-
-        return this;
-    }
     public CLCommandQueue putCopyBufferToImage() {
 
         return this;
     }
     public CLCommandQueue putCopyImageToBuffer() {
-
-        return this;
-    }
-
-    public CLCommandQueue putReadImage() {
 
         return this;
     }
@@ -237,13 +410,13 @@ public class CLCommandQueue implements CLResource {
         PointerBuffer locWS = null;
 
         if(globalWorkOffset != 0) {
-            globWO = bufferA.put(1, globalWorkOffset).position(1);
+            globWO = bufferA.put(2, globalWorkOffset).position(2);
         }
         if(globalWorkSize != 0) {
-            globWS = bufferB.put(1, globalWorkSize).position(1);
+            globWS = bufferB.put(2, globalWorkSize).position(2);
         }
         if(globalWorkSize != 0) {
-            locWS = bufferC.put(1, localWorkSize).position(1);
+            locWS = bufferC.put(2, localWorkSize).position(2);
         }
 
         this.putNDRangeKernel(kernel, 1, globWO, globWS, locWS, events);
@@ -269,13 +442,13 @@ public class CLCommandQueue implements CLResource {
         PointerBuffer localWorkSize = null;
 
         if(globalWorkOffsetX != 0 && globalWorkOffsetY != 0) {
-            globalWorkOffset = bufferA.put(globalWorkOffsetX).put(globalWorkOffsetY).rewind();
+            globalWorkOffset = bufferA.position(1).put(globalWorkOffsetX).put(globalWorkOffsetY).position(1);
         }
         if(globalWorkSizeX != 0 && globalWorkSizeY != 0) {
-            globalWorkSize = bufferB.put(globalWorkSizeX).put(globalWorkSizeY).rewind();
+            globalWorkSize = bufferB.position(1).put(globalWorkSizeX).put(globalWorkSizeY).position(1);
         }
         if(localWorkSizeX != 0 && localWorkSizeY !=0) {
-            localWorkSize = bufferC.put(localWorkSizeX).put(localWorkSizeY).rewind();
+            localWorkSize = bufferC.position(1).put(localWorkSizeX).put(localWorkSizeY).position(1);
         }
         this.putNDRangeKernel(kernel, 2, globalWorkOffset, globalWorkSize, localWorkSize);
         return this;
@@ -314,7 +487,7 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putAcquireGLObject(long glObject, CLEventList events) {
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = bufferA.put(1, glObject).position(1);
+        PointerBuffer glObj = bufferA.put(2, glObject).position(2);
         
         int ret = xl.clEnqueueAcquireGLObjects(ID, 1, glObj, 0, null,
                     events==null ? null : events.IDs);
@@ -337,7 +510,7 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReleaseGLObject(long glObject, CLEventList events) {
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = bufferA.put(1, glObject).position(1);
+        PointerBuffer glObj = bufferA.put(2, glObject).position(2);
 
         int ret = xl.clEnqueueReleaseGLObjects(ID, 1, glObj, 0, null,
                 events==null ? null : events.IDs);

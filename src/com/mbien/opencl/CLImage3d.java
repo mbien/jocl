@@ -13,8 +13,11 @@ import static com.mbien.opencl.CLException.*;
  */
 public final class CLImage3d<B extends Buffer> extends CLImage<B> {
 
-    private CLImage3d(CLContext context, B directBuffer, CLImageFormat format, long id) {
-        super(context, directBuffer, format, id);
+    public final int depth;
+
+    private CLImage3d(CLContext context, B directBuffer, CLImageFormat format, int width, int height, int depth, long id) {
+        super(context, directBuffer, format, width, height, id);
+        this.depth = depth;
     }
 
     static <B extends Buffer> CLImage3d<B> createImage(CLContext context, B directBuffer,
@@ -26,12 +29,12 @@ public final class CLImage3d<B extends Buffer> extends CLImage<B> {
         long id = cl.clCreateImage3D(context.ID, flags, format, width, height, depth, rowPitch, slicePitch, directBuffer, err);
         checkForError(err.get(), "can not create 2d image");
 
-        return new CLImage3d<B>(context, directBuffer, format, id);
+        return new CLImage3d<B>(context, directBuffer, format, width, height, depth, id);
     }
 
     @Override
     public <T extends Buffer> CLImage3d<T> cloneWith(T directBuffer) {
-        return new CLImage3d<T>(context, directBuffer, format, ID);
+        return new CLImage3d<T>(context, directBuffer, format, width, height, depth, ID);
     }
 
     /**
@@ -45,6 +48,6 @@ public final class CLImage3d<B extends Buffer> extends CLImage<B> {
      * Returns the depth of this image in pixels.
      */
     public int getDepth() {
-        return (int)imageInfo.getLong(CL_IMAGE_DEPTH);
+        return depth;
     }
 }

@@ -241,12 +241,15 @@ public class CLProgram implements CLResource {
             releaseKernels();
         }
 
-        long[] deviceIDs = null;
+        PointerBuffer deviceIDs = null;
+        int count = 0;
         if(devices != null) {
-            deviceIDs = new long[devices.length];
-            for (int i = 0; i < deviceIDs.length; i++) {
-                deviceIDs[i] = devices[i].ID;
+            deviceIDs = PointerBuffer.allocateDirect(devices.length);
+            for (int i = 0; i < devices.length; i++) {
+                deviceIDs.put(i, devices[i].ID);
             }
+            deviceIDs.rewind();
+            count = devices.length;
         }
 
         // invalidate build status
@@ -254,7 +257,7 @@ public class CLProgram implements CLResource {
         executable = false;
 
         // Build the program
-        int ret = cl.clBuildProgram(ID, deviceIDs, options, null, null);
+        int ret = cl.clBuildProgram(ID, count, deviceIDs, options, null, null);
 
         if(ret != CL_SUCCESS) {
             throw new CLException(ret, "\n"+getBuildLog());

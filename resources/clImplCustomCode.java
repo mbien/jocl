@@ -1,66 +1,72 @@
 
-        CLProcAddressTable addressTable = new CLProcAddressTable();
+    CLProcAddressTable addressTable = new CLProcAddressTable();
 
-        public long clCreateContext(java.nio.Buffer properties, long[] devices, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
+    public long clCreateContext(PointerBuffer properties, PointerBuffer devices, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
 
-            if(pfn_notify != null)
-                throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
+        if(properties!=null && !properties.isDirect())
+            throw new RuntimeException("Argument \"properties\" was not a direct buffer");
 
-            if(userData != null)
-                System.err.println("WARNING: userData not yet implemented... ignoring");
+        if(pfn_notify != null)
+            throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
 
-            int listLength = 0;
-            if(devices != null)
-                listLength = devices.length;
+        if(userData != null)
+            System.err.println("WARNING: userData not yet implemented... ignoring");
 
-            return this.clCreateContext1(
-                    BufferFactory.getArray(properties), BufferFactory.getIndirectBufferByteOffset(properties), listLength, devices, null, null,
-                    BufferFactory.getArray(errcode_ret), BufferFactory.getIndirectBufferByteOffset(errcode_ret) );
-        }
-        private native long clCreateContext1(Object cl_context_properties, int props_offset, int deviceCount, long[] devices, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
+        return this.clCreateContext0(
+                properties!=null?properties.getBuffer():null, BufferFactory.getDirectBufferByteOffset(properties),
+                devices!=null?devices.getBuffer():null, BufferFactory.getDirectBufferByteOffset(devices),
+                null, null,
+                errcode_ret, BufferFactory.getDirectBufferByteOffset(errcode_ret) );
+    }
+    private native long clCreateContext0(Object cl_context_properties, int props_offset, Object devices, int devices_offset, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
 
         
-        public long clCreateContextFromType(java.nio.Buffer properties, long device_type, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
+    public long clCreateContextFromType(PointerBuffer properties, long device_type, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
 
-            if(pfn_notify != null)
-                throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
+        if(properties!=null && !properties.isDirect())
+            throw new RuntimeException("Argument \"properties\" was not a direct buffer");
 
-            if(userData != null)
-                System.err.println("WARNING: userData not yet implemented... ignoring");
+        if(pfn_notify != null)
+            throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
 
-            return this.clCreateContextFromType1(
-                    BufferFactory.getArray(properties), BufferFactory.getIndirectBufferByteOffset(properties), device_type, pfn_notify, null,
-                    BufferFactory.getArray(errcode_ret), BufferFactory.getIndirectBufferByteOffset(errcode_ret) );
+        if(userData != null)
+            System.err.println("WARNING: userData not yet implemented... ignoring");
+
+        return this.clCreateContextFromType0(
+                properties!=null?properties.getBuffer():null, BufferFactory.getDirectBufferByteOffset(properties),
+                device_type, pfn_notify, null,
+                errcode_ret, BufferFactory.getDirectBufferByteOffset(errcode_ret) );
+    }
+    private native long clCreateContextFromType0(Object properties, int props_offset, long device_type, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
+
+
+    /** Interface to C language function: <br> <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
+    public int clBuildProgram(long program, int deviceCount, PointerBuffer deviceList, String options, BuildProgramCallback cb, Object userData)  {
+
+        if(deviceList!=null && !deviceList.isDirect())
+            throw new RuntimeException("Argument \"properties\" was not a direct buffer");
+
+        if(cb != null)
+            throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
+
+        if(userData != null)
+            System.err.println("WARNING: userData not yet implemented... ignoring");
+
+        return clBuildProgram0(program, deviceCount,
+                               deviceList!=null?deviceList.getBuffer():null, BufferFactory.getDirectBufferByteOffset(deviceList),
+                               options, cb, userData);
+    }
+    /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
+    private native int clBuildProgram0(long program, int deviceCount, Object deviceList, int deviceListOffset, String options, BuildProgramCallback cb, Object userData);
+
+
+    private final static void convert32To64(long[] values) {
+        if(values.length%2 == 1) {
+            values[values.length-1] = values[values.length/2]>>>32;
         }
-        private native long clCreateContextFromType1(Object properties, int props_offset, long device_type, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
-
-
-        /** Interface to C language function: <br> <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
-        public int clBuildProgram(long program, long[] deviceList, String options, BuildProgramCallback cb, Object userData)  {
-
-              if(cb != null)
-                  throw new RuntimeException("asynchronous execution with callback is not yet implemented, pass null through this method to block until complete.");
-
-              if(userData != null)
-                  System.err.println("WARNING: userData not yet implemented... ignoring");
-
-              int listLength = 0;
-              if(deviceList != null)
-                  listLength = deviceList.length;
-
-              return clBuildProgram1(program, listLength, deviceList, options, cb, userData);
+        for (int i = values.length - 1 - values.length%2; i >= 0; i-=2) {
+            long temp = values[i/2];
+            values[i-1] = temp>>>32;
+            values[i  ] = temp & 0x00000000FFFFFFFFL;
         }
-        /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
-        private native int clBuildProgram1(long program, int devices, Object deviceList, String options, BuildProgramCallback cb, Object userData);
-
-
-        private final static void convert32To64(long[] values) {
-            if(values.length%2 == 1) {
-                values[values.length-1] = values[values.length/2]>>>32;
-            }
-            for (int i = values.length - 1 - values.length%2; i >= 0; i-=2) {
-                long temp = values[i/2];
-                values[i-1] = temp>>>32;
-                values[i  ] = temp & 0x00000000FFFFFFFFL;
-            }
-        }
+    }

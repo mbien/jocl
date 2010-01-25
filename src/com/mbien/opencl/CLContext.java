@@ -3,6 +3,7 @@ package com.mbien.opencl;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
+import com.sun.gluegen.runtime.BufferFactory;
 import com.sun.gluegen.runtime.CPU;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.io.BufferedReader;
@@ -80,7 +81,7 @@ public class CLContext implements CLResource {
      * The platform to be used is implementation dependent.
      */
     public static final CLContext create() {
-        Buffer properties = setupContextProperties(null);
+        PointerBuffer properties = setupContextProperties(null);
         return new CLContext(createContextFromType(properties, CL.CL_DEVICE_TYPE_ALL));
     }
 
@@ -120,7 +121,7 @@ public class CLContext implements CLResource {
             }
         }
 
-        Buffer properties = setupContextProperties(platform);
+        PointerBuffer properties = setupContextProperties(platform);
         return new CLContext(createContextFromType(properties, type));
     }
 
@@ -136,11 +137,11 @@ public class CLContext implements CLResource {
             deviceIDs[i] = devices[i].ID;
         }
 
-        Buffer properties = setupContextProperties(platform);
+        PointerBuffer properties = setupContextProperties(platform);
         return new CLContext(createContext(properties, deviceIDs));
     }
 
-    protected static final long createContextFromType(Buffer properties, long deviceType) {
+    protected static final long createContextFromType(PointerBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(properties, deviceType, null, null, status);
@@ -150,17 +151,24 @@ public class CLContext implements CLResource {
         return context;
     }
 
-    protected static final long createContext(Buffer properties, long[] devices) {
+    protected static final long createContext(PointerBuffer properties, long[] devices) {
 
-        IntBuffer status = IntBuffer.allocate(1);
-        long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, devices, null, null, status);
+        IntBuffer status = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+        PointerBuffer pb = null;
+        if(devices != null && devices.length != 0) {
+            pb = PointerBuffer.allocateDirect(devices.length);
+            for (int i = 0; i < devices.length; i++) {
+                pb.put(i, devices[i]);
+            }
+        }
+        long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, pb, null, null, status);
 
         checkForError(status.get(), "can not create CL context");
 
         return context;
     }
 
-    private static final Buffer setupContextProperties(CLPlatform platform) {
+    private static final PointerBuffer setupContextProperties(CLPlatform platform) {
 
         if(platform == null) {
             CLPlatform[] platforms = CLPlatform.listCLPlatforms();
@@ -168,16 +176,11 @@ public class CLContext implements CLResource {
                 platform = platforms[0];
         }
 
-        Buffer properties = null;
+        PointerBuffer properties = null;
         if(platform != null) {
-            if(CPU.is32Bit()){
-                properties = ByteBuffer.allocate(4*3).order(ByteOrder.nativeOrder())
-                    .putInt(CL.CL_CONTEXT_PLATFORM).putInt((int)platform.ID).putInt(0); // 0 terminated array
-            }else{
-                properties = LongBuffer.allocate(3)
-                    .put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0); // 0 terminated array
-            }
-            properties.rewind();
+            properties = PointerBuffer.allocateDirect(3)
+                                      .put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0) // 0 terminated array
+                                      .rewind();
         }
         return properties;
     }

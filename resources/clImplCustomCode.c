@@ -25,29 +25,23 @@ void createContextCallback(const char * c, const void * v, size_t s, void * o) {
  *                                                      cl_int *                 errcode_ret );
  */
 JNIEXPORT jlong JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType1(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jlong device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
+Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject _unused,
+        jobject props, jint props_byte_offset, jobject device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
     cl_context _ctx;
 
     if (props != NULL) {
-        _props_ptr = (cl_context_properties*) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
+        _props_ptr = (cl_context_properties*) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
     }
+
     if (errcode != NULL) {
-        _errcode_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, errcode, NULL)) + errcode_byte_offset);
+        _errcode_ptr = (void *) (((char*) (*env)->GetDirectBufferAddress(env, errcode)) + errcode_byte_offset);
     }
 
     //TODO callback; payload
     _ctx = clCreateContextFromType(_props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
-
-    if (errcode != NULL) {
-        (*env)->ReleasePrimitiveArrayCritical(env, errcode, _errcode_ptr, 0);
-    }
-    if (props != NULL) {
-        (*env)->ReleasePrimitiveArrayCritical(env, props, _props_ptr, 0);
-    }
 
     return (jlong) (intptr_t)_ctx;
 }
@@ -63,8 +57,8 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType1(JNIEnv *env, jobject 
  *                cl_int *                   errcode_ret   ) CL_API_SUFFIX__VERSION_1_0;
  */
 JNIEXPORT jlong JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
+Java_com_mbien_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
+        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
@@ -73,27 +67,17 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
     cl_context _ctx;
 
     if (props != NULL) {
-        _props_ptr = (cl_context_properties*) (((char*) (*env)->GetPrimitiveArrayCritical(env, props, NULL)) + props_byte_offset);
+        _props_ptr = (cl_context_properties*) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
     }
     if (deviceList != NULL) {
-        _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)) /*+ device_byte_offset*/);
+        _deviceListPtr = (void *) (((char*) (*env)->GetDirectBufferAddress(env, deviceList)) + device_type_offset);
     }
     if (errcode != NULL) {
-        _errcode_ptr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, errcode, NULL)) + errcode_byte_offset);
+        _errcode_ptr = (void *) (((char*) (*env)->GetDirectBufferAddress(env, errcode)) + errcode_byte_offset);
     }
 
     // TODO payload, callback...
     _ctx = clCreateContext(_props_ptr, numDevices, (cl_device_id *)_deviceListPtr, NULL, NULL, (int32_t *) _errcode_ptr);
-
-    if (errcode != NULL) {
-        (*env)->ReleasePrimitiveArrayCritical(env, errcode, _errcode_ptr, 0);
-    }
-    if (deviceList != NULL) {
-        (*env)->ReleasePrimitiveArrayCritical(env, deviceList, _deviceListPtr, 0);
-    }
-    if (props != NULL) {
-        (*env)->ReleasePrimitiveArrayCritical(env, props, _props_ptr, 0);
-    }
 
     return (jlong) (intptr_t)_ctx;
 }
@@ -109,8 +93,8 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContext1(JNIEnv *env, jobject _unused,
  *               void *                  user_data   ) CL_API_SUFFIX__VERSION_1_0;
  */
 JNIEXPORT jint JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clBuildProgram1(JNIEnv *env, jobject _unused,
-        jlong program, jint deviceCount, jobject deviceList, jstring options, jobject cb, jobject data) {
+Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
+        jlong program, jint deviceCount, jobject deviceList, jint device_type_offset, jstring options, jobject cb, jobject data) {
 
     const char* _strchars_options = NULL;
     cl_int _res;
@@ -126,15 +110,11 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram1(JNIEnv *env, jobject _unused,
     }
 
     if (deviceList != NULL) {
-        _deviceListPtr = (void *) (((char*) (*env)->GetPrimitiveArrayCritical(env, deviceList, NULL)));
+        _deviceListPtr = (void *) (((char*) (*env)->GetDirectBufferAddress(env, deviceList)) + device_type_offset);
     }
 
     // TODO payload, callback...
     _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, (cl_device_id *)_deviceListPtr, _strchars_options, NULL, NULL);
-
-    if (deviceList != NULL) {
-        (*env)->ReleasePrimitiveArrayCritical(env, deviceList, _deviceListPtr, 0);
-    }
 
     if (options != NULL) {
         (*env)->ReleaseStringUTFChars(env, options, _strchars_options);

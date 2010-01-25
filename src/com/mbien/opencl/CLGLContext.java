@@ -2,11 +2,11 @@ package com.mbien.opencl;
 
 import java.nio.Buffer;
 import com.mbien.opencl.CLMemory.Mem;
+import com.sun.gluegen.runtime.PointerBuffer;
 import com.sun.opengl.impl.GLContextImpl;
 import com.sun.opengl.impl.macosx.cgl.MacOSXCGLContext;
 import com.sun.opengl.impl.windows.wgl.WindowsWGLContext;
 import com.sun.opengl.impl.x11.glx.X11GLXContext;
-import java.nio.LongBuffer;
 import javax.media.nativewindow.DefaultGraphicsConfiguration;
 import javax.media.opengl.GLContext;
 
@@ -52,7 +52,7 @@ public final class CLGLContext extends CLContext {
         DefaultGraphicsConfiguration config = (DefaultGraphicsConfiguration)ctxImpl.getDrawableImpl()
              .getNativeWindow().getGraphicsConfiguration().getNativeGraphicsConfiguration();
 
-        LongBuffer properties = LongBuffer.allocate(5);
+        PointerBuffer properties = PointerBuffer.allocateDirect(5);
         if(glContext instanceof X11GLXContext) {
             long handle = config.getScreen().getDevice().getHandle();
             glID = ((X11GLXContext)glContext).getContext();

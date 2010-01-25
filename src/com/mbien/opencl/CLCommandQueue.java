@@ -141,8 +141,8 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putWriteImage(CLImage2d<?> writeImage, int inputRowPitch,
             int originX, int originY, int rangeX, int rangeY, boolean blockingWrite, CLEventList events) {
 
-        bufferA.position(1).put(originX).put(originY).position(1);
-        bufferB.position(1).put(rangeX).put(rangeY).position(1);
+        copy2NIO(bufferA, originX, originY);
+        copy2NIO(bufferB, rangeX, rangeY);
 
         int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, blockingWrite ? CL_TRUE : CL_FALSE,
                                          bufferA, bufferB, inputRowPitch, 0, writeImage.buffer,
@@ -172,8 +172,8 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putWriteImage(CLImage3d<?> writeImage, int inputRowPitch, int inputSlicePitch,
             int originX, int originY, int originZ, int rangeX, int rangeY, int rangeZ, boolean blockingWrite, CLEventList events) {
 
-        bufferA.rewind().put(originX).put(originY).put(originZ).rewind();
-        bufferB.rewind().put(rangeX).put(rangeY).put(rangeZ).rewind();
+        copy2NIO(bufferA, originX, originY, originZ);
+        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
 
         int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, blockingWrite ? CL_TRUE : CL_FALSE,
                                          bufferA, bufferB, inputRowPitch, inputSlicePitch, writeImage.buffer,
@@ -203,8 +203,8 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReadImage(CLImage2d<?> readImage, int inputRowPitch,
             int originX, int originY, int rangeX, int rangeY, boolean blockingRead, CLEventList events) {
 
-        bufferA.position(1).put(originX).put(originY).position(1);
-        bufferB.position(1).put(rangeX).put(rangeY).position(1);
+        copy2NIO(bufferA, originX, originY);
+        copy2NIO(bufferB, rangeX, rangeY);
 
         int ret = cl.clEnqueueReadImage(ID, readImage.ID, blockingRead ? CL_TRUE : CL_FALSE,
                                          bufferA, bufferB, inputRowPitch, 0, readImage.buffer,
@@ -234,8 +234,8 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReadImage(CLImage3d<?> readImage, int inputRowPitch, int inputSlicePitch,
             int originX, int originY, int originZ, int rangeX, int rangeY, int rangeZ, boolean blockingRead, CLEventList events) {
 
-        bufferA.rewind().put(originX).put(originY).put(originZ).rewind();
-        bufferB.rewind().put(rangeX).put(rangeY).put(rangeZ).rewind();
+        copy2NIO(bufferA, originX, originY, originZ);
+        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
 
         int ret = cl.clEnqueueReadImage(ID, readImage.ID, blockingRead ? CL_TRUE : CL_FALSE,
                                          bufferA, bufferB, inputRowPitch, inputSlicePitch, readImage.buffer,
@@ -269,9 +269,9 @@ public class CLCommandQueue implements CLResource {
                                         int dstOriginX, int dstOriginY,
                                         int rangeX, int rangeY, CLEventList events) {
 
-        bufferA.position(1).put(srcOriginX).put(srcOriginY).position(1);
-        bufferB.position(1).put(dstOriginX).put(dstOriginY).position(1);
-        bufferC.position(1).put(rangeX).put(rangeY).position(1);
+        copy2NIO(bufferA, srcOriginX, srcOriginY);
+        copy2NIO(bufferB, dstOriginX, dstOriginY);
+        copy2NIO(bufferC, rangeX, rangeY);
 
         int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, bufferA, bufferB, bufferC,
                                          0, null, events==null ? null : events.IDs);
@@ -306,9 +306,9 @@ public class CLCommandQueue implements CLResource {
                                         int dstOriginX, int dstOriginY, int dstOriginZ,
                                         int rangeX, int rangeY, int rangeZ, CLEventList events) {
 
-        bufferA.rewind().put(srcOriginX).put(srcOriginY).put(srcOriginZ).rewind();
-        bufferB.rewind().put(dstOriginX).put(dstOriginY).put(dstOriginZ).rewind();
-        bufferC.rewind().put(rangeX).put(rangeY).put(rangeZ).rewind();
+        copy2NIO(bufferA, srcOriginX, srcOriginY, srcOriginZ);
+        copy2NIO(bufferB, dstOriginX, dstOriginY, dstOriginZ);
+        copy2NIO(bufferC, rangeX, rangeY, rangeZ);
 
         int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, bufferA, bufferB, bufferC,
                                          0, null, events==null ? null : events.IDs);
@@ -410,13 +410,13 @@ public class CLCommandQueue implements CLResource {
         PointerBuffer locWS = null;
 
         if(globalWorkOffset != 0) {
-            globWO = bufferA.put(2, globalWorkOffset).position(2);
+            globWO = copy2NIO(bufferA, globalWorkOffset);
         }
         if(globalWorkSize != 0) {
-            globWS = bufferB.put(2, globalWorkSize).position(2);
+            globWS = copy2NIO(bufferB, globalWorkSize);
         }
         if(globalWorkSize != 0) {
-            locWS = bufferC.put(2, localWorkSize).position(2);
+            locWS = copy2NIO(bufferC, localWorkSize);
         }
 
         this.putNDRangeKernel(kernel, 1, globWO, globWS, locWS, events);
@@ -442,13 +442,13 @@ public class CLCommandQueue implements CLResource {
         PointerBuffer localWorkSize = null;
 
         if(globalWorkOffsetX != 0 && globalWorkOffsetY != 0) {
-            globalWorkOffset = bufferA.position(1).put(globalWorkOffsetX).put(globalWorkOffsetY).position(1);
+            globalWorkOffset = copy2NIO(bufferA, globalWorkOffsetX, globalWorkOffsetY);
         }
         if(globalWorkSizeX != 0 && globalWorkSizeY != 0) {
-            globalWorkSize = bufferB.position(1).put(globalWorkSizeX).put(globalWorkSizeY).position(1);
+            globalWorkSize = copy2NIO(bufferB, globalWorkSizeX, globalWorkSizeY);
         }
         if(localWorkSizeX != 0 && localWorkSizeY !=0) {
-            localWorkSize = bufferC.position(1).put(localWorkSizeX).put(localWorkSizeY).position(1);
+            localWorkSize = copy2NIO(bufferC, localWorkSizeX, localWorkSizeY);
         }
         this.putNDRangeKernel(kernel, 2, globalWorkOffset, globalWorkSize, localWorkSize);
         return this;
@@ -487,7 +487,7 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putAcquireGLObject(long glObject, CLEventList events) {
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = bufferA.put(2, glObject).position(2);
+        PointerBuffer glObj = copy2NIO(bufferA, glObject);
         
         int ret = xl.clEnqueueAcquireGLObjects(ID, 1, glObj, 0, null,
                     events==null ? null : events.IDs);
@@ -510,7 +510,7 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReleaseGLObject(long glObject, CLEventList events) {
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = bufferA.put(2, glObject).position(2);
+        PointerBuffer glObj = copy2NIO(bufferA, glObject);
 
         int ret = xl.clEnqueueReleaseGLObjects(ID, 1, glObj, 0, null,
                 events==null ? null : events.IDs);
@@ -536,6 +536,18 @@ public class CLCommandQueue implements CLResource {
         int ret = cl.clReleaseCommandQueue(ID);
         context.onCommandQueueReleased(device, this);
         checkForError(ret, "can not release command queue");
+    }
+
+    private final static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
+        return buffer.put(2, a).position(2);
+    }
+
+    private final static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
+        return buffer.position(1).put(a).put(b).position(1);
+    }
+
+    private final static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
+        return buffer.rewind().put(a).put(b).put(c).rewind();
     }
 
     @Override

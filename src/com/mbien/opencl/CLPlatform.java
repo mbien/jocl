@@ -33,6 +33,16 @@ public final class CLPlatform {
     }
 
     /**
+     * Returns the default OpenCL platform or null when no platform found.
+     */
+    public static CLPlatform getDefault() {
+        CLPlatform[] platforms = listCLPlatforms();
+        if(platforms.length > 0)
+            return platforms[0];
+        return null;
+    }
+
+    /**
      * Lists all available OpenCL implementaitons.
      * @throws CLException if something went wrong initializing OpenCL
      */

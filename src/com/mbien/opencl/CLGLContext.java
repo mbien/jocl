@@ -13,66 +13,123 @@ import javax.media.opengl.GLContext;
 import static com.mbien.opencl.CLGLI.*;
 
 /**
- *
+ * OpenCL Context supporting interoperablity between JOGL and JOCL.
  * @author Michael Bien
  */
 public final class CLGLContext extends CLContext {
 
-    final long glContextID;
+    final long glID;
 
     private CLGLContext(long clContextID, long glContextID) {
         super(clContextID);
-        this.glContextID = glContextID;
+        this.glID = glContextID;
     }
 
-    public static CLGLContext create(GLContext glContext) {
+    /**
+     * Creates a shared context on all available devices (CL_DEVICE_TYPE_ALL).
+     */
+    public static final CLGLContext create(GLContext glContext) {
+        return create(glContext, (CLPlatform)null, CLDevice.Type.ALL);
+    }
+
+    /**
+     * Creates a shared context on the specified platform on all available devices (CL_DEVICE_TYPE_ALL).
+     */
+    public static CLGLContext create(GLContext glContext, CLPlatform platform) {
+        return create(glContext, platform, CLDevice.Type.ALL);
+    }
+
+    public static CLGLContext create(GLContext glContext, CLDevice.Type... deviceTypes) {
+        return create(glContext, null, deviceTypes);
+    }
+
+    /**
+     * Creates a shared context on the specified devices.
+     * The platform to be used is implementation dependent.
+     */
+    public static final CLGLContext create(GLContext glContext, CLDevice... devices) {
+        return create(glContext, null, devices);
+    }
+
+    /**
+     * Creates a shared context on the specified platform and with the specified
+     * device types.
+     */
+    private static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice.Type... deviceTypes) {
+
+        long[] glID = new long[1];
+        PointerBuffer properties = setupContextProperties(glContext, platform, glID);
+        long clID = createContextFromType(properties, toDeviceBitmap(deviceTypes));
+
+        return new CLGLContext(clID, glID[0]);
+
+    }
+
+    /**
+     * Creates a shared context on the specified platform and with the specified
+     * devices.
+     */
+    private static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice... devices) {
+
+        long[] glID = new long[1];
+        PointerBuffer properties = setupContextProperties(glContext, platform, glID);
+        long clID = createContext(properties, devices);
+
+        return new CLGLContext(clID, glID[0]);
+    }
 
 
-//UNIX
-//cl_context_properties props[] = {
-//         CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
-//         CL_GLX_DISPLAY_KHR,  (cl_context_properties) glXGetCurrentDisplay(),
-//         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
+    private static final PointerBuffer setupContextProperties(GLContext glContext, CLPlatform platform, long[] glID) {
 
-//WIN32
-//cl_context_properties props[] = {
-//         CL_GL_CONTEXT_KHR, (cl_context_properties)TODO0,
-//         CL_WGL_HDC_KHR, (cl_context_properties)TODO 0,
-//         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
+        if(platform == null) {
+            platform = CLPlatform.getDefault();
+        }
 
-//MACOSX
-//cl_context_properties props[] = {
-//         CL_CGL_SHAREGROUP_KHR, (cl_context_properties)TODO 0,
-//         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
-
-        long glID = 0;
+        if(platform == null) {
+            throw new RuntimeException("no OpenCL installation found");
+        }
 
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
 
         DefaultGraphicsConfiguration config = (DefaultGraphicsConfiguration)ctxImpl.getDrawableImpl()
              .getNativeWindow().getGraphicsConfiguration().getNativeGraphicsConfiguration();
 
-        PointerBuffer properties = PointerBuffer.allocateDirect(5);
+        PointerBuffer properties = null;
         if(glContext instanceof X11GLXContext) {
+            properties = PointerBuffer.allocateDirect(7);
             long handle = config.getScreen().getDevice().getHandle();
-            glID = ((X11GLXContext)glContext).getContext();
-            properties.put(CLGLI.CL_GL_CONTEXT_KHR).put(glID)
-                      .put(CLGLI.CL_GLX_DISPLAY_KHR).put(handle);
+            glID[0] = ((X11GLXContext)glContext).getContext();
+            properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
+                      .put(CL_GLX_DISPLAY_KHR).put(handle)
+                      .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof WindowsWGLContext) {
             // TODO test on windows
-            throw new RuntimeException("cl-gl interoperability on windows not yet implemented");
+            //WIN32
+            //cl_context_properties props[] = {
+            //         CL_GL_CONTEXT_KHR, (cl_context_properties)0,
+            //         CL_WGL_HDC_KHR, (cl_context_properties)0,
+            //         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
+            properties = PointerBuffer.allocateDirect(7);
+            long handle = config.getScreen().getDevice().getHandle();
+            glID[0] = ((WindowsWGLContext)glContext).getHGLRC();
+            properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
+                      .put(CL_WGL_HDC_KHR).put(handle)
+                      .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof MacOSXCGLContext) {
             // TODO test on mac
-            throw new RuntimeException("cl-gl interoperability on mac not yet implemented");
+            //MACOSX
+            //cl_context_properties props[] = {
+            //         CL_CGL_SHAREGROUP_KHR, (cl_context_properties)0,
+            //         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
+            properties = PointerBuffer.allocateDirect(5);
+            glID[0] = ((MacOSXCGLContext)glContext).getCGLContext();
+            properties.put(CL_CGL_SHAREGROUP_KHR).put(glID[0])
+                      .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else{
             throw new RuntimeException("unsupported GLContext: "+glContext);
         }
-        
-        properties.put(0).rewind(); // 0 terminated array
 
-        long clID = createContextFromType(properties, CL_DEVICE_TYPE_ALL);
-
-        return new CLGLContext(clID, glID);
+        return properties.put(0).rewind(); // 0 terminated array
     }
 
 

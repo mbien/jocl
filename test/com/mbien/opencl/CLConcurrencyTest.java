@@ -21,7 +21,8 @@ public class CLConcurrencyTest {
 
         out.println(" - - - event synchronisation test - - - ");
 
-        final int elements = ONE_MB/SIZEOF_INT * 5; // 5MB per buffer
+        final int groupSize = 256;
+        final int elements = roundUp(groupSize, ONE_MB/SIZEOF_INT * 5); // 5MB per buffer
 
         CLContext context = CLContext.create();
 
@@ -54,10 +55,10 @@ public class CLConcurrencyTest {
         assertEquals(0, events.size());
 
         vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferC); // C = A+B
-        queue.put1DRangeKernel(vectorAddKernel, 0, elements, 256, events);
+        queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
 
         vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferD); // D = A+B
-        queue.put1DRangeKernel(vectorAddKernel, 0, elements, 256, events);
+        queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
 
         assertEquals(2, events.size());
         queue.putWaitForEvent(events, 0, false)

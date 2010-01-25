@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.CLDevice.Type;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
@@ -114,12 +115,7 @@ public class CLContext implements CLResource {
      */
     private static final CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
 
-        long type = 0;
-        if(deviceTypes != null) {
-            for (int i = 0; i < deviceTypes.length; i++) {
-                type |= deviceTypes[i].TYPE;
-            }
-        }
+        long type = toDeviceBitmap(deviceTypes);
 
         PointerBuffer properties = setupContextProperties(platform);
         return new CLContext(createContextFromType(properties, type));
@@ -129,16 +125,10 @@ public class CLContext implements CLResource {
      * Creates a context on the specified platform and with the specified
      * devices.
      */
-    private static final CLContext create(CLPlatform platform, CLDevice... devices) {
-
-        long[] deviceIDs = new long[devices.length];
-
-        for (int i = 0; i < devices.length; i++) {
-            deviceIDs[i] = devices[i].ID;
-        }
+    private static final CLContext create(CLPlatform platform, CLDevice[] devices) {
 
         PointerBuffer properties = setupContextProperties(platform);
-        return new CLContext(createContext(properties, deviceIDs));
+        return new CLContext(createContext(properties, devices));
     }
 
     protected static final long createContextFromType(PointerBuffer properties, long deviceType) {
@@ -151,14 +141,14 @@ public class CLContext implements CLResource {
         return context;
     }
 
-    protected static final long createContext(PointerBuffer properties, long[] devices) {
+    protected static final long createContext(PointerBuffer properties, CLDevice... devices) {
 
         IntBuffer status = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
         PointerBuffer pb = null;
         if(devices != null && devices.length != 0) {
             pb = PointerBuffer.allocateDirect(devices.length);
             for (int i = 0; i < devices.length; i++) {
-                pb.put(i, devices[i]);
+                pb.put(i, devices[i].ID);
             }
         }
         long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, pb, null, null, status);
@@ -171,18 +161,16 @@ public class CLContext implements CLResource {
     private static final PointerBuffer setupContextProperties(CLPlatform platform) {
 
         if(platform == null) {
-            CLPlatform[] platforms = CLPlatform.listCLPlatforms();
-            if(platforms.length > 0)
-                platform = platforms[0];
+            platform = CLPlatform.getDefault();
+        }
+        
+        if(platform == null) {
+            throw new RuntimeException("no OpenCL installation found");
         }
 
-        PointerBuffer properties = null;
-        if(platform != null) {
-            properties = PointerBuffer.allocateDirect(3)
-                                      .put(CL.CL_CONTEXT_PLATFORM).put(platform.ID).put(0) // 0 terminated array
-                                      .rewind();
-        }
-        return properties;
+        return PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
+                                              .put(platform.ID).put(0) // 0 terminated array
+                                              .rewind();
     }
 
     /**
@@ -420,6 +408,16 @@ public class CLContext implements CLResource {
                 return deviceArray[i];
         }
         return null;
+    }
+
+    protected static long toDeviceBitmap(Type[] deviceTypes) {
+        long type = 0;
+        if (deviceTypes != null) {
+            for (int i = 0; i < deviceTypes.length; i++) {
+                type |= deviceTypes[i].TYPE;
+            }
+        }
+        return type;
     }
 
     @Override

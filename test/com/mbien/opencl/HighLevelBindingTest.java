@@ -154,7 +154,7 @@ public class HighLevelBindingTest {
         CLBuffer<ByteBuffer> clBufferB = context.createBuffer(srcB, Mem.READ_ONLY);
         CLBuffer<ByteBuffer> clBufferC = context.createBuffer(dest, Mem.WRITE_ONLY);
 
-        Map<String, CLKernel> kernels = program.getCLKernels();
+        Map<String, CLKernel> kernels = program.createCLKernels();
         for (CLKernel kernel : kernels.values()) {
             out.println("kernel: "+kernel.toString());
         }

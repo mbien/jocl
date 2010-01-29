@@ -19,7 +19,7 @@ import static com.mbien.opencl.CL.*;
  * <code>kernel</code> function."
  * @author Michael Bien
  */
-public class CLKernel implements CLResource {
+public class CLKernel implements CLResource/*, Cloneable*/ {
 
     public final long ID;
     public final String name;
@@ -129,7 +129,7 @@ public class CLKernel implements CLResource {
     private final void setArgument(int argumentIndex, int size, Buffer value) {
         if(argumentIndex >= numArgs || argumentIndex < 0) {
             throw new IndexOutOfBoundsException("kernel "+ toString() +" has "+numArgs+
-                    " arguments, can not set argument number "+argumentIndex);
+                    " arguments, can not set argument with index "+argumentIndex);
         }
         if(!program.isExecutable()) {
             throw new IllegalStateException("can not set program" +
@@ -201,12 +201,13 @@ public class CLKernel implements CLResource {
         hash = 43 * hash + (this.program != null ? this.program.hashCode() : 0);
         return hash;
     }
-    
-    CLKernel copy() {
-        int[] err = new int[1];
-        long newID = cl.clCreateKernel(program.ID, name, err, 0);
-        checkForError(err[0], "can not copy kernel");
-        return new CLKernel(program, newID);
-    }
+
+    /**
+     * Returns a new instance of this kernel.
+     */
+//    @Override
+//    public CLKernel clone() {
+//        return program.createCLKernel(name);
+//    }
 
 }

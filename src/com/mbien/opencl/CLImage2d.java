@@ -22,7 +22,7 @@ public final class CLImage2d<B extends Buffer> extends CLImage<B> {
         CL cl = context.cl;
         IntBuffer err = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
 
-        long id = cl.clCreateImage2D(context.ID, flags, format, width, height, rowPitch, directBuffer, err);
+        long id = cl.clCreateImage2D(context.ID, flags, format.getFormatImpl(), width, height, rowPitch, directBuffer, err);
         checkForError(err.get(), "can not create 2d image");
 
         return new CLImage2d<B>(context, directBuffer, format, width, height, id);

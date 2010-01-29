@@ -10,6 +10,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import static com.mbien.opencl.CLException.*;
+import static com.mbien.opencl.CL.*;
 
 /**
  *
@@ -38,7 +39,7 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
     }
 
     protected static final boolean isHostPointerFlag(int flags) {
-        return (flags & CL.CL_MEM_COPY_HOST_PTR) != 0 || (flags & CL.CL_MEM_USE_HOST_PTR) != 0;
+        return (flags & CL_MEM_COPY_HOST_PTR) != 0 || (flags & CL_MEM_USE_HOST_PTR) != 0;
     }
 
     protected static final int sizeOfBufferElem(Buffer buffer) {
@@ -88,7 +89,7 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
 
     public long getCLSize() {
         PointerBuffer pb = PointerBuffer.allocateDirect(1);
-        int ret = cl.clGetMemObjectInfo(ID, CL.CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
+        int ret = cl.clGetMemObjectInfo(ID, CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
         checkForError(ret, "can not optain buffer info");
         return pb.get();
     }
@@ -125,52 +126,66 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
         return hash;
     }
 
+    @Override
+    public String toString() {
+        return "CLMemory [id: " + ID+"]";
+    }
+
     /**
      * Memory settings for configuring CLMemory.
      */
     public enum Mem {
 
         /**
+         * Enum representing CL_MEM_READ_WRITE.
          * This flag specifies that the memory object will be read and
          * written by a kernel.
          */
-        READ_WRITE(CL.CL_MEM_READ_WRITE),
+        READ_WRITE(CL_MEM_READ_WRITE),
 
         /**
+         * Enum representing CL_MEM_WRITE_ONLY.
          * This flags specifies that the memory object will be written
          * but not read by a kernel.
          * Reading from a buffer or image object created with WRITE_ONLY
          * inside a kernel is undefined.
          */
-        WRITE_ONLY(CL.CL_MEM_WRITE_ONLY),
+        WRITE_ONLY(CL_MEM_WRITE_ONLY),
 
         /**
+         * Enum representing CL_MEM_READ_ONLY.
          * This flag specifies that the memory object is a read-only memory
          * object when used inside a kernel. Writing to a buffer or image object
          * created withREAD_ONLY inside a kernel is undefined.
          */
-        READ_ONLY(CL.CL_MEM_READ_ONLY),
+        READ_ONLY(CL_MEM_READ_ONLY),
 
         /**
-         * Enum representing CL.CL_MEM_USE_HOST_PTR.
+         * Enum representing CL_MEM_USE_HOST_PTR.
          * If specified, it indicates that the application wants the OpenCL
          * implementation to use memory referenced by host_ptr as the storage
          * bits for the memory object. OpenCL implementations are allowed
          * to cache the buffer contents pointed to by host_ptr in device memory.
          * This cached copy can be used when kernels are executed on a device.
          */
-        USE_BUFFER(CL.CL_MEM_USE_HOST_PTR),
-
-//        ALLOC_HOST_PTR(CL_MEM_ALLOC_HOST_PTR), // this is the default in java world anyway
+        USE_BUFFER(CL_MEM_USE_HOST_PTR),
 
         /**
-         * Enum representing CL.CL_MEM_COPY_HOST_PTR.
-         * If CL_MEM_COPY_HOST_PTR specified, it indicates that the application
+         * Enum representing CL_MEM_ALLOC_HOST_PTR.
+         * This flag specifies that the application wants the OpenCL implementation
+         * to allocate memory from host accessible memory.
+         * {@link #ALLOC_HOST_PTR} and {@link #USE_BUFFER} are mutually exclusive.
+         */
+        ALLOC_HOST_PTR(CL_MEM_ALLOC_HOST_PTR),
+
+        /**
+         * Enum representing CL_MEM_COPY_HOST_PTR.
+         * If {@link #COPY_BUFFER} specified, it indicates that the application
          * wants the OpenCL implementation to allocate memory for the memory object
          * and copy the data from memory referenced by host_ptr.<br/>
-         * COPY_HOST_PTR and USE_HOST_PTR are mutually exclusive.
+         * {@link #COPY_BUFFER} and {@link #USE_BUFFER} are mutually exclusive.
          */
-        COPY_BUFFER(CL.CL_MEM_COPY_HOST_PTR);
+        COPY_BUFFER(CL_MEM_COPY_HOST_PTR);
 
         /**
          * Value of wrapped OpenCL flag.
@@ -183,15 +198,15 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
 
         public static Mem valueOf(int bufferFlag) {
             switch (bufferFlag) {
-                case CL.CL_MEM_READ_WRITE:
+                case CL_MEM_READ_WRITE:
                     return Mem.READ_WRITE;
-                case CL.CL_MEM_READ_ONLY:
+                case CL_MEM_READ_ONLY:
                     return Mem.READ_ONLY;
-                case CL.CL_MEM_USE_HOST_PTR:
+                case CL_MEM_USE_HOST_PTR:
                     return Mem.USE_BUFFER;
-//                case(CL_MEM_ALLOC_HOST_PTR):
-//                    return ALLOC_HOST_PTR;
-                case CL.CL_MEM_COPY_HOST_PTR:
+                case(CL_MEM_ALLOC_HOST_PTR):
+                    return ALLOC_HOST_PTR;
+                case CL_MEM_COPY_HOST_PTR:
                     return Mem.COPY_BUFFER;
             }
             return null;
@@ -205,7 +220,7 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
                 }
             }
             if (clFlags == 0) {
-                clFlags = CL.CL_MEM_READ_WRITE;
+                clFlags = CL_MEM_READ_WRITE;
             }
             return clFlags;
         }

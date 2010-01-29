@@ -36,7 +36,7 @@ public class CLConcurrencyTest {
 
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
 
-        CLKernel vectorAddKernel = program.getCLKernel("VectorAddGM")
+        CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM")
                                           .setArg(3, elements);
 
         CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
@@ -106,11 +106,10 @@ public class CLConcurrencyTest {
 
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
 
-        final CLKernel vectorAddKernel1 = program.getCLKernel("VectorAddGM")
+        final CLKernel vectorAddKernel1 = program.createCLKernel("VectorAddGM")
                                                 .setArg(3, elements);
 
-        //TODO introduce public api for cloning/creating kernels
-        final CLKernel vectorAddKernel2 = vectorAddKernel1.copy()
+        final CLKernel vectorAddKernel2 = program.createCLKernel("VectorAddGM")
                                                 .setArg(3, elements);
 
 

@@ -11,12 +11,18 @@ import static com.mbien.opencl.CLGLI.*;
  */
 public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> {
 
-    private CLGLBuffer(CLContext context, B directBuffer, long id) {
+    /**
+     * The OpenGL object handle.
+     */
+    public final int GLID;
+
+    private CLGLBuffer(CLContext context, B directBuffer, long id, int glObject) {
         super(context, directBuffer, id);
+        this.GLID = glObject;
     }
 
 
-    static <B extends Buffer> CLGLBuffer<B> create(CLContext context, B directBuffer, int flags, int glBuffer) {
+    static <B extends Buffer> CLGLBuffer<B> create(CLContext context, B directBuffer, int flags, int glObject) {
         if(directBuffer != null && !directBuffer.isDirect())
             throw new IllegalArgumentException("buffer is not a direct buffer");
 
@@ -29,14 +35,14 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> {
         int[] result = new int[1];
         CLGLI clgli = (CLGLI)cl;
         
-        long id = clgli.clCreateFromGLBuffer(context.ID, flags, glBuffer, result, 0);
+        long id = clgli.clCreateFromGLBuffer(context.ID, flags, glObject, result, 0);
 
-        return new CLGLBuffer<B>(context, directBuffer, id);
+        return new CLGLBuffer<B>(context, directBuffer, id, glObject);
     }
 
     @Override
     public <T extends Buffer> CLGLBuffer<T> cloneWith(T directBuffer) {
-        return new CLGLBuffer<T>(context, directBuffer, ID);
+        return new CLGLBuffer<T>(context, directBuffer, ID, GLID);
     }
 
     /**
@@ -57,6 +63,11 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> {
         int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
         CLException.checkForError(ret, "error while asking for gl object info");
         return array[0];
+    }
+
+    @Override
+    public String toString() {
+        return "CLMemory [id: " + ID+" glID: "+GLID+"]";
     }
 
     public enum GLObjectType {

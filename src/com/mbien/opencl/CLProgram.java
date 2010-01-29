@@ -8,11 +8,12 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
-import java.util.Set;
 
 /**
  * Represents a OpenCL program executed on one or more {@link CLDevice}s.
@@ -25,7 +26,7 @@ public class CLProgram implements CLResource {
     
     private final CL cl;
 
-    private Map<String, CLKernel> kernels;
+    private final Set<CLKernel> kernels;
     private Map<CLDevice, Status> buildStatusMap;
 
     private boolean executable;
@@ -35,6 +36,7 @@ public class CLProgram implements CLResource {
         
         this.cl = context.cl;
         this.context = context;
+        this.kernels = new HashSet<CLKernel>();
 
         IntBuffer ib = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
         // Create the program
@@ -47,6 +49,7 @@ public class CLProgram implements CLResource {
 
         this.cl = context.cl;
         this.context = context;
+        this.kernels = new HashSet<CLKernel>();
 
         PointerBuffer devices = PointerBuffer.allocateDirect(binaries.size());
         PointerBuffer lengths = PointerBuffer.allocateDirect(binaries.size());
@@ -78,38 +81,6 @@ public class CLProgram implements CLResource {
 
         checkForError(err.get(), "can not create program with binary");
 
-    }
-
-    private final void initKernels() {
-
-        if(kernels == null) {
-
-            IntBuffer numKernels = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
-            int ret = cl.clCreateKernelsInProgram(ID, 0, null, numKernels);
-            checkForError(ret, "can not create kernels for program");
-
-            if(numKernels.get(0) > 0) {
-                HashMap<String, CLKernel> map = new HashMap<String, CLKernel>();
-
-                PointerBuffer kernelIDs = PointerBuffer.allocateDirect(numKernels.get(0));
-                ret = cl.clCreateKernelsInProgram(ID, kernelIDs.capacity(), kernelIDs, null);
-                checkForError(ret, "can not create kernels for program");
-
-                for (int i = 0; i < kernelIDs.capacity(); i++) {
-                    CLKernel kernel = new CLKernel(this, kernelIDs.get(i));
-                    map.put(kernel.name, kernel);
-                }
-                this.kernels = map;
-            }else{
-                initBuildStatus();
-                if(!isExecutable()) {
-                    // It is illegal to create kernels from a not executable program.
-                    // For consistency between AMD and NVIDIA drivers throw an exception at this point.
-                    throw new CLException(CL_INVALID_PROGRAM_EXECUTABLE,
-                            "can not initialize kernels, program is not executable. status: "+buildStatusMap);
-                }
-            }
-        }
     }
 
     private final void initBuildStatus() {
@@ -235,7 +206,7 @@ public class CLProgram implements CLResource {
      */
     public CLProgram build(String options, CLDevice... devices) {
 
-        if(kernels != null) {
+        if(!kernels.isEmpty()) {
             //No changes to the program executable are allowed while there are
             //kernel objects associated with a program object.
             releaseKernels();
@@ -266,8 +237,83 @@ public class CLProgram implements CLResource {
         return this;
     }
 
+    /**
+     * Creates a kernel with the specified kernel name.
+     */
+    public CLKernel createCLKernel(String kernelName) {
+
+        if(released) {
+            return null;
+        }
+
+        int[] err = new int[1];
+        long id = cl.clCreateKernel(ID, kernelName, err, 0);
+        checkForError(err[0], "unable to create Kernel with name: "+kernelName);
+
+        CLKernel kernel = new CLKernel(this, id);
+        kernels.add(kernel);
+        return kernel;
+    }
+
+    /**
+     * Creates n instances of a kernel with the specified kernel name.
+     */
+    /*
+    public CLKernel[] createCLKernels(String kernelName, int instanceCount) {
+
+        if(released) {
+            return new CLKernel[0];
+        }
+
+        CLKernel[] newKernels = new CLKernel[instanceCount];
+        for (int i = 0; i < newKernels.length; i++) {
+            newKernels[i] = createCLKernel(kernelName);
+        }
+        return newKernels;
+    }
+    */
+
+    /**
+     * Creates all kernels of this program and stores them a Map with the kernel name as key.
+     */
+    public Map<String, CLKernel> createCLKernels() {
+
+        if(released) {
+            return Collections.emptyMap();
+        }
+
+        HashMap<String, CLKernel> newKernels = new HashMap<String, CLKernel>();
+
+        IntBuffer numKernels = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+        int ret = cl.clCreateKernelsInProgram(ID, 0, null, numKernels);
+        checkForError(ret, "can not create kernels for program");
+
+        if(numKernels.get(0) > 0) {
+
+            PointerBuffer kernelIDs = PointerBuffer.allocateDirect(numKernels.get(0));
+            ret = cl.clCreateKernelsInProgram(ID, kernelIDs.capacity(), kernelIDs, null);
+            checkForError(ret, "can not create kernels for program");
+
+            for (int i = 0; i < kernelIDs.capacity(); i++) {
+                CLKernel kernel = new CLKernel(this, kernelIDs.get(i));
+                kernels.add(kernel);
+                newKernels.put(kernel.name, kernel);
+            }
+        }else{
+            initBuildStatus();
+            if(!isExecutable()) {
+                // It is illegal to create kernels from a not executable program.
+                // For consistency between AMD and NVIDIA drivers throw an exception at this point.
+                throw new CLException(CL_INVALID_PROGRAM_EXECUTABLE,
+                        "can not initialize kernels, program is not executable. status: "+buildStatusMap);
+            }
+        }
+
+        return newKernels;
+    }
+
     void onKernelReleased(CLKernel kernel) {
-        this.kernels.remove(kernel.name);
+        this.kernels.remove(kernel);
     }
 
     /**
@@ -287,43 +333,13 @@ public class CLProgram implements CLResource {
     }
 
     private void releaseKernels() {
-        if(kernels != null) {
-            String[] names = kernels.keySet().toArray(new String[kernels.size()]);
-            for (String name : names) {
-                kernels.get(name).release();
+        if(!kernels.isEmpty()) {
+            // copy to array to prevent concurrent modification exception
+            CLKernel[] array = kernels.toArray(new CLKernel[kernels.size()]);
+            for (CLKernel kernel : array) {
+                kernel.release();
             }
-            kernels = null;
         }
-    }
-
-    /**
-     * Returns the kernel with the specified name.
-     * @throws IllegalArgumentException when no kernel with the specified name exists in this program.
-     */
-    public CLKernel getCLKernel(String kernelName) {
-        if(released) {
-            return null;
-        }
-        initKernels();
-        final CLKernel kernel = kernels.get(kernelName);
-        if(kernel == null) {
-            throw new IllegalArgumentException(
-                    this+" does not contain a kernel with the name '"+kernelName+"'");
-        }
-        return kernel;
-    }
-
-
-    /**
-     * Returns all kernels of this program in a unmodifiable view of a map
-     * with the kernel function names as keys.
-     */
-    public Map<String, CLKernel> getCLKernels() {
-        if(released) {
-            return Collections.emptyMap();
-        }
-        initKernels();
-        return Collections.unmodifiableMap(kernels);
     }
 
     /**

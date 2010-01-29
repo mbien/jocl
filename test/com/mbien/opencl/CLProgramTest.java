@@ -23,7 +23,7 @@ public class CLProgramTest {
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"));
 
         try{
-            program.getCLKernels();
+            program.createCLKernels();
             fail("expected exception but got none :(");
         }catch(CLException ex) {
             out.println("got expected exception:  "+ex.getCLErrorString());
@@ -36,7 +36,7 @@ public class CLProgramTest {
 
         assertTrue(program.isExecutable());
 
-        Map<String, CLKernel> kernels = program.getCLKernels();
+        Map<String, CLKernel> kernels = program.createCLKernels();
         assertNotNull(kernels);
         assertTrue("kernel map is empty", kernels.size() > 0);
 
@@ -48,7 +48,7 @@ public class CLProgramTest {
         out.println(program.getBuildStatus());
 
         // try again with rebuilt program
-        kernels = program.getCLKernels();
+        kernels = program.createCLKernels();
         assertNotNull(kernels);
         assertTrue("kernel map is empty", kernels.size() > 0);
         assertTrue(kernels.size() > 0);
@@ -92,10 +92,12 @@ public class CLProgramTest {
         assertNotNull(program.getCLDevices());
         assertEquals(program.getCLDevices().length, 0);
 
-        assertNotNull(program.getCLKernels());
-        assertEquals(program.getCLKernels().size(), 0);
-
-        assertNull(program.getCLKernel("foo"));
+        {
+            Map<String, CLKernel> kernels = program.createCLKernels();
+            assertNotNull(kernels);
+            assertEquals(kernels.size(), 0);
+        }
+        assertNull(program.createCLKernel("foo"));
 
         program = context.createProgram(binaries);
 
@@ -114,7 +116,7 @@ public class CLProgramTest {
         assertEquals(program.getSource().length(), 0);
 
         try{
-            program.getCLKernels();
+            program.createCLKernels();
         }catch(CLException ex) {
             // expected, not build yet
         }
@@ -123,7 +125,7 @@ public class CLProgramTest {
         program.build();
         out.println(program.getBuildStatus());
 
-        assertNotNull(program.getCLKernel("Test"));
+        assertNotNull(program.createCLKernel("Test"));
 
         assertTrue(program.isExecutable());
 

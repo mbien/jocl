@@ -31,6 +31,7 @@ public class CLKernel implements CLResource/*, Cloneable*/ {
     private final ByteBuffer buffer;
 
     private int argIndex;
+    private boolean force32BitArgs;
 
     CLKernel(CLProgram program, long id) {
         this.ID = id;
@@ -101,7 +102,11 @@ public class CLKernel implements CLResource/*, Cloneable*/ {
     }
 
     public CLKernel setArg(int argumentIndex, long value) {
-        setArgument(argumentIndex, 8, wrap(value));
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4, wrap((int)value));
+        }else{
+            setArgument(argumentIndex, 8, wrap(value));
+        }
         return this;
     }
 
@@ -111,7 +116,11 @@ public class CLKernel implements CLResource/*, Cloneable*/ {
     }
 
     public CLKernel setArg(int argumentIndex, double value) {
-        setArgument(argumentIndex, 8, wrap(value));
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4, wrap((float)value));
+        }else{
+            setArgument(argumentIndex, 8, wrap(value));
+        }
         return this;
     }
 
@@ -138,6 +147,22 @@ public class CLKernel implements CLResource/*, Cloneable*/ {
 
         int ret = cl.clSetKernelArg(ID, argumentIndex, size, value);
         checkForError(ret, "error on clSetKernelArg");
+    }
+
+    /**
+     * Forces double and long arguments to be passed as float and int to the OpenCL kernel.
+     * This can be used in applications which want to mix kernels with different floating point precison.
+     */
+    public CLKernel setForce32BitArgs(boolean force) {
+        this.force32BitArgs = force;
+        return this;
+    }
+
+    /**
+     * @see #setForce32BitArgs(boolean) 
+     */
+    public boolean isForce32BitArgsEnabled() {
+        return force32BitArgs;
     }
 
     private final Buffer wrap(float value) {

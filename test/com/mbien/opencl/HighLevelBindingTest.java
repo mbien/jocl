@@ -58,6 +58,7 @@ public class HighLevelBindingTest {
             out.println("    version: "+platform.getVersion());
             out.println("    vendor: "+platform.getVendor());
             out.println("    max FLOPS device: "+platform.getMaxFlopsDevice());
+            out.println("    extensions: "+platform.getExtensions());
 
             CLDevice[] clDevices = platform.listCLDevices();
             for (CLDevice device : clDevices) {
@@ -74,7 +75,8 @@ public class HighLevelBindingTest {
                 out.println("    max param size: "+device.getMaxParameterSize()+" byte");
                 out.println("    local mem: "+device.getLocalMemSize()/1024+" KB");
                 out.println("    local mem type: "+device.getLocalMemType());
-                out.println("    global mem cache size: "+device.getGlobalMemCachSize());
+                out.println("    global mem cache size: "+device.getGlobalMemCacheSize());
+                out.println("    global mem cacheline size: "+device.getGlobalMemCachelineSize());
                 out.println("    global mem cache type: "+device.getGlobalMemCacheType());
                 out.println("    constant buffer size: "+device.getMaxConstantBufferSize());
                 out.println("    error correction support: "+device.isErrorCorrectionSupported());

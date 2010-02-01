@@ -32,6 +32,7 @@ class CLUtils {
         map.put("CL_PLATFORM_PROFILE",  platform.getProfile());
         map.put("CL_PLATFORM_VERSION",  platform.getVersion());
         map.put("CL_PLATFORM_VENDOR",   platform.getVendor());
+        map.put("CL_PLATFORM_EXTENSIONS",   platform.getExtensions().toString());
 //        map.put("fastest device (estimated)", platform.getMaxFlopsDevice().toString());
 
         return map;
@@ -53,7 +54,8 @@ class CLUtils {
         map.put("CL_DEVICE_MAX_PARAMETER_SIZE", dev.getMaxParameterSize()+" Byte");
         map.put("CL_DEVICE_LOCAL_MEM_SIZE",     dev.getLocalMemSize()/1024+" KB");
         map.put("CL_DEVICE_LOCAL_MEM_TYPE",     dev.getLocalMemType()+"");
-        map.put("CL_DEVICE_GLOBAL_MEM_CACHE_SIZE", dev.getGlobalMemCachSize()+"");
+        map.put("CL_DEVICE_GLOBAL_MEM_CACHE_SIZE", dev.getGlobalMemCacheSize()+"");
+        map.put("CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE", dev.getGlobalMemCachelineSize()+"");
         map.put("CL_DEVICE_GLOBAL_MEM_CACHE_TYPE", dev.getGlobalMemCacheType()+"");
         map.put("CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE", dev.getMaxConstantBufferSize()+"");
         map.put("CL_DEVICE_MAX_CONSTANT_ARGS",        dev.getMaxConstantArgs()+"");

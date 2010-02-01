@@ -263,14 +263,14 @@ public final class CLDevice {
     /**
      * Returns the size of global memory cache line in bytes.
      */
-    public long getGlobalMemCachlineSize() {
+    public long getGlobalMemCachelineSize() {
         return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE);
     }
 
     /**
      * Returns the size of global memory cache in bytes.
      */
-    public long getGlobalMemCachSize() {
+    public long getGlobalMemCacheSize() {
         return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
     }
 
@@ -463,6 +463,13 @@ public final class CLDevice {
      */
     public boolean isDoubleFPAvailable() {
         return getExtensions().contains("cl_khr_fp64");
+    }
+
+    /**
+     * Returns true if the extension is supported on this device.
+     */
+    public boolean isExtensionAvailable(String extension) {
+        return getExtensions().contains(extension);
     }
 
     /**

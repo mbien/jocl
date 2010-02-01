@@ -2,9 +2,14 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
 import com.sun.gluegen.runtime.PointerBuffer;
+import com.sun.gluegen.runtime.ProcAddressHelper;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
@@ -22,9 +27,12 @@ public final class CLPlatform {
 
     private static final CL cl;
 
+    private Set<String> extensions;
+
     static{
-        System.loadLibrary("gluegen-rt");
-        System.loadLibrary("jocl");
+        NativeLibLoader.loadJOCL();
+//        System.loadLibrary("gluegen-rt");
+//        ProcAddressHelper.resetProcAddressTable(table, null);
         cl = new CLImpl();
     }
 
@@ -183,6 +191,32 @@ public final class CLPlatform {
      */
     public String getVendor() {
         return getInfoString(CL_PLATFORM_VENDOR);
+    }
+
+    /**
+     * Returns true if the extension is supported on this platform.
+     */
+    public boolean isExtensionAvailable(String extension) {
+        return getExtensions().contains(extension);
+    }
+
+    /**
+     * Returns all platform extension names as unmodifiable Set.
+     */
+    public Set<String> getExtensions() {
+
+        if(extensions == null) {
+            extensions = new HashSet<String>();
+            String ext = getInfoString(CL_PLATFORM_EXTENSIONS);
+            Scanner scanner = new Scanner(ext);
+
+            while(scanner.hasNext())
+                extensions.add(scanner.next());
+
+            extensions = Collections.unmodifiableSet(extensions);
+        }
+
+        return extensions;
     }
 
     /**

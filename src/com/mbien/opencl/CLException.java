@@ -12,6 +12,11 @@ public class CLException extends RuntimeException {
 
     private final static String ERROR_CODE_DOC = "http://www.khronos.org/opencl/sdk/1.0/docs/man/xhtml/errors.html";
 
+    public CLException(String message) {
+        super(message);
+        errorcode = 0;
+    }
+
     public CLException(int error, String message) {
         super(message + "\nerror: " + identifyError(error) + " (man page: "+ERROR_CODE_DOC+")");
         errorcode = error;

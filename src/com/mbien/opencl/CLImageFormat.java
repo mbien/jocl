@@ -172,7 +172,7 @@ public final class CLImageFormat {
 
         /**
          * Represents a normalized 5-6-5 3-channel RGB image. The channel order must
-         * be {@link ChannelOrder#CL_RGB}.
+         * be {@link ChannelOrder#RGB}.
          */
         UNORM_SHORT_565(CL_UNORM_SHORT_565),
 

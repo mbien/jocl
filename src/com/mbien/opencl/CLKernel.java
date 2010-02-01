@@ -12,11 +12,11 @@ import static com.mbien.opencl.CL.*;
 
 /**
  * High level abstraction for an OpenCL Kernel.
- * CLKernel is not threadsafe.
- * "A kernel is a function declared in a program. A kernel is identified by the <code>kernel</code> qualifier
+ * A kernel is a function declared in a program. A kernel is identified by the <code>kernel</code> qualifier
  * applied to any function in a program. A kernel object encapsulates the specific <code>kernel</code>
  * function declared in a program and the argument values to be used when executing this
- * <code>kernel</code> function."
+ * <code>kernel</code> function.
+ * CLKernel is not threadsafe.
  * @author Michael Bien
  */
 public class CLKernel implements CLResource/*, Cloneable*/ {

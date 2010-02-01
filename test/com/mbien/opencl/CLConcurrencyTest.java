@@ -19,7 +19,7 @@ public class CLConcurrencyTest {
      @Test
      public void testEvents() throws IOException {
 
-        out.println(" - - - event synchronisation test - - - ");
+        out.println(" - - - event synchronization test - - - ");
 
         final int groupSize = 256;
         final int elements = roundUp(groupSize, ONE_MB/SIZEOF_INT * 5); // 5MB per buffer
@@ -82,7 +82,7 @@ public class CLConcurrencyTest {
      @Test
      public void concurrencyTest() throws IOException, InterruptedException {
 
-        out.println(" - - - queue synchronisation test - - - ");
+        out.println(" - - - QueueBarrier test - - - ");
 
         final int elements = ONE_MB/SIZEOF_INT * 10; // 20MB per buffer
 

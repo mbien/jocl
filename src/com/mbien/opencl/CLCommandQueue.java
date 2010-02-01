@@ -20,9 +20,11 @@ import static com.mbien.opencl.CL.*;
 public class CLCommandQueue implements CLResource {
 
     public final long ID;
+
     private final CLContext context;
     private final CLDevice device;
     private final CL cl;
+    private long properties;
 
     /*
      * Those direct memory buffers are used to pass data between the JVM and OpenCL.
@@ -35,6 +37,7 @@ public class CLCommandQueue implements CLResource {
         this.context = context;
         this.cl = context.cl;
         this.device = device;
+        this.properties = properties;
 
         this.bufferA = PointerBuffer.allocateDirect(3);
         this.bufferB = PointerBuffer.allocateDirect(3);
@@ -450,7 +453,7 @@ public class CLCommandQueue implements CLResource {
         if(localWorkSizeX != 0 && localWorkSizeY !=0) {
             localWorkSize = copy2NIO(bufferC, localWorkSizeX, localWorkSizeY);
         }
-        this.putNDRangeKernel(kernel, 2, globalWorkOffset, globalWorkSize, localWorkSize);
+        this.putNDRangeKernel(kernel, 2, globalWorkOffset, globalWorkSize, localWorkSize, events);
         return this;
     }
 
@@ -525,11 +528,24 @@ public class CLCommandQueue implements CLResource {
         return this;
     }
 
-
     public CLCommandQueue finish() {
         int ret = cl.clFinish(ID);
         checkForError(ret, "can not finish command queue");
         return this;
+    }
+
+    /**
+     * Returns true only when {@link Mode#PROFILING_MODE} has been enabled.
+     */
+    public boolean isProfilingEnabled() {
+        return (Mode.PROFILING_MODE.QUEUE_MODE & properties) != 0;
+    }
+
+    /**
+     * Returns true only when {@link Mode#OUT_OF_ORDER_EXEC_MODE} mode has been enabled.
+     */
+    public boolean isOutOfOrderModeEnabled() {
+        return (Mode.OUT_OF_ORDER_EXEC_MODE.QUEUE_MODE & properties) != 0;
     }
 
     public void release() {

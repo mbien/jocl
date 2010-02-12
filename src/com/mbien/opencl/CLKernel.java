@@ -19,7 +19,7 @@ import static com.mbien.opencl.CL.*;
  * CLKernel is not threadsafe.
  * @author Michael Bien
  */
-public class CLKernel implements CLResource/*, Cloneable*/ {
+public class CLKernel implements CLResource, Cloneable {
 
     public final long ID;
     public final String name;
@@ -228,11 +228,11 @@ public class CLKernel implements CLResource/*, Cloneable*/ {
     }
 
     /**
-     * Returns a new instance of this kernel.
+     * Returns a new instance of this kernel with uninitialized arguments.
      */
-//    @Override
-//    public CLKernel clone() {
-//        return program.createCLKernel(name);
-//    }
+    @Override
+    public CLKernel clone() {
+        return program.createCLKernel(name).setForce32BitArgs(force32BitArgs);
+    }
 
 }

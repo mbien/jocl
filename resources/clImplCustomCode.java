@@ -18,11 +18,11 @@
 
         return this.clCreateContext0(
                 properties!=null?properties.getBuffer():null, BufferFactory.getDirectBufferByteOffset(properties),
-                devices!=null?devices.getBuffer():null, BufferFactory.getDirectBufferByteOffset(devices),
+                devices!=null?devices.remaining():0, devices!=null?devices.getBuffer():null, BufferFactory.getDirectBufferByteOffset(devices),
                 null, null,
                 errcode_ret, BufferFactory.getDirectBufferByteOffset(errcode_ret) );
     }
-    private native long clCreateContext0(Object cl_context_properties, int props_offset, Object devices, int devices_offset, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
+    private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
 
         
     public long clCreateContextFromType(PointerBuffer properties, long device_type, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {

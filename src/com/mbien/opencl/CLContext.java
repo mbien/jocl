@@ -113,7 +113,7 @@ public class CLContext implements CLResource {
      * Creates a context on the specified platform and with the specified
      * device types.
      */
-    private static final CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
+    public static final CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
 
         long type = toDeviceBitmap(deviceTypes);
 
@@ -125,10 +125,16 @@ public class CLContext implements CLResource {
      * Creates a context on the specified platform and with the specified
      * devices.
      */
-    private static final CLContext create(CLPlatform platform, CLDevice[] devices) {
+    public static final CLContext create(CLPlatform platform, CLDevice... devices) {
 
         PointerBuffer properties = setupContextProperties(platform);
-        return new CLContext(createContext(properties, devices));
+        CLContext context = new CLContext(createContext(properties, devices));
+        if(devices != null) {
+            for (int i = 0; i < devices.length; i++) {
+                devices[i].setContext(context);
+            }
+        }
+        return context;
     }
 
     protected static final long createContextFromType(PointerBuffer properties, long deviceType) {

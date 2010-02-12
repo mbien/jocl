@@ -72,6 +72,10 @@ public final class CLDevice {
     CLContext getContext() {
         return context;
     }
+    
+    void setContext(CLContext context) {
+        this.context = context;
+    }
 
     /**
      * Returns the name of this device.

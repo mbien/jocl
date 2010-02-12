@@ -107,6 +107,47 @@ public class HighLevelBindingTest {
     }
 
     @Test
+    public void createContextTest() {
+
+        out.println(" - - - highLevelTest; create context - - - ");
+
+        CLPlatform platform = CLPlatform.getDefault();
+        int deviceCount = platform.listCLDevices().length;
+        CLDevice firstDevice = platform.listCLDevices()[0];
+
+        CLContext c = CLContext.create();
+        assertNotNull(c);
+        assertEquals(deviceCount, c.getCLDevices().length);
+        c.release();
+
+        c = CLContext.create(platform);
+        assertNotNull(c);
+        assertEquals(deviceCount, c.getCLDevices().length);
+        c.release();
+
+        c = CLContext.create(firstDevice);
+        assertNotNull(c);
+        assertEquals(1, c.getCLDevices().length);
+        c.release();
+
+        c = CLContext.create(CLDevice.Type.ALL);
+        assertNotNull(c);
+        assertEquals(deviceCount, c.getCLDevices().length);
+        c.release();
+
+        c = CLContext.create(platform, firstDevice);
+        assertNotNull(c);
+        assertEquals(1, c.getCLDevices().length);
+        c.release();
+
+        c = CLContext.create(platform, CLDevice.Type.ALL);
+        assertNotNull(c);
+        assertEquals(deviceCount, c.getCLDevices().length);
+        c.release();
+
+    }
+
+    @Test
     public void vectorAddGMTest() throws IOException {
 
         out.println(" - - - highLevelTest; global memory kernel - - - ");

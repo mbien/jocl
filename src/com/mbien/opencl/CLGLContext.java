@@ -39,6 +39,10 @@ public final class CLGLContext extends CLContext {
         return create(glContext, platform, CLDevice.Type.ALL);
     }
 
+    /**
+     * Creates a shared context on the specified platform and with the specified
+     * device types.
+     */
     public static CLGLContext create(GLContext glContext, CLDevice.Type... deviceTypes) {
         return create(glContext, null, deviceTypes);
     }
@@ -55,7 +59,7 @@ public final class CLGLContext extends CLContext {
      * Creates a shared context on the specified platform and with the specified
      * device types.
      */
-    private static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice.Type... deviceTypes) {
+    public static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice.Type... deviceTypes) {
 
         long[] glID = new long[1];
         PointerBuffer properties = setupContextProperties(glContext, platform, glID);
@@ -69,13 +73,19 @@ public final class CLGLContext extends CLContext {
      * Creates a shared context on the specified platform and with the specified
      * devices.
      */
-    private static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice... devices) {
+    public static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice... devices) {
 
         long[] glID = new long[1];
         PointerBuffer properties = setupContextProperties(glContext, platform, glID);
         long clID = createContext(properties, devices);
 
-        return new CLGLContext(clID, glID[0]);
+        CLGLContext context = new CLGLContext(clID, glID[0]);
+        if(devices != null) {
+            for (int i = 0; i < devices.length; i++) {
+                devices[i].setContext(context);
+            }
+        }
+        return context;
     }
 
 

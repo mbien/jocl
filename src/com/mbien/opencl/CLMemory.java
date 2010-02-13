@@ -202,6 +202,8 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
                     return Mem.READ_WRITE;
                 case CL_MEM_READ_ONLY:
                     return Mem.READ_ONLY;
+                case CL_MEM_WRITE_ONLY:
+                    return Mem.WRITE_ONLY;
                 case CL_MEM_USE_HOST_PTR:
                     return Mem.USE_BUFFER;
                 case(CL_MEM_ALLOC_HOST_PTR):

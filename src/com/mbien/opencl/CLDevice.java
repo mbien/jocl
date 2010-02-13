@@ -746,9 +746,9 @@ public final class CLDevice {
          */
         public static LocalMemType valueOf(int clLocalCacheType) {
             if(clLocalCacheType == CL_GLOBAL)
-                return LOCAL;
-            else if(clLocalCacheType == CL_LOCAL)
                 return GLOBAL;
+            else if(clLocalCacheType == CL_LOCAL)
+                return LOCAL;
             return null;
         }
 

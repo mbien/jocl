@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.CLProgram.Status;
 import java.io.IOException;
 import java.util.Map;
 import org.junit.Test;
@@ -7,12 +8,22 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.CLProgram.CompilerOptions.*;
+import static com.mbien.opencl.CLProgram.Status.*;
 
 /**
  *
  * @author Michael Bien
  */
 public class CLProgramTest {
+
+    @Test
+    public void enumsTest() {
+
+        // CLProgram enums
+        for (Status e : Status.values()) {
+            assertEquals(e, Status.valueOf(e.STATUS));
+        }
+    }
 
     @Test
     public void rebuildProgramTest() throws IOException {
@@ -116,7 +127,8 @@ public class CLProgramTest {
         assertEquals(program.getSource().length(), 0);
 
         try{
-            program.createCLKernels();
+            Map<String, CLKernel> kernels = program.createCLKernels();
+            fail("expected an exception from createCLKernels but got: "+kernels);
         }catch(CLException ex) {
             // expected, not build yet
         }

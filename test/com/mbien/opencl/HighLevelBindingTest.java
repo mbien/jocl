@@ -3,6 +3,9 @@ package com.mbien.opencl;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLCommandQueue.Mode;
 import com.mbien.opencl.CLDevice.FPConfig;
+import com.mbien.opencl.CLDevice.GlobalMemCacheType;
+import com.mbien.opencl.CLDevice.LocalMemType;
+import com.mbien.opencl.CLDevice.Type;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -31,20 +34,42 @@ public class HighLevelBindingTest {
     }
 
     @Test
-    public void contextlessTest() {
-
-        out.println(" - - - highLevelTest; contextless - - - ");
-
+    public void enumsTest() {
+        
         // enum tests
         final EnumSet<FPConfig> singleFPConfig = FPConfig.valuesOf(CL.CL_FP_DENORM | CL.CL_FP_ROUND_TO_INF);
         assertEquals(0, FPConfig.valuesOf(0).size());
         assertTrue(singleFPConfig.contains(FPConfig.DENORM));
         assertTrue(singleFPConfig.contains(FPConfig.ROUND_TO_INF));
 
-        final EnumSet<Mode> queueMode = Mode.valuesOf(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | CL.CL_QUEUE_PROFILING_ENABLE);
-        assertEquals(0, Mode.valuesOf(0).size());
-        assertTrue(queueMode.contains(Mode.OUT_OF_ORDER_EXEC_MODE));
-        assertTrue(queueMode.contains(Mode.PROFILING_MODE));
+        // CLDevice enums
+        for (FPConfig e : FPConfig.values()) {
+            EnumSet<FPConfig> set = FPConfig.valuesOf(e.CONFIG);
+            assertTrue(set.contains(e));
+        }
+        for (GlobalMemCacheType e : GlobalMemCacheType.values()) {
+            assertEquals(e, GlobalMemCacheType.valueOf(e.TYPE));
+        }
+        for (LocalMemType e : LocalMemType.values()) {
+            assertEquals(e, LocalMemType.valueOf(e.TYPE));
+        }
+        for (Type e : Type.values()) {
+            assertEquals(e, Type.valueOf(e.TYPE));
+        }
+
+        // CLMemory enums
+        for (Mem e : Mem.values()) {
+            assertEquals(e, Mem.valueOf(e.CONFIG));
+        }
+
+    }
+
+
+
+    @Test
+    public void contextlessTest() {
+
+        out.println(" - - - highLevelTest; contextless - - - ");
 
         // platform/device info tests
         CLPlatform[] clPlatforms = CLPlatform.listCLPlatforms();

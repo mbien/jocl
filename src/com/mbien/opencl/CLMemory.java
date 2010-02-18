@@ -39,7 +39,9 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
     }
 
     protected static final boolean isHostPointerFlag(int flags) {
-        return (flags & CL_MEM_COPY_HOST_PTR) != 0 || (flags & CL_MEM_USE_HOST_PTR) != 0;
+        return (flags & CL_MEM_COPY_HOST_PTR) != 0
+            || (flags & CL_MEM_USE_HOST_PTR)  != 0
+            || (flags & CL_MEM_ALLOC_HOST_PTR)!= 0;
     }
 
     protected static final int sizeOfBufferElem(Buffer buffer) {
@@ -176,7 +178,7 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
          * to allocate memory from host accessible memory.
          * {@link #ALLOC_HOST_PTR} and {@link #USE_BUFFER} are mutually exclusive.
          */
-        ALLOC_HOST_PTR(CL_MEM_ALLOC_HOST_PTR),
+        ALLOCATE_BUFFER(CL_MEM_ALLOC_HOST_PTR),
 
         /**
          * Enum representing CL_MEM_COPY_HOST_PTR.
@@ -207,7 +209,7 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
                 case CL_MEM_USE_HOST_PTR:
                     return Mem.USE_BUFFER;
                 case(CL_MEM_ALLOC_HOST_PTR):
-                    return ALLOC_HOST_PTR;
+                    return ALLOCATE_BUFFER;
                 case CL_MEM_COPY_HOST_PTR:
                     return Mem.COPY_BUFFER;
             }
@@ -226,6 +228,51 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
             }
             return clFlags;
         }
+    }
+
+    /**
+     * Configures the mapping process of
+     * {@link com.mbien.opencl.CLCommandQueue#putMapBuffer(CLBuffer, CLMemory.Map, boolean)}.
+     */
+    public enum Map {
+
+        /**
+         * Enum representing CL_MAP_READ | CL_MAP_WRITE.
+         * This flag specifies that the memory object will be mapped for read and write operation.
+         */
+        READ_WRITE(CL_MAP_READ | CL_MAP_WRITE),
+
+        /**
+         * Enum representing CL_MAP_WRITE.
+         * This flag specifies that the memory object will be mapped for write operation.
+         */
+        WRITE(CL_MAP_WRITE),
+
+        /**
+         * Enum representing CL_MAP_READ.
+         * This flag specifies that the memory object will be mapped for read operation.
+         */
+        READ(CL_MAP_READ);
+
+        /**
+         * Value of wrapped OpenCL flag.
+         */
+        public final int FLAGS;
+
+        private Map(int flags) {
+            this.FLAGS = flags;
+        }
+
+        public Map valueOf(int flag) {
+            if(flag == WRITE.FLAGS)
+                return WRITE;
+            else if(flag == READ.FLAGS)
+                return READ;
+            else if(flag == READ_WRITE.FLAGS)
+                return READ_WRITE;
+            return null;
+        }
+
     }
 
    

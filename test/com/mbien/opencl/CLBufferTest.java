@@ -1,6 +1,7 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.CLMemory.Mem;
+import com.mbien.opencl.CLMemory.Map;
 import com.sun.opengl.util.BufferUtil;
 import java.nio.ByteBuffer;
 import org.junit.Test;
@@ -91,4 +92,43 @@ public class CLBufferTest {
 
         context.release();
     }
+    
+    @Test
+    public void mapBufferTest() {
+
+        out.println(" - - - highLevelTest; map buffer test - - - ");
+
+        final int elements = NUM_ELEMENTS;
+        final int sizeInBytes = elements*SIZEOF_INT;
+
+        CLContext context = CLContext.create();
+
+        CLBuffer<?> clBufferA = context.createBuffer(sizeInBytes, Mem.READ_WRITE);
+        CLBuffer<?> clBufferB = context.createBuffer(sizeInBytes, Mem.READ_WRITE);
+
+        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
+        
+        // fill only first buffer -> we will copy the payload to the second later.
+        ByteBuffer mappedBufferA = queue.putMapBuffer(clBufferA, Map.READ_WRITE, true);
+        assertEquals(sizeInBytes, mappedBufferA.capacity());
+
+        fillBuffer(mappedBufferA, 12345);           // write to A
+
+        queue.putUnmapMemory(clBufferA)             // unmap A
+             .putCopyBuffer(clBufferA, clBufferB);  // copy A -> B
+
+        // map B for read operations
+        ByteBuffer mappedBufferB = queue.putMapBuffer(clBufferB, Map.READ, true);
+        assertEquals(sizeInBytes, mappedBufferB.capacity());
+
+        out.println("validating computed results...");
+        checkIfEqual(mappedBufferA, mappedBufferB, elements); // A == B ?
+        out.println("results are valid");
+
+        queue.putUnmapMemory(clBufferB);            // unmap B
+
+        context.release();
+
+    }
+    
 }

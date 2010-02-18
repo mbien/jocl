@@ -278,6 +278,22 @@ public class CLContext implements CLResource {
     /**
      * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
      */
+    public final CLBuffer<?> createBuffer(int size, Mem... flags) {
+        return createBuffer(size, Mem.flagsToInt(flags));
+    }
+
+    /**
+     * Creates a CLBuffer with the specified flags.
+     */
+    public final CLBuffer<?> createBuffer(int size, int flags) {
+        CLBuffer<?> buffer = CLBuffer.create(this, size, flags);
+        memoryObjects.add(buffer);
+        return buffer;
+    }
+
+    /**
+     * Creates a CLBuffer with the specified flags. No flags creates a MEM.READ_WRITE buffer.
+     */
     public final <B extends Buffer> CLBuffer<B> createBuffer(B directBuffer, Mem... flags) {
         return createBuffer(directBuffer, Mem.flagsToInt(flags));
     }

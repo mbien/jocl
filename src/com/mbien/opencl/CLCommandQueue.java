@@ -1,6 +1,8 @@
 package com.mbien.opencl;
 
 import com.sun.gluegen.runtime.PointerBuffer;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -108,14 +110,18 @@ public class CLCommandQueue implements CLResource {
     }
 */
 
-    public CLCommandQueue putCopyBuffer(CLBuffer<?> src, CLBuffer<?> dest, long bytesToCopy) {
-        return putCopyBuffer(src, dest, bytesToCopy, null);
+    public CLCommandQueue putCopyBuffer(CLBuffer<?> src, CLBuffer<?> dest) {
+        return putCopyBuffer(src, dest, 0, 0, src.getCLSize(), null);
     }
 
-    public CLCommandQueue putCopyBuffer(CLBuffer<?> src, CLBuffer<?> dest, long bytesToCopy, CLEventList events) {
+    public CLCommandQueue putCopyBuffer(CLBuffer<?> src, CLBuffer<?> dest, long bytesToCopy) {
+        return putCopyBuffer(src, dest, 0, 0, bytesToCopy, null);
+    }
+
+    public CLCommandQueue putCopyBuffer(CLBuffer<?> src, CLBuffer<?> dest, int srcOffset, int destOffset, long bytesToCopy, CLEventList events) {
 
         int ret = cl.clEnqueueCopyBuffer(
-                        ID, src.ID, dest.ID, src.buffer.position(), dest.buffer.position(), bytesToCopy,
+                        ID, src.ID, dest.ID, srcOffset, destOffset, bytesToCopy,
                         0, null, events==null ? null : events.IDs);
 
         checkForError(ret, "can not copy Buffer");
@@ -253,7 +259,7 @@ public class CLCommandQueue implements CLResource {
 
     //2D
     public CLCommandQueue putCopyImage(CLImage2d<?> srcImage, CLImage2d<?> dstImage) {
-        return putCopyImage(srcImage, dstImage, 0, 0, 0, 0, srcImage.width, srcImage.height, null);
+        return putCopyImage(srcImage, dstImage, null);
     }
 
     public CLCommandQueue putCopyImage(CLImage2d<?> srcImage, CLImage2d<?> dstImage, CLEventList events) {
@@ -288,7 +294,7 @@ public class CLCommandQueue implements CLResource {
 
     //3D
     public CLCommandQueue putCopyImage(CLImage3d<?> srcImage, CLImage3d<?> dstImage) {
-        return putCopyImage(srcImage, dstImage, 0, 0, 0, 0, 0, 0, srcImage.width, srcImage.height, srcImage.depth, null);
+        return putCopyImage(srcImage, dstImage, null);
     }
 
     public CLCommandQueue putCopyImage(CLImage3d<?> srcImage, CLImage3d<?> dstImage, CLEventList events) {
@@ -323,32 +329,250 @@ public class CLCommandQueue implements CLResource {
         return this;
     }
     
-    //TODO implement remaining methods
-    /*
-    public CLCommandQueue putCopyBufferToImage() {
+    //2D
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage2d<?> dstImage) {
+        return putCopyBufferToImage(srcBuffer, dstImage, null);
+    }
+    
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage2d<?> dstImage, CLEventList events) {
+        return putCopyBufferToImage(srcBuffer, dstImage, 0, 0, 0, dstImage.width, dstImage.height, events);
+    }
+        
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage2d<?> dstImage,
+                                        long srcOffset, int dstOriginX, int dstOriginY,
+                                        int rangeX, int rangeY) {
+        return putCopyBufferToImage(srcBuffer, dstImage, 
+                srcOffset, dstOriginX, dstOriginY, rangeX, rangeY, null);
+    }
+    
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage2d<?> dstImage,
+                                        long srcOffset, int dstOriginX, int dstOriginY,
+                                        int rangeX, int rangeY, CLEventList events) {
 
+        copy2NIO(bufferA, dstOriginX, dstOriginY);
+        copy2NIO(bufferB, rangeX, rangeY);
+
+        int ret = cl.clEnqueueCopyBufferToImage(ID, srcBuffer.ID, dstImage.ID,
+                                         srcOffset, bufferA, bufferB,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not copy buffer to image2d");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
         return this;
     }
-    public CLCommandQueue putCopyImageToBuffer() {
+    
+    //3D
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage3d<?> dstImage) {
+        return putCopyBufferToImage(srcBuffer, dstImage, null);
+    }
+    
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage3d<?> dstImage, CLEventList events) {
+        return putCopyBufferToImage(srcBuffer, dstImage, 0, 0, 0, 0, dstImage.width, dstImage.height, dstImage.depth, events);
+    }
+        
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage3d<?> dstImage,
+                                        long srcOffset, int dstOriginX, int dstOriginY, int dstOriginZ,
+                                        int rangeX, int rangeY, int rangeZ) {
+        return putCopyBufferToImage(srcBuffer, dstImage, 
+                srcOffset, dstOriginX, dstOriginY, dstOriginZ, rangeX, rangeY, rangeZ, null);
+        
+    }
+    
+    public CLCommandQueue putCopyBufferToImage(CLBuffer<?> srcBuffer, CLImage3d<?> dstImage,
+                                        long srcOffset, int dstOriginX, int dstOriginY, int dstOriginZ,
+                                        int rangeX, int rangeY, int rangeZ, CLEventList events) {
 
+        copy2NIO(bufferA, dstOriginX, dstOriginY, dstOriginZ);
+        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
+
+        int ret = cl.clEnqueueCopyBufferToImage(ID, srcBuffer.ID, dstImage.ID,
+                                         srcOffset, bufferA, bufferB,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not copy buffer to image3d");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
         return this;
     }
 
-    public CLBuffer putMapBuffer() {
-
-        return null;
+    //2D
+    public CLCommandQueue putCopyImageToBuffer(CLImage2d<?> srcImage, CLBuffer<?> dstBuffer) {
+        return putCopyImageToBuffer(srcImage, dstBuffer, null);
     }
+    
+    public CLCommandQueue putCopyImageToBuffer(CLImage2d<?> srcImage, CLBuffer<?> dstBuffer, CLEventList events) {
+        return putCopyImageToBuffer(srcImage, dstBuffer, 0, 0, srcImage.width, srcImage.height, 0, events);
+    }
+        
+    public CLCommandQueue putCopyImageToBuffer(CLImage2d<?> srcImage, CLBuffer<?> dstBuffer,
+                                        int srcOriginX, int srcOriginY,
+                                        int rangeX, int rangeY, long dstOffset) {
+        return putCopyImageToBuffer(srcImage, dstBuffer, 
+                srcOriginX, srcOriginY, rangeX, rangeY, dstOffset, null);
+    }
+    
+    public CLCommandQueue putCopyImageToBuffer(CLImage2d<?> srcImage, CLBuffer<?> dstBuffer,
+                                        int srcOriginX, int srcOriginY,
+                                        int rangeX, int rangeY, long dstOffset, CLEventList events) {
 
-    public CLCommandQueue putMapImage() {
+        copy2NIO(bufferA, srcOriginX, srcOriginY);
+        copy2NIO(bufferB, rangeX, rangeY);
 
+        int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
+                                         bufferA, bufferB, dstOffset,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not copy buffer to image2d");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+    
+    //3D
+    public CLCommandQueue putCopyImageToBuffer(CLImage3d<?> srcImage, CLBuffer<?> dstBuffer) {
+        return putCopyImageToBuffer(srcImage, dstBuffer, 0, 0, 0, srcImage.width, srcImage.height, srcImage.depth, 0, null);
+    }
+    
+    public CLCommandQueue putCopyImageToBuffer(CLImage3d<?> srcImage, CLBuffer<?> dstBuffer, CLEventList events) {
+        return putCopyImageToBuffer(srcImage, dstBuffer, 0, 0, 0, srcImage.width, srcImage.height, srcImage.depth, 0, events);
+    }
+        
+    public CLCommandQueue putCopyImageToBuffer(CLImage3d<?> srcImage, CLBuffer<?> dstBuffer,
+                                        int srcOriginX, int srcOriginY, int srcOriginZ,
+                                        int rangeX, int rangeY, int rangeZ, long dstOffset) {
+        return putCopyImageToBuffer(srcImage, dstBuffer, 
+                srcOriginX, srcOriginY, srcOriginZ, rangeX, rangeY, rangeZ, dstOffset, null);
+        
+    }
+    
+    public CLCommandQueue putCopyImageToBuffer(CLImage3d<?> srcImage, CLBuffer<?> dstBuffer,
+                                        int srcOriginX, int srcOriginY, int srcOriginZ, 
+                                        int rangeX, int rangeY, int rangeZ, long dstOffset, CLEventList events) {
+
+        copy2NIO(bufferA, srcOriginX, srcOriginY, srcOriginZ);
+        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
+
+        int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
+                                         bufferA, bufferB, dstOffset,
+                                         0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not copy buffer to image3d");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
         return this;
     }
 
-    public CLCommandQueue putUnmapMemObject() {
+    public ByteBuffer putMapBuffer(CLBuffer<?> buffer, CLMemory.Map flag, boolean blockingMap) {
+        return putMapBuffer(buffer, flag, blockingMap, null);
+    }
 
-        return this;
+    public ByteBuffer putMapBuffer(CLBuffer<?> buffer, CLMemory.Map flag, boolean blockingMap, CLEventList events) {
+        return putMapBuffer(buffer, flag, 0, buffer.getCLSize(), blockingMap, events);
+    }
+
+    public ByteBuffer putMapBuffer(CLBuffer<?> buffer, CLMemory.Map flag, long offset, long length, boolean blockingMap) {
+        return putMapBuffer(buffer, flag, offset, length, blockingMap, null);
+    }
+
+    public ByteBuffer putMapBuffer(CLBuffer<?> buffer, CLMemory.Map flag, long offset, long length, boolean blockingMap, CLEventList events) {
+        IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
+        ByteBuffer mappedBuffer = cl.clEnqueueMapBuffer(ID, buffer.ID, blockingMap ? CL_TRUE : CL_FALSE,
+                                         flag.FLAGS, offset, length,
+                                         0, null, events==null ? null : events.IDs, error);
+        checkForError(error.get(), "can not map buffer");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+
+        return mappedBuffer;
+    }
+/* TODO finish putMapImage
+    // 2D
+    public ByteBuffer putMapImage(CLImage2d<?> image, CLMemory.Map flag, boolean blockingMap) {
+        return putMapImage(image, flag, blockingMap, null);
+    }
+
+    public ByteBuffer putMapImage(CLImage2d<?> image, CLMemory.Map flag, boolean blockingMap, CLEventList events) {
+        return putMapImage(image, flag, 0, 0, image.width, image.height, blockingMap, events);
+    }
+
+    public ByteBuffer putMapImage(CLImage2d<?> buffer, CLMemory.Map flag, int offsetX, int offsetY,
+                                    int rangeX, int rangeY, boolean blockingMap) {
+        return putMapImage(buffer, flag, offsetX, offsetY, rangeX, rangeY, blockingMap, null);
+    }
+
+    public ByteBuffer putMapImage(CLImage2d<?> buffer, CLMemory.Map flag,
+                                    int offsetX, int offsetY,
+                                    int rangeX, int rangeY, boolean blockingMap, CLEventList events) {
+        IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
+        copy2NIO(bufferB, offsetX, offsetY);
+        copy2NIO(bufferC, rangeX, rangeY);
+        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, blockingMap ? CL_TRUE : CL_FALSE,
+                                         flag.FLAGS, bufferB, bufferC, null, null,
+                                         0, null, events==null ? null : events.IDs, error);
+        checkForError(error.get(), "can not map image2d");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+
+        return mappedImage;
+    }
+
+    // 3D
+    public ByteBuffer putMapImage(CLImage3d<?> image, CLMemory.Map flag, boolean blockingMap) {
+        return putMapImage(image, flag, blockingMap, null);
+    }
+
+    public ByteBuffer putMapImage(CLImage3d<?> image, CLMemory.Map flag, boolean blockingMap, CLEventList events) {
+        return putMapImage(image, flag, 0, 0, 0, image.width, image.height, image.depth, blockingMap, events);
+    }
+
+    public ByteBuffer putMapImage(CLImage3d<?> image, CLMemory.Map flag,
+                                    int offsetX, int offsetY, int offsetZ,
+                                    int rangeX, int rangeY, int rangeZ, boolean blockingMap) {
+        return putMapImage(image, flag, offsetX, offsetY, offsetZ, rangeX, rangeY, rangeZ, blockingMap, null);
+    }
+
+    public ByteBuffer putMapImage(CLImage3d<?> buffer, CLMemory.Map flag,
+                                    int offsetX, int offsetY, int offsetZ,
+                                    int rangeX, int rangeY, int rangeZ, boolean blockingMap, CLEventList events) {
+        IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
+        copy2NIO(bufferB, offsetX, offsetY, offsetZ);
+        copy2NIO(bufferC, rangeX, rangeY, rangeZ);
+        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, blockingMap ? CL_TRUE : CL_FALSE,
+                                         flag.FLAGS, bufferB, bufferC, null, null,
+                                         0, null, events==null ? null : events.IDs, error);
+        checkForError(error.get(), "can not map image3d");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+
+        return mappedImage;
     }
 */
+    public CLCommandQueue putUnmapMemory(CLMemory<?> memory) {
+        return putUnmapMemory(memory, null);
+    }
+
+    public CLCommandQueue putUnmapMemory(CLMemory<?> memory, CLEventList events) {
+        int ret = cl.clEnqueueUnmapMemObject(ID, memory.ID, memory.getBuffer(),
+                                        0, null, events==null ? null : events.IDs);
+        checkForError(ret, "can not unmap memory");
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+        return this;
+    }
+
     public CLCommandQueue putMarker(CLEventList events) {
         int ret = cl.clEnqueueMarker(CL_INT_MIN, events.IDs);
         checkForError(ret, "can not enqueue marker");

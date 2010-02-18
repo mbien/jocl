@@ -10,15 +10,34 @@ import static com.mbien.opencl.CLException.*;
  */
 public class CLBuffer<B extends Buffer> extends CLMemory<B> {
 
+    public CLBuffer(CLContext context, long id) {
+        super(context, id);
+    }
 
     protected CLBuffer(CLContext context, B directBuffer, long id) {
         super(context, directBuffer, id);
     }
 
+    @SuppressWarnings("unchecked")
+    static CLBuffer<?> create(CLContext context, int size, int flags) {
+
+        CL cl = context.cl;
+        int[] result = new int[1];
+
+        if(isHostPointerFlag(flags)) {
+            throw new IllegalArgumentException("no host pointer defined");
+        }
+
+        long id = cl.clCreateBuffer(context.ID, flags, size, null, result, 0);
+        checkForError(result[0], "can not create cl buffer");
+
+        return new CLBuffer(context, id);
+    }
+
     static <B extends Buffer> CLBuffer<B> create(CLContext context, B directBuffer, int flags) {
 
-        if(directBuffer != null && !directBuffer.isDirect())
-            throw new IllegalArgumentException("buffer is not a direct buffer");
+        if(!directBuffer.isDirect())
+            throw new IllegalArgumentException("buffer is not direct");
 
         B host_ptr = null;
         CL cl = context.cl;

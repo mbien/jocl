@@ -29,7 +29,7 @@ public class CLCommandQueue implements CLResource {
     private long properties;
 
     /*
-     * Those direct memory buffers are used to pass data between the JVM and OpenCL.
+     * Those direct memory buffers are used to move data between the JVM and OpenCL.
      */
     private final PointerBuffer bufferA;
     private final PointerBuffer bufferB;
@@ -150,8 +150,10 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putWriteImage(CLImage2d<?> writeImage, int inputRowPitch,
             int originX, int originY, int rangeX, int rangeY, boolean blockingWrite, CLEventList events) {
 
-        copy2NIO(bufferA, originX, originY);
-        copy2NIO(bufferB, rangeX, rangeY);
+        // spec: CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0
+        // or region[2] is not equal to 1 or slice_pitch is not equal to 0.
+        copy2NIO(bufferA, originX, originY, 0);
+        copy2NIO(bufferB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, blockingWrite ? CL_TRUE : CL_FALSE,
                                          bufferA, bufferB, inputRowPitch, 0, writeImage.buffer,
@@ -212,8 +214,10 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReadImage(CLImage2d<?> readImage, int inputRowPitch,
             int originX, int originY, int rangeX, int rangeY, boolean blockingRead, CLEventList events) {
 
-        copy2NIO(bufferA, originX, originY);
-        copy2NIO(bufferB, rangeX, rangeY);
+        // spec: CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0
+        // or region[2] is not equal to 1 or slice_pitch is not equal to 0.
+        copy2NIO(bufferA, originX, originY, 0);
+        copy2NIO(bufferB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueReadImage(ID, readImage.ID, blockingRead ? CL_TRUE : CL_FALSE,
                                          bufferA, bufferB, inputRowPitch, 0, readImage.buffer,
@@ -278,9 +282,11 @@ public class CLCommandQueue implements CLResource {
                                         int dstOriginX, int dstOriginY,
                                         int rangeX, int rangeY, CLEventList events) {
 
-        copy2NIO(bufferA, srcOriginX, srcOriginY);
-        copy2NIO(bufferB, dstOriginX, dstOriginY);
-        copy2NIO(bufferC, rangeX, rangeY);
+        //spec: CL_INVALID_VALUE if src_image is a 2D image object and origin[2] or dst_origin[2] is not equal to 0
+        // or region[2] is not equal to 1.
+        copy2NIO(bufferA, srcOriginX, srcOriginY, 0);
+        copy2NIO(bufferB, dstOriginX, dstOriginY, 0);
+        copy2NIO(bufferC, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, bufferA, bufferB, bufferC,
                                          0, null, events==null ? null : events.IDs);
@@ -349,8 +355,10 @@ public class CLCommandQueue implements CLResource {
                                         long srcOffset, int dstOriginX, int dstOriginY,
                                         int rangeX, int rangeY, CLEventList events) {
 
-        copy2NIO(bufferA, dstOriginX, dstOriginY);
-        copy2NIO(bufferB, rangeX, rangeY);
+        // spec: CL_INVALID_VALUE if dst_image is a 2D image object and dst_origin[2] is not equal to 0
+        // or region[2] is not equal to 1.
+        copy2NIO(bufferA, dstOriginX, dstOriginY, 0);
+        copy2NIO(bufferB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueCopyBufferToImage(ID, srcBuffer.ID, dstImage.ID,
                                          srcOffset, bufferA, bufferB,
@@ -418,8 +426,10 @@ public class CLCommandQueue implements CLResource {
                                         int srcOriginX, int srcOriginY,
                                         int rangeX, int rangeY, long dstOffset, CLEventList events) {
 
-        copy2NIO(bufferA, srcOriginX, srcOriginY);
-        copy2NIO(bufferB, rangeX, rangeY);
+        // spec: CL_INVALID_VALUE if src_image is a 2D image object and src_origin[2] is not equal to 0
+        // or region[2] is not equal to 1.
+        copy2NIO(bufferA, srcOriginX, srcOriginY, 0);
+        copy2NIO(bufferB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
                                          bufferA, bufferB, dstOffset,
@@ -511,8 +521,11 @@ public class CLCommandQueue implements CLResource {
                                     int offsetX, int offsetY,
                                     int rangeX, int rangeY, boolean blockingMap, CLEventList events) {
         IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
-        copy2NIO(bufferB, offsetX, offsetY);
-        copy2NIO(bufferC, rangeX, rangeY);
+
+        // spec: CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0 or region[2] is not equal to 1
+        copy2NIO(bufferB, offsetX, offsetY, 0);
+        copy2NIO(bufferC, rangeX, rangeY, 1);
+
         ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, blockingMap ? CL_TRUE : CL_FALSE,
                                          flag.FLAGS, bufferB, bufferC, null, null,
                                          0, null, events==null ? null : events.IDs, error);

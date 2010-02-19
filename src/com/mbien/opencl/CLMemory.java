@@ -38,10 +38,12 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
         this.ID = id;
     }
 
+    /**
+     * Returns true if a host pointer must be specified on mem object creation.
+     */
     protected static final boolean isHostPointerFlag(int flags) {
         return (flags & CL_MEM_COPY_HOST_PTR) != 0
-            || (flags & CL_MEM_USE_HOST_PTR)  != 0
-            || (flags & CL_MEM_ALLOC_HOST_PTR)!= 0;
+            || (flags & CL_MEM_USE_HOST_PTR)  != 0;
     }
 
     protected static final int sizeOfBufferElem(Buffer buffer) {

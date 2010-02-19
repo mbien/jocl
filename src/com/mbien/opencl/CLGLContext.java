@@ -143,6 +143,14 @@ public final class CLGLContext extends CLContext {
     }
 
 
+    public final CLGLBuffer<?> createFromGLBuffer(int glBuffer, Mem... flags) {
+        return createFromGLBuffer(null, glBuffer, Mem.flagsToInt(flags));
+    }
+
+    public final CLGLBuffer<?> createFromGLBuffer(int glBuffer, int flags) {
+        return createFromGLBuffer(null, glBuffer, flags);
+    }
+
     public final <B extends Buffer> CLGLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
         return createFromGLBuffer(directBuffer, glBuffer, Mem.flagsToInt(flags));
     }

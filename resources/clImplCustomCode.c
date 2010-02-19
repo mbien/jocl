@@ -122,3 +122,66 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
     
     return (jint)_res;
 }
+
+/*   Java->C glue code:
+ *   Java package: com.mbien.opencl.impl.CLImpl
+ *    Java method: java.nio.ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags, com.sun.gluegen.runtime.PointerBuffer origin, com.sun.gluegen.runtime.PointerBuffer range, com.sun.gluegen.runtime.PointerBuffer image_row_pitch, com.sun.gluegen.runtime.PointerBuffer image_slice_pitch, int num_events_in_wait_list, com.sun.gluegen.runtime.PointerBuffer event_wait_list, com.sun.gluegen.runtime.PointerBuffer event, java.nio.IntBuffer errcode_ret)
+ *     C function: void *  clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret);
+ */
+JNIEXPORT jobject JNICALL
+Java_com_mbien_opencl_impl_CLImpl_clEnqueueMapImage0__JJIJLjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2IILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2I(JNIEnv *env, jobject _unused, jlong command_queue, jlong image, jint blocking_map, jlong map_flags, jobject origin, jint origin_byte_offset, jobject range, jint range_byte_offset, jobject image_row_pitch, jint image_row_pitch_byte_offset, jobject image_slice_pitch, jint image_slice_pitch_byte_offset, jint num_events_in_wait_list, jobject event_wait_list, jint event_wait_list_byte_offset, jobject event, jint event_byte_offset, jobject errcode_ret, jint errcode_ret_byte_offset) {
+
+  size_t * _origin_ptr = NULL;
+  size_t * _range_ptr = NULL;
+  size_t * _image_row_pitch_ptr = NULL;
+  size_t * _image_slice_pitch_ptr = NULL;
+  cl_event * _event_wait_list_ptr = NULL;
+  cl_event * _event_ptr = NULL;
+  int32_t * _errcode_ret_ptr = NULL;
+  size_t * elements = NULL;
+  size_t * depth = NULL;
+  size_t pixels;
+  cl_int status;
+
+  void *  _res;
+
+    if (origin != NULL) {
+        _origin_ptr = (size_t *) (((char*) (*env)->GetDirectBufferAddress(env, origin)) + origin_byte_offset);
+    }
+    if (range != NULL) {
+        _range_ptr = (size_t *) (((char*) (*env)->GetDirectBufferAddress(env, range)) + range_byte_offset);
+    }
+    if (image_row_pitch != NULL) {
+        _image_row_pitch_ptr = (size_t *) (((char*) (*env)->GetDirectBufferAddress(env, image_row_pitch)) + image_row_pitch_byte_offset);
+    }
+    if (image_slice_pitch != NULL) {
+        _image_slice_pitch_ptr = (size_t *) (((char*) (*env)->GetDirectBufferAddress(env, image_slice_pitch)) + image_slice_pitch_byte_offset);
+    }
+    if (event_wait_list != NULL) {
+        _event_wait_list_ptr = (cl_event *) (((char*) (*env)->GetDirectBufferAddress(env, event_wait_list)) + event_wait_list_byte_offset);
+    }
+    if (event != NULL) {
+        _event_ptr = (cl_event *) (((char*) (*env)->GetDirectBufferAddress(env, event)) + event_byte_offset);
+    }
+    if (errcode_ret != NULL) {
+        _errcode_ret_ptr = (int32_t *) (((char*) (*env)->GetDirectBufferAddress(env, errcode_ret)) + errcode_ret_byte_offset);
+    }
+
+  _res = clEnqueueMapImage((cl_command_queue) (intptr_t) command_queue, (cl_mem) (intptr_t) image, (uint32_t) blocking_map, (uint64_t) map_flags, (size_t *) _origin_ptr, (size_t *) _range_ptr, (size_t *) _image_row_pitch_ptr, (size_t *) _image_slice_pitch_ptr, (uint32_t) num_events_in_wait_list, (cl_event *) _event_wait_list_ptr, (cl_event *) _event_ptr, (int32_t *) _errcode_ret_ptr);
+  if (_res == NULL) return NULL;
+
+  // calculate buffer size
+  status  = clGetImageInfo((cl_mem) (intptr_t) image, CL_IMAGE_ELEMENT_SIZE, sizeof(size_t), (void *) elements, NULL);
+  status |= clGetImageInfo((cl_mem) (intptr_t) image, CL_IMAGE_DEPTH, sizeof(size_t), (void *) depth, NULL);
+
+  if(status != CL_SUCCESS) return NULL;
+
+  if(*depth == 0) { // 2D
+      pixels = (*_image_row_pitch_ptr)   * _range_ptr[1] + _range_ptr[0];
+  }else{            // 3D
+      pixels = (*_image_slice_pitch_ptr) * _range_ptr[2]
+             + (*_image_row_pitch_ptr)   * _range_ptr[1] + _range_ptr[0];
+  }
+
+  return (*env)->NewDirectByteBuffer(env, _res, pixels * (*elements));
+}

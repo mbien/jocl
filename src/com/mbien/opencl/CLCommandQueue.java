@@ -502,7 +502,7 @@ public class CLCommandQueue implements CLResource {
 
         return mappedBuffer;
     }
-/* TODO finish putMapImage
+
     // 2D
     public ByteBuffer putMapImage(CLImage2d<?> image, CLMemory.Map flag, boolean blockingMap) {
         return putMapImage(image, flag, blockingMap, null);
@@ -570,7 +570,7 @@ public class CLCommandQueue implements CLResource {
 
         return mappedImage;
     }
-*/
+
     public CLCommandQueue putUnmapMemory(CLMemory<?> memory) {
         return putUnmapMemory(memory, null);
     }

@@ -37,9 +37,15 @@ public class CLEvent implements CLResource {
         checkForError(ret, "can not release event");
     }
 
+    /**
+     * Returns the execution status of the command which triggers this event.
+     */
     public ExecutionStatus getStatus() {
-        int status = (int)eventInfo.getLong(CL_EVENT_COMMAND_EXECUTION_STATUS);
-        return ExecutionStatus.valueOf(status);
+        return ExecutionStatus.valueOf(getStatusCode());
+    }
+    
+    public int getStatusCode() {
+        return (int)eventInfo.getLong(CL_EVENT_COMMAND_EXECUTION_STATUS);
     }
 
     public CommandType getType() {
@@ -182,7 +188,12 @@ public class CLEvent implements CLResource {
         /**
          * The command has completed.
          */
-        COMPLETE(CL_COMPLETE);
+        COMPLETE(CL_COMPLETE),
+
+        /**
+         * The command did not complete because of an error.
+         */
+        ERROR(-1);
 
 
         /**
@@ -204,6 +215,9 @@ public class CLEvent implements CLResource {
                     return RUNNING;
                 case(CL_COMPLETE):
                     return COMPLETE;
+            }
+            if(status < 0) {
+                return ERROR;
             }
             return null;
         }

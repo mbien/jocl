@@ -98,6 +98,12 @@ public final class CLPlatform {
 
         //find all devices
         int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, ib);
+
+        // return an empty array rather than throwing an exception
+        if(ret == CL.CL_DEVICE_NOT_FOUND) {
+            return new CLDevice[0];
+        }
+
         checkForError(ret, "error while enumerating devices");
 
         PointerBuffer deviceIDs = PointerBuffer.allocateDirect(ib.get(0));

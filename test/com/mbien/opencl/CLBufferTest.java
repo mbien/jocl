@@ -101,10 +101,25 @@ public class CLBufferTest {
         final int elements = NUM_ELEMENTS;
         final int sizeInBytes = elements*SIZEOF_INT;
 
-        CLContext context = CLContext.create();
+        CLContext context = null;
+        CLBuffer<?> clBufferA = null;
+        CLBuffer<?> clBufferB = null;
 
-        CLBuffer<?> clBufferA = context.createBuffer(sizeInBytes, Mem.READ_WRITE);
-        CLBuffer<?> clBufferB = context.createBuffer(sizeInBytes, Mem.READ_WRITE);
+        // We will have to allocate mappable NIO memory on non CPU contexts
+        // since we can't map e.g GPU memory.
+        if(CLPlatform.getDefault().listCLDevices(CLDevice.Type.CPU).length > 0) {
+
+            context = CLContext.create(CLDevice.Type.CPU);
+
+            clBufferA = context.createBuffer(sizeInBytes, Mem.READ_WRITE);
+            clBufferB = context.createBuffer(sizeInBytes, Mem.READ_WRITE);
+        }else{
+
+            context = CLContext.create();
+
+            clBufferA = context.createByteBuffer(sizeInBytes, Mem.READ_WRITE, Mem.USE_BUFFER);
+            clBufferB = context.createByteBuffer(sizeInBytes, Mem.READ_WRITE, Mem.USE_BUFFER);
+        }
 
         CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
         

@@ -202,6 +202,7 @@
         <!-- download new headers from OpenCL registry if necessary -->
         <update-headers header="${headers.orig}/cl.h" url="${registry.url}cl.h"/>
         <update-headers header="${headers.orig}/cl_gl.h" url="${registry.url}cl_gl.h"/>
+        <update-headers header="${headers.orig}/cl_ext.h" url="${registry.url}cl_ext.h"/>
         <update-headers header="${headers.orig}/cl_platform.h" url="${registry.url}cl_platform.h"/>
 
     </target>

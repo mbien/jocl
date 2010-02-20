@@ -218,6 +218,7 @@
         <!--nothing to uncomment in this headers-->
         <copy file="${headers.orig}/cl_platform.h" toDir="${headers.dest}" overwrite="true"/>
         <copy file="${headers.orig}/cl_ext.h" toDir="${headers.dest}" overwrite="true"/>
+        <copy file="${headers.orig}/cl_vendor_ext.h" toDir="${headers.dest}" overwrite="true"/>
 
     </target>
 

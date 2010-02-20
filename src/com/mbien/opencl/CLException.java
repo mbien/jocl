@@ -178,6 +178,9 @@ public class CLException extends RuntimeException {
             case CL_INVALID_GLOBAL_WORK_SIZE:
                 return "CL_INVALID_GLOBAL_WORK_SIZE";
 
+            case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR:
+                return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
+
             case CL_PLATFORM_NOT_FOUND_KHR:
                 return "CL_PLATFORM_NOT_FOUND_KHR";
 

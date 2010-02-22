@@ -91,6 +91,11 @@ public class CLKernel implements CLResource, Cloneable {
         return this;
     }
 
+    public CLKernel rewind() {
+        argIndex = 0;
+        return this;
+    }
+
     public CLKernel setArg(int argumentIndex, CLMemory<?> value) {
         setArgument(argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
         return this;
@@ -157,6 +162,10 @@ public class CLKernel implements CLResource, Cloneable {
         this.force32BitArgs = force;
         return this;
     }
+    
+    public CLProgram getProgram() {
+        return program;
+    }
 
     /**
      * @see #setForce32BitArgs(boolean) 
@@ -179,11 +188,6 @@ public class CLKernel implements CLResource, Cloneable {
 
     private final Buffer wrap(long value) {
         return buffer.putLong(value).rewind();
-    }
-
-    public CLKernel rewind() {
-        argIndex = 0;
-        return this;
     }
 
     /**

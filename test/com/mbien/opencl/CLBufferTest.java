@@ -33,7 +33,7 @@ public class CLBufferTest {
         // fill only first read buffer -> we will copy the payload to the second later.
         fillBuffer(clBufferA.buffer, 12345);
 
-        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
+        CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
 
         // asynchronous write of data to GPU device, blocking read later to get the computed results back.
         queue.putWriteBuffer(clBufferA, false)                                 // write A
@@ -62,7 +62,7 @@ public class CLBufferTest {
         // fill only first read buffer -> we will copy the payload to the second later.
         fillBuffer(buffer, 12345);
 
-        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
+        CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
 
         Mem[] bufferConfig = new Mem[] {Mem.COPY_BUFFER, Mem.USE_BUFFER};
 
@@ -78,11 +78,11 @@ public class CLBufferTest {
                  .putReadBuffer(clBufferB, true)                                   // read B
                  .finish();
 
-            assertEquals(2, context.getCLMemoryObjects().size());
+            assertEquals(2, context.getMemoryObjects().size());
             clBufferA.release();
-            assertEquals(1, context.getCLMemoryObjects().size());
+            assertEquals(1, context.getMemoryObjects().size());
             clBufferB.release();
-            assertEquals(0, context.getCLMemoryObjects().size());
+            assertEquals(0, context.getMemoryObjects().size());
 
             // uploading worked when a==b.
             out.println("validating computed results...");
@@ -121,7 +121,7 @@ public class CLBufferTest {
             clBufferB = context.createByteBuffer(sizeInBytes, Mem.READ_WRITE, Mem.USE_BUFFER);
         }
 
-        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
+        CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
         
         // fill only first buffer -> we will copy the payload to the second later.
         ByteBuffer mappedBufferA = queue.putMapBuffer(clBufferA, Map.READ_WRITE, true);

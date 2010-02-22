@@ -45,11 +45,13 @@ public class CLContext implements CLResource {
     protected final List<CLSampler> samplers;
     protected final List<CLMemory<? extends Buffer>> memoryObjects;
     protected final Map<CLDevice, List<CLCommandQueue>> queuesMap;
+    protected final CLPlatform platform;
 
 
-    protected CLContext(long contextID) {
-        this.cl = CLPlatform.getLowLevelBinding();
+    protected CLContext(CLPlatform platform, long contextID) {
+        this.cl = CLPlatform.getLowLevelCLInterface();
         this.ID = contextID;
+        this.platform = platform;
         this.programs = new ArrayList<CLProgram>();
         this.samplers = new ArrayList<CLSampler>();
         this.memoryObjects = new ArrayList<CLMemory<? extends Buffer>>();
@@ -82,8 +84,7 @@ public class CLContext implements CLResource {
      * The platform to be used is implementation dependent.
      */
     public static final CLContext create() {
-        PointerBuffer properties = setupContextProperties(null);
-        return new CLContext(createContextFromType(properties, CL.CL_DEVICE_TYPE_ALL));
+        return create((CLPlatform)null, Type.ALL);
     }
 
     /**
@@ -115,10 +116,14 @@ public class CLContext implements CLResource {
      */
     public static final CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
 
+        if(platform == null) {
+            platform = CLPlatform.getDefault();
+        }
+
         long type = toDeviceBitmap(deviceTypes);
 
         PointerBuffer properties = setupContextProperties(platform);
-        return new CLContext(createContextFromType(properties, type));
+        return new CLContext(platform, createContextFromType(properties, type));
     }
 
     /**
@@ -127,8 +132,12 @@ public class CLContext implements CLResource {
      */
     public static final CLContext create(CLPlatform platform, CLDevice... devices) {
 
+        if(platform == null) {
+            platform = CLPlatform.getDefault();
+        }
+
         PointerBuffer properties = setupContextProperties(platform);
-        CLContext context = new CLContext(createContext(properties, devices));
+        CLContext context = new CLContext(platform, createContext(properties, devices));
         if(devices != null) {
             for (int i = 0; i < devices.length; i++) {
                 devices[i].setContext(context);
@@ -140,7 +149,7 @@ public class CLContext implements CLResource {
     protected static final long createContextFromType(PointerBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
-        long context = CLPlatform.getLowLevelBinding().clCreateContextFromType(properties, deviceType, null, null, status);
+        long context = CLPlatform.getLowLevelCLInterface().clCreateContextFromType(properties, deviceType, null, null, status);
 
         checkForError(status.get(), "can not create CL context");
 
@@ -157,7 +166,7 @@ public class CLContext implements CLResource {
                 pb.put(i, devices[i].ID);
             }
         }
-        long context = CLPlatform.getLowLevelBinding().clCreateContext(properties, pb, null, null, status);
+        long context = CLPlatform.getLowLevelCLInterface().clCreateContext(properties, pb, null, null, status);
 
         checkForError(status.get(), "can not create CL context");
 
@@ -166,10 +175,6 @@ public class CLContext implements CLResource {
 
     private static final PointerBuffer setupContextProperties(CLPlatform platform) {
 
-        if(platform == null) {
-            platform = CLPlatform.getDefault();
-        }
-        
         if(platform == null) {
             throw new RuntimeException("no OpenCL installation found");
         }
@@ -376,23 +381,30 @@ public class CLContext implements CLResource {
     }
 
     /**
+     * Returns the CLPlatform this context is running on.
+     */
+    public CLPlatform getPlatform() {
+        return platform;
+    }
+
+    /**
      * Returns a read only view of all programs associated with this context.
      */
-    public List<CLProgram> getCLPrograms() {
+    public List<CLProgram> getPrograms() {
         return Collections.unmodifiableList(programs);
     }
 
     /**
      * Returns a read only view of all allocated memory objects associated with this context.
      */
-    public List<CLMemory<? extends Buffer>> getCLMemoryObjects() {
+    public List<CLMemory<? extends Buffer>> getMemoryObjects() {
         return Collections.unmodifiableList(memoryObjects);
     }
 
     /**
      * Returns a read only view of all samplers associated with this context.
      */
-    public List<CLSampler> getCLSamplers() {
+    public List<CLSampler> getSamplers() {
         return Collections.unmodifiableList(samplers);
     }
 
@@ -403,7 +415,7 @@ public class CLContext implements CLResource {
      * @see #getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
      */
     public CLDevice getMaxFlopsDevice() {
-        return CLPlatform.findMaxFlopsDevice(getCLDevices());
+        return CLPlatform.findMaxFlopsDevice(getDevices());
     }
 
     /**
@@ -412,19 +424,19 @@ public class CLContext implements CLResource {
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      */
     public CLDevice getMaxFlopsDevice(CLDevice.Type type) {
-        return CLPlatform.findMaxFlopsDevice(getCLDevices(), type);
+        return CLPlatform.findMaxFlopsDevice(getDevices(), type);
     }
 
     /**
      * Returns all devices associated with this CLContext.
      */
-    public CLDevice[] getCLDevices() {
+    public CLDevice[] getDevices() {
         initDevices();
         return devices;
     }
 
-    CLDevice getCLDevice(long dID) {
-        CLDevice[] deviceArray = getCLDevices();
+    CLDevice getDevice(long dID) {
+        CLDevice[] deviceArray = getDevices();
         for (int i = 0; i < deviceArray.length; i++) {
             if(dID == deviceArray[i].ID)
                 return deviceArray[i];
@@ -445,7 +457,7 @@ public class CLContext implements CLResource {
     @Override
     public String toString() {
         return "CLContext [id: " + ID
-                      + " #devices: " + getCLDevices().length
+                      + " #devices: " + getDevices().length
                       + "]";
     }
 

@@ -11,12 +11,13 @@ import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
 
 /**
- * The command-queue can be used to queue a set of operations in order. Having multiple
- * command-queues allows applications to queue multiple independent commands without
+ * The command queue is used to queue a set of operations for a specific {@link CLDevice}.
+ * Having multiple command-queues allows applications to queue multiple independent commands without
  * requiring synchronization. Note that this should work as long as these objects are
  * not being shared.<br/>
- * Sharing of objects across multiple command-queues or using a CLCommandQueue
+ * Sharing of objects across multiple queues or using a CLCommandQueue
  * form multiple Threads will require the application to perform appropriate synchronization.
+ * @see CLDevice#createCommandQueue(com.mbien.opencl.CLCommandQueue.Mode[])
  * @author Michael Bien
  */
 public class CLCommandQueue implements CLResource {
@@ -49,7 +50,7 @@ public class CLCommandQueue implements CLResource {
         this.ID = cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
 
         if(status[0] != CL_SUCCESS)
-            throw new CLException(status[0], "can not create command queue on "+device);
+            throw newException(status[0], "can not create command queue on "+device);
     }
 
     public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingRead) {
@@ -64,7 +65,7 @@ public class CLCommandQueue implements CLResource {
                 0, null, events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS)
-            throw new CLException(ret, "can not enqueue WriteBuffer: " + writeBuffer);
+            throw newException(ret, "can not enqueue WriteBuffer: " + writeBuffer);
 
         if(events != null) {
             events.createEvent(context);
@@ -86,7 +87,7 @@ public class CLCommandQueue implements CLResource {
                 0, null, events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS)
-            throw new CLException(ret, "can not enqueue ReadBuffer: " + readBuffer);
+            throw newException(ret, "can not enqueue ReadBuffer: " + readBuffer);
 
         if(events != null) {
             events.createEvent(context);
@@ -710,7 +711,7 @@ public class CLCommandQueue implements CLResource {
                 events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS)
-            throw new CLException(ret, "can not enqueue NDRangeKernel: " + kernel);
+            throw newException(ret, "can not enqueue NDRangeKernel: " + kernel);
 
         if(events != null) {
             events.createEvent(context);
@@ -733,7 +734,7 @@ public class CLCommandQueue implements CLResource {
                     events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS)
-            throw new CLException(ret, "can not aquire GLObject: " + glObject);
+            throw newException(ret, "can not aquire GLObject: " + glObject);
 
         if(events != null) {
             events.createEvent(context);
@@ -756,7 +757,7 @@ public class CLCommandQueue implements CLResource {
                 events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS)
-            throw new CLException(ret, "can not release GLObject: " + glObject);
+            throw newException(ret, "can not release GLObject: " + glObject);
 
         if(events != null) {
             events.createEvent(context);
@@ -779,10 +780,10 @@ public class CLCommandQueue implements CLResource {
     }
 
     /**
-     * Returns true only when {@link Mode#OUT_OF_ORDER_EXEC_MODE} mode has been enabled.
+     * Returns true only when {@link Mode#OUT_OF_ORDER_MODE} mode has been enabled.
      */
     public boolean isOutOfOrderModeEnabled() {
-        return (Mode.OUT_OF_ORDER_EXEC_MODE.QUEUE_MODE & properties) != 0;
+        return (Mode.OUT_OF_ORDER_MODE.QUEUE_MODE & properties) != 0;
     }
 
     public void release() {
@@ -801,6 +802,36 @@ public class CLCommandQueue implements CLResource {
 
     private final static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
         return buffer.rewind().put(a).put(b).put(c).rewind();
+    }
+
+    /**
+     * Returns the device of this command queue.
+     */
+    public CLDevice getDevice() {
+        return device;
+    }
+
+    /**
+     * Returns the command queue properties as EnumSet.
+     */
+    public EnumSet<Mode> getProperties() {
+        return Mode.valuesOf(properties);
+    }
+
+    /**
+     * Setting properties after a command queue has been created can be implementation specific,
+     * please refere to the specification ({@native clSetCommandQueueProperty}) or vendor documentation.
+     */
+    public void setProperty(Mode property, boolean enabled) {
+        int ret = cl.clSetCommandQueueProperty(ID, property.QUEUE_MODE, enabled ? CL_TRUE : CL_FALSE, null);
+        if(ret != CL_SUCCESS) {
+            checkForError(ret, "can not set command queue property: " + property);
+        }
+        if(enabled) {
+            properties |=  property.QUEUE_MODE;
+        }else{
+            properties &= ~property.QUEUE_MODE;
+        }
     }
 
     @Override
@@ -841,7 +872,7 @@ public class CLCommandQueue implements CLResource {
          * If set, the commands in the command-queue are
          * executed out-of-order. Otherwise, commands are executed in-order.
          */
-        OUT_OF_ORDER_EXEC_MODE(CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE),
+        OUT_OF_ORDER_MODE(CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE),
 
         /**
          * Enables profiling of commands in the command-queue.
@@ -862,14 +893,14 @@ public class CLCommandQueue implements CLResource {
         public static Mode valueOf(int queueMode) {
             switch(queueMode) {
                 case(CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE):
-                    return OUT_OF_ORDER_EXEC_MODE;
+                    return OUT_OF_ORDER_MODE;
                 case(CL_QUEUE_PROFILING_ENABLE):
                     return PROFILING_MODE;
             }
             return null;
         }
 
-        public static EnumSet<Mode> valuesOf(int bitfield) {
+        public static EnumSet<Mode> valuesOf(long bitfield) {
             List<Mode> matching = new ArrayList<Mode>();
             Mode[] values = Mode.values();
             for (Mode value : values) {

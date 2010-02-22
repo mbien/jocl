@@ -91,6 +91,9 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
         return sizeOfBufferElem(buffer) * buffer.capacity();
     }
 
+    /**
+     * Returns the size of the allocated OpenCL memory.
+     */
     public long getCLSize() {
         PointerBuffer pb = PointerBuffer.allocateDirect(1);
         int ret = cl.clGetMemObjectInfo(ID, CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);

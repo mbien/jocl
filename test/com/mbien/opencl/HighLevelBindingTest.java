@@ -1,7 +1,10 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.CLMemory.Mem;
-import com.mbien.opencl.CLCommandQueue.Mode;
+import com.mbien.opencl.CLSampler.AddressingMode;
+import com.mbien.opencl.CLSampler.FilteringMode;
+import com.mbien.opencl.CLImageFormat.ChannelOrder;
+import com.mbien.opencl.CLImageFormat.ChannelType;
 import com.mbien.opencl.CLDevice.FPConfig;
 import com.mbien.opencl.CLDevice.GlobalMemCacheType;
 import com.mbien.opencl.CLDevice.LocalMemType;
@@ -60,6 +63,22 @@ public class HighLevelBindingTest {
         // CLMemory enums
         for (Mem e : Mem.values()) {
             assertEquals(e, Mem.valueOf(e.CONFIG));
+        }
+
+        // CLSampler enums
+        for (AddressingMode e : AddressingMode.values()) {
+            assertEquals(e, AddressingMode.valueOf(e.MODE));
+        }
+        for (FilteringMode e : FilteringMode.values()) {
+            assertEquals(e, FilteringMode.valueOf(e.MODE));
+        }
+
+        // CLImage enums
+        for (ChannelOrder e : ChannelOrder.values()) {
+            assertEquals(e, ChannelOrder.valueOf(e.ORDER));
+        }
+        for (ChannelType e : ChannelType.values()) {
+            assertEquals(e, ChannelType.valueOf(e.TYPE));
         }
 
     }
@@ -142,32 +161,32 @@ public class HighLevelBindingTest {
 
         CLContext c = CLContext.create();
         assertNotNull(c);
-        assertEquals(deviceCount, c.getCLDevices().length);
+        assertEquals(deviceCount, c.getDevices().length);
         c.release();
 
         c = CLContext.create(platform);
         assertNotNull(c);
-        assertEquals(deviceCount, c.getCLDevices().length);
+        assertEquals(deviceCount, c.getDevices().length);
         c.release();
 
         c = CLContext.create(firstDevice);
         assertNotNull(c);
-        assertEquals(1, c.getCLDevices().length);
+        assertEquals(1, c.getDevices().length);
         c.release();
 
         c = CLContext.create(CLDevice.Type.ALL);
         assertNotNull(c);
-        assertEquals(deviceCount, c.getCLDevices().length);
+        assertEquals(deviceCount, c.getDevices().length);
         c.release();
 
         c = CLContext.create(platform, firstDevice);
         assertNotNull(c);
-        assertEquals(1, c.getCLDevices().length);
+        assertEquals(1, c.getDevices().length);
         c.release();
 
         c = CLContext.create(platform, CLDevice.Type.ALL);
         assertNotNull(c);
-        assertEquals(deviceCount, c.getCLDevices().length);
+        assertEquals(deviceCount, c.getDevices().length);
         c.release();
 
     }
@@ -180,7 +199,7 @@ public class HighLevelBindingTest {
         CLPlatform[] clPlatforms = CLPlatform.listCLPlatforms();
         CLContext context = CLContext.create(clPlatforms[0]);
 
-        CLDevice[] contextDevices = context.getCLDevices();
+        CLDevice[] contextDevices = context.getDevices();
 
         out.println("context devices:");
         for (CLDevice device : contextDevices) {
@@ -251,22 +270,22 @@ public class HighLevelBindingTest {
             out.print(dest.getInt()+", ");
         out.println("...; "+dest.remaining()/SIZEOF_INT + " more");
 
-        assertTrue(3 == context.getCLMemoryObjects().size());
+        assertTrue(3 == context.getMemoryObjects().size());
         clBufferA.release();
-        assertTrue(2 == context.getCLMemoryObjects().size());
+        assertTrue(2 == context.getMemoryObjects().size());
 
-        assertTrue(2 == context.getCLMemoryObjects().size());
+        assertTrue(2 == context.getMemoryObjects().size());
         clBufferB.release();
-        assertTrue(1 == context.getCLMemoryObjects().size());
+        assertTrue(1 == context.getMemoryObjects().size());
 
-        assertTrue(1 == context.getCLMemoryObjects().size());
+        assertTrue(1 == context.getMemoryObjects().size());
         clBufferC.release();
-        assertTrue(0 == context.getCLMemoryObjects().size());
+        assertTrue(0 == context.getMemoryObjects().size());
 
 
-        assertTrue(1 == context.getCLPrograms().size());
+        assertTrue(1 == context.getPrograms().size());
         program.release();
-        assertTrue(0 == context.getCLPrograms().size());
+        assertTrue(0 == context.getPrograms().size());
 
         context.release();
     }

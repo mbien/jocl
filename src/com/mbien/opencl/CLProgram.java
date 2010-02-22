@@ -17,6 +17,10 @@ import static com.mbien.opencl.CL.*;
 
 /**
  * Represents a OpenCL program executed on one or more {@link CLDevice}s.
+ * A CLProgram must be build using one of the build methods before creating {@link CLKernel}s.
+ * @see CLContext#createProgram(java.io.InputStream)
+ * @see CLContext#createProgram(java.lang.String)
+ * @see CLContext#createProgram(java.util.Map)
  * @author Michael Bien
  */
 public class CLProgram implements CLResource {
@@ -231,7 +235,7 @@ public class CLProgram implements CLResource {
         int ret = cl.clBuildProgram(ID, count, deviceIDs, options, null, null);
 
         if(ret != CL_SUCCESS) {
-            throw new CLException(ret, "\n"+getBuildLog());
+            throw newException(ret, "\n"+getBuildLog());
         }
 
         return this;
@@ -304,7 +308,7 @@ public class CLProgram implements CLResource {
             if(!isExecutable()) {
                 // It is illegal to create kernels from a not executable program.
                 // For consistency between AMD and NVIDIA drivers throw an exception at this point.
-                throw new CLException(CL_INVALID_PROGRAM_EXECUTABLE,
+                throw newException(CL_INVALID_PROGRAM_EXECUTABLE,
                         "can not initialize kernels, program is not executable. status: "+buildStatusMap);
             }
         }
@@ -342,6 +346,10 @@ public class CLProgram implements CLResource {
         }
     }
 
+    public CLContext getContext() {
+        return context;
+    }
+
     /**
      * Returns all devices associated with this program.
      */
@@ -360,7 +368,7 @@ public class CLProgram implements CLResource {
         int count = bb.capacity() / (CPU.is32Bit()?4:8);
         CLDevice[] devices = new CLDevice[count];
         for (int i = 0; i < count; i++) {
-            devices[i] = context.getCLDevice(CPU.is32Bit()?bb.getInt():bb.getLong());
+            devices[i] = context.getDevice(CPU.is32Bit()?bb.getInt():bb.getLong());
         }
 
         return devices;
@@ -439,8 +447,8 @@ public class CLProgram implements CLResource {
     }
 
     /**
-     * Returns the binaries for this program in a map containing the device as key
-     * and the byte array as value.
+     * Returns the binaries for this program in a Map containing the device as key
+     * and the program binaries as value.
      */
     public Map<CLDevice, byte[]> getBinaries() {
 
@@ -495,6 +503,20 @@ public class CLProgram implements CLResource {
                 sb.append(" ");
         }
         return sb.toString();
+    }
+
+    /**
+     * Utility method for defining macros as build options (Returns "-D name").
+     */
+    public static String define(String name) {
+        return "-D "+name;
+    }
+
+    /**
+     * Utility method for defining macros as build options (Returns "-D name=value").
+     */
+    public static String define(String name, String value) {
+        return "-D "+name+"="+value;
     }
 
     @Override

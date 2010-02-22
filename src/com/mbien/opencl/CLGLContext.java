@@ -20,8 +20,8 @@ public final class CLGLContext extends CLContext {
 
     final long glID;
 
-    private CLGLContext(long clContextID, long glContextID) {
-        super(clContextID);
+    private CLGLContext(CLPlatform platform, long clContextID, long glContextID) {
+        super(platform, clContextID);
         this.glID = glContextID;
     }
 
@@ -61,11 +61,15 @@ public final class CLGLContext extends CLContext {
      */
     public static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice.Type... deviceTypes) {
 
+        if(platform == null) {
+            platform = CLPlatform.getDefault();
+        }
+
         long[] glID = new long[1];
-        PointerBuffer properties = setupContextProperties(glContext, platform, glID);
+        PointerBuffer properties = setupContextProperties(platform, glContext, glID);
         long clID = createContextFromType(properties, toDeviceBitmap(deviceTypes));
 
-        return new CLGLContext(clID, glID[0]);
+        return new CLGLContext(platform, clID, glID[0]);
 
     }
 
@@ -75,11 +79,15 @@ public final class CLGLContext extends CLContext {
      */
     public static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice... devices) {
 
+        if(platform == null) {
+            platform = CLPlatform.getDefault();
+        }
+
         long[] glID = new long[1];
-        PointerBuffer properties = setupContextProperties(glContext, platform, glID);
+        PointerBuffer properties = setupContextProperties(platform, glContext, glID);
         long clID = createContext(properties, devices);
 
-        CLGLContext context = new CLGLContext(clID, glID[0]);
+        CLGLContext context = new CLGLContext(platform, clID, glID[0]);
         if(devices != null) {
             for (int i = 0; i < devices.length; i++) {
                 devices[i].setContext(context);
@@ -89,11 +97,7 @@ public final class CLGLContext extends CLContext {
     }
 
 
-    private static final PointerBuffer setupContextProperties(GLContext glContext, CLPlatform platform, long[] glID) {
-
-        if(platform == null) {
-            platform = CLPlatform.getDefault();
-        }
+    private static final PointerBuffer setupContextProperties(CLPlatform platform, GLContext glContext, long[] glID) {
 
         if(platform == null) {
             throw new RuntimeException("no OpenCL installation found");

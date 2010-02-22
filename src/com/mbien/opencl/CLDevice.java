@@ -15,7 +15,11 @@ import java.util.Set;
 import static com.mbien.opencl.CL.*;
 
 /**
- * 
+ * This object represents an OpenCL device.
+ * @see CLPlatform#listCLDevices(com.mbien.opencl.CLDevice.Type)
+ * @see CLPlatform#getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
+ * @see CLContext#getDevices()
+ * @see CLContext#getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
  * @author Michael Bien
  */
 public final class CLDevice {
@@ -68,11 +72,11 @@ public final class CLDevice {
         return context.createCommandQueue(this, properties);
     }
 
-    /*keep this package private for now, may be null*/
-    CLContext getContext() {
+    public CLContext getContext() {
         return context;
     }
     
+    /*keep this package private*/
     void setContext(CLContext context) {
         this.context = context;
     }

@@ -2,7 +2,6 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
 import com.sun.gluegen.runtime.PointerBuffer;
-import com.sun.gluegen.runtime.ProcAddressHelper;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -77,8 +76,17 @@ public final class CLPlatform {
     /**
      * Returns the low level binding interface to the OpenCL APIs.
      */
-    public static CL getLowLevelBinding() {
+    public static CL getLowLevelCLInterface() {
         return cl;
+    }
+
+    /**
+     * Hint to allow the implementation to release the resources allocated by the OpenCL compiler.
+     * Calls to {@link CLProgram#build()} after unloadCompiler will reload the compiler if necessary.
+     */
+    public static void unloadCompiler() {
+        int ret = cl.clUnloadCompiler();
+        checkForError(ret, "error while sending unload compiler hint");
     }
 
     /**

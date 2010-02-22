@@ -26,7 +26,7 @@ public class CLCommandQueueTest {
 
         //CLCommandQueueEnums
         EnumSet<Mode> queueMode = Mode.valuesOf(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | CL.CL_QUEUE_PROFILING_ENABLE);
-        assertTrue(queueMode.contains(Mode.OUT_OF_ORDER_EXEC_MODE));
+        assertTrue(queueMode.contains(Mode.OUT_OF_ORDER_MODE));
         assertTrue(queueMode.contains(Mode.PROFILING_MODE));
 
         assertNotNull(Mode.valuesOf(0));
@@ -69,7 +69,7 @@ public class CLCommandQueueTest {
 
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
         CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue();
+        CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
 
         final CLEventList events = new CLEventList(2);
 
@@ -126,7 +126,7 @@ public class CLCommandQueueTest {
 
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
         CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-        CLCommandQueue queue = context.getCLDevices()[0].createCommandQueue(Mode.PROFILING_MODE);
+        CLCommandQueue queue = context.getDevices()[0].createCommandQueue(Mode.PROFILING_MODE);
 
         queue.putWriteBuffer(clBufferA, true) // write A
              .putWriteBuffer(clBufferB, true);// write B
@@ -165,7 +165,7 @@ public class CLCommandQueueTest {
 
         CLContext context = CLContext.create();
 
-        CLDevice[] devices = context.getCLDevices();
+        CLDevice[] devices = context.getDevices();
 
         if (devices.length < 2) {
             out.println("aborting test... need at least 2 devices");

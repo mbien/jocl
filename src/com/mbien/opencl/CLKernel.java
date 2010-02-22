@@ -19,14 +19,12 @@ import static com.mbien.opencl.CL.*;
  * CLKernel is not threadsafe.
  * @author Michael Bien
  */
-public class CLKernel implements CLResource, Cloneable {
+public class CLKernel extends CLObject implements CLResource, Cloneable {
 
-    public final long ID;
     public final String name;
     public final int numArgs;
 
     private final CLProgram program;
-    private final CL cl;
 
     private final ByteBuffer buffer;
 
@@ -34,9 +32,8 @@ public class CLKernel implements CLResource, Cloneable {
     private boolean force32BitArgs;
 
     CLKernel(CLProgram program, long id) {
-        this.ID = id;
+        super(program.getContext(), id);
         this.program = program;
-        this.cl = program.context.cl;
         this.buffer = BufferFactory.newDirectByteBuffer(8);
 
         PointerBuffer pb = PointerBuffer.allocateDirect(1);

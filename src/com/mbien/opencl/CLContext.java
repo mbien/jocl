@@ -34,23 +34,21 @@ import static com.sun.gluegen.runtime.BufferFactory.*;
  * specified in the context.
  * @author Michael Bien
  */
-public class CLContext implements CLResource {
-
-    final CL cl;
-    public final long ID;
+public class CLContext extends CLObject implements CLResource {
 
     protected CLDevice[] devices;
 
     protected final List<CLProgram> programs;
     protected final List<CLSampler> samplers;
     protected final List<CLMemory<? extends Buffer>> memoryObjects;
+    
     protected final Map<CLDevice, List<CLCommandQueue>> queuesMap;
+
     protected final CLPlatform platform;
 
 
     protected CLContext(CLPlatform platform, long contextID) {
-        this.cl = CLPlatform.getLowLevelCLInterface();
-        this.ID = contextID;
+        super(CLPlatform.getLowLevelCLInterface(), contextID);
         this.platform = platform;
         this.programs = new ArrayList<CLProgram>();
         this.samplers = new ArrayList<CLSampler>();
@@ -188,7 +186,7 @@ public class CLContext implements CLResource {
      * Creates a program from the given sources, the program is not build yet.
      */
     public CLProgram createProgram(String src) {
-        CLProgram program = new CLProgram(this, src);
+        CLProgram program = CLProgram.create(this, src);
         programs.add(program);
         return program;
     }
@@ -226,7 +224,7 @@ public class CLContext implements CLResource {
      * </ul>
      */
     public CLProgram createProgram(Map<CLDevice, byte[]> binaries) {
-        CLProgram program = new CLProgram(this, binaries);
+        CLProgram program = CLProgram.create(this, binaries);
         programs.add(program);
         return program;
     }
@@ -314,7 +312,7 @@ public class CLContext implements CLResource {
 
     CLCommandQueue createCommandQueue(CLDevice device, long properties) {
 
-        CLCommandQueue queue = new CLCommandQueue(this, device, properties);
+        CLCommandQueue queue = CLCommandQueue.create(this, device, properties);
 
         List<CLCommandQueue> list = queuesMap.get(device);
         if(list == null) {
@@ -327,7 +325,7 @@ public class CLContext implements CLResource {
     }
 
     public CLSampler createSampler(AddressingMode addrMode, FilteringMode filtMode, boolean normalizedCoords) {
-        CLSampler sampler = new CLSampler(this, addrMode, filtMode, normalizedCoords);
+        CLSampler sampler = CLSampler.create(this, addrMode, filtMode, normalizedCoords);
         samplers.add(sampler);
         return sampler;
     }
@@ -383,8 +381,14 @@ public class CLContext implements CLResource {
     /**
      * Returns the CLPlatform this context is running on.
      */
+    @Override
     public CLPlatform getPlatform() {
         return platform;
+    }
+
+    @Override
+    public CLContext getContext() {
+        return this;
     }
 
     /**

@@ -25,6 +25,20 @@ class CLUtils {
         }
     }
 
+    /**
+     * Returns true if clBoolean == CL.CL_TRUE.
+     */
+    public static boolean clBoolean(int clBoolean) {
+        return clBoolean == CL.CL_TRUE;
+    }
+
+    /**
+     * Returns b ? CL.CL_TRUE : CL.CL_FALSE
+     */
+    public static int clBoolean(boolean b) {
+        return b ? CL.CL_TRUE : CL.CL_FALSE;
+    }
+
     public static Map<String, String> obtainPlatformProperties(CLPlatform platform) {
 
         Map<String, String> map = new LinkedHashMap<String, String>();

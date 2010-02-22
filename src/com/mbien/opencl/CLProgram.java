@@ -23,37 +23,32 @@ import static com.mbien.opencl.CL.*;
  * @see CLContext#createProgram(java.util.Map)
  * @author Michael Bien
  */
-public class CLProgram implements CLResource {
+public class CLProgram extends CLObject implements CLResource {
     
-    public final CLContext context;
-    public final long ID;
-    
-    private final CL cl;
-
     private final Set<CLKernel> kernels;
     private Map<CLDevice, Status> buildStatusMap;
 
     private boolean executable;
     private boolean released;
 
-    CLProgram(CLContext context, String src) {
-        
-        this.cl = context.cl;
-        this.context = context;
+    private CLProgram(CLContext context, long id) {
+        super(context, id);
         this.kernels = new HashSet<CLKernel>();
+    }
+    
+    static CLProgram create(CLContext context, String src) {
 
-        IntBuffer ib = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+        IntBuffer status = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
         // Create the program
-        ID = cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
-                                                         PointerBuffer.allocateDirect(1).put(src.length()), ib);
-        checkForError(ib.get(), "can not create program with source");
+        long id = context.cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
+                               PointerBuffer.allocateDirect(1).put(src.length()), status);
+
+        checkForError(status.get(), "can not create program with source");
+        
+        return new CLProgram(context, id);
     }
 
-    CLProgram(CLContext context, Map<CLDevice, byte[]> binaries) {
-
-        this.cl = context.cl;
-        this.context = context;
-        this.kernels = new HashSet<CLKernel>();
+    static CLProgram create(CLContext context, Map<CLDevice, byte[]> binaries) {
 
         PointerBuffer devices = PointerBuffer.allocateDirect(binaries.size());
         PointerBuffer lengths = PointerBuffer.allocateDirect(binaries.size());
@@ -77,7 +72,7 @@ public class CLProgram implements CLResource {
 
         IntBuffer err = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
 //        IntBuffer status = BufferFactory.newDirectByteBuffer(binaries.size()*4).asIntBuffer();
-        ID = cl.clCreateProgramWithBinary(context.ID, devices.capacity(), devices, lengths, codeBuffers, /*status*/null, err);
+        long id = context.cl.clCreateProgramWithBinary(context.ID, devices.capacity(), devices, lengths, codeBuffers, /*status*/null, err);
 
 //        while(status.remaining() != 0) {
 //            checkForError(status.get(), "unable to load binaries on all devices");
@@ -85,6 +80,7 @@ public class CLProgram implements CLResource {
 
         checkForError(err.get(), "can not create program with binary");
 
+        return new CLProgram(context, id);
     }
 
     private final void initBuildStatus() {
@@ -344,10 +340,6 @@ public class CLProgram implements CLResource {
                 kernel.release();
             }
         }
-    }
-
-    public CLContext getContext() {
-        return context;
     }
 
     /**

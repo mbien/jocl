@@ -22,29 +22,19 @@ import static com.mbien.opencl.CL.*;
  * @see CLContext#getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
  * @author Michael Bien
  */
-public final class CLDevice {
+public final class CLDevice extends CLObject {
 
-    private final CL cl;
-    private CLContext context;
     private Set<String> extensions;
     
     private final CLDeviceInfoAccessor deviceInfo;
 
-    /**
-     * OpenCL device id for this device.
-     */
-    public final long ID;
-
     CLDevice(CL cl, long id) {
-        this.cl = cl;
-        this.ID = id;
+        super(cl, id);
         this.deviceInfo = new CLDeviceInfoAccessor();
     }
 
     CLDevice(CLContext context, long id) {
-        this.context = context;
-        this.cl = context.cl;
-        this.ID = id;
+        super(context, id);
         this.deviceInfo = new CLDeviceInfoAccessor();
     }
 
@@ -70,10 +60,6 @@ public final class CLDevice {
         if(context == null)
             throw new IllegalStateException("this device is not associated with a context");
         return context.createCommandQueue(this, properties);
-    }
-
-    public CLContext getContext() {
-        return context;
     }
     
     /*keep this package private*/

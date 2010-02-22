@@ -5,32 +5,28 @@ import java.nio.Buffer;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
+import static com.mbien.opencl.CLUtils.*;
 
 /**
  * Object representing an OpenCL sampler.
  * @author Michael Bien
  */
-public class CLSampler implements CLResource {
-
-    public final long ID;
-
-    private final CLContext context;
-    private final CL cl;
+public class CLSampler extends CLObject implements CLResource {
 
     private final CLSamplerInfoAccessor samplerInfo;
 
-    CLSampler(CLContext context, AddressingMode addrMode, FilteringMode filtMode, boolean normalizedCoords) {
-        
-        this.context = context;
-        this.cl = context.cl;
-
+    private CLSampler(CLContext context, long id,  AddressingMode addrMode, FilteringMode filtMode, boolean normalizedCoords) {
+        super(context, id);
         this.samplerInfo = new CLSamplerInfoAccessor();
+    }
 
+    static CLSampler create(CLContext context, AddressingMode addrMode, FilteringMode filtMode, boolean normalizedCoords) {
         int[] error = new int[1];
 
-        ID = cl.clCreateSampler(context.ID, normalizedCoords?CL_TRUE:CL_FALSE, addrMode.MODE, filtMode.MODE, error, 0);
+        long id = context.cl.clCreateSampler(context.ID, clBoolean(normalizedCoords), addrMode.MODE, filtMode.MODE, error, 0);
 
         checkForError(error[0], "can not create sampler");
+        return new CLSampler(context, id, addrMode, filtMode, normalizedCoords);
     }
 
     public FilteringMode getFilteringMode() {

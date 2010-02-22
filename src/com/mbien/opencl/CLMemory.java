@@ -16,26 +16,17 @@ import static com.mbien.opencl.CL.*;
  *
  * @author Michael Bien
  */
-public abstract class CLMemory <B extends Buffer> implements CLResource {
+public abstract class CLMemory <B extends Buffer> extends CLObject implements CLResource {
     
     B buffer;
     
-    public final long ID;
-
-    protected final CLContext context;
-    protected final CL cl;
-
     protected <Buffer> CLMemory(CLContext context, long id) {
-        this.context = context;
-        this.cl = context.cl;
-        this.ID = id;
+        super(context, id);
     }
     
     protected CLMemory(CLContext context, B directBuffer, long id) {
+        super(context, id);
         this.buffer = directBuffer;
-        this.context = context;
-        this.cl = context.cl;
-        this.ID = id;
     }
 
     /**
@@ -77,6 +68,9 @@ public abstract class CLMemory <B extends Buffer> implements CLResource {
         return this;
     }
 
+    /**
+     * Returns the optional NIO buffer for this memory object.
+     */
     public B getBuffer() {
         return buffer;
     }

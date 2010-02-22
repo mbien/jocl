@@ -14,20 +14,13 @@ import static com.mbien.opencl.CLException.*;
  * {@link com.mbien.opencl.CLCommandQueue.Mode#PROFILING_MODE}.
  * @author Michael Bien
  */
-public class CLEvent implements CLResource {
-
-    public final CLContext context;
-    public final long ID;
-
-    private final CL cl;
+public class CLEvent extends CLObject implements CLResource {
 
     private final CLEventInfoAccessor eventInfo;
     private final CLEventProfilingInfoAccessor eventProfilingInfo;
 
     CLEvent(CLContext context, long id) {
-        this.context = context;
-        this.cl = context.cl;
-        this.ID = id;
+        super(context, id);
         this.eventInfo = new CLEventInfoAccessor();
         this.eventProfilingInfo = new CLEventProfilingInfoAccessor();
     }

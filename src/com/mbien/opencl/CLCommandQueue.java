@@ -9,6 +9,7 @@ import java.util.List;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
+import static com.mbien.opencl.CLUtils.*;
 
 /**
  * The command queue is used to queue a set of operations for a specific {@link CLDevice}.
@@ -20,13 +21,9 @@ import static com.mbien.opencl.CL.*;
  * @see CLDevice#createCommandQueue(com.mbien.opencl.CLCommandQueue.Mode[])
  * @author Michael Bien
  */
-public class CLCommandQueue implements CLResource {
+public class CLCommandQueue extends CLObject implements CLResource {
 
-    public final long ID;
-
-    private final CLContext context;
     private final CLDevice device;
-    private final CL cl;
     private long properties;
 
     /*
@@ -36,9 +33,9 @@ public class CLCommandQueue implements CLResource {
     private final PointerBuffer bufferB;
     private final PointerBuffer bufferC;
 
-    CLCommandQueue(CLContext context, CLDevice device, long properties) {
-        this.context = context;
-        this.cl = context.cl;
+    private CLCommandQueue(CLContext context, long id, CLDevice device, long properties) {
+        super(context, id);
+
         this.device = device;
         this.properties = properties;
 
@@ -46,11 +43,16 @@ public class CLCommandQueue implements CLResource {
         this.bufferB = PointerBuffer.allocateDirect(3);
         this.bufferC = PointerBuffer.allocateDirect(3);
 
+    }
+
+    static CLCommandQueue create(CLContext context, CLDevice device, long properties) {
         int[] status = new int[1];
-        this.ID = cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
+        long id = context.cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
 
         if(status[0] != CL_SUCCESS)
             throw newException(status[0], "can not create command queue on "+device);
+
+        return new CLCommandQueue(context, id, device, properties);
     }
 
     public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingRead) {
@@ -60,7 +62,7 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingWrite, CLEventList events) {
 
         int ret = cl.clEnqueueWriteBuffer(
-                ID, writeBuffer.ID, blockingWrite ? CL_TRUE : CL_FALSE,
+                ID, writeBuffer.ID, clBoolean(blockingWrite),
                 0, writeBuffer.getSize(), writeBuffer.buffer,
                 0, null, events==null ? null : events.IDs);
 
@@ -82,7 +84,7 @@ public class CLCommandQueue implements CLResource {
     public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead, CLEventList events) {
 
         int ret = cl.clEnqueueReadBuffer(
-                ID, readBuffer.ID, blockingRead ? CL_TRUE : CL_FALSE,
+                ID, readBuffer.ID, clBoolean(blockingRead),
                 0, readBuffer.getSize(), readBuffer.buffer,
                 0, null, events==null ? null : events.IDs);
 
@@ -156,7 +158,7 @@ public class CLCommandQueue implements CLResource {
         copy2NIO(bufferA, originX, originY, 0);
         copy2NIO(bufferB, rangeX, rangeY, 1);
 
-        int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, blockingWrite ? CL_TRUE : CL_FALSE,
+        int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, clBoolean(blockingWrite),
                                          bufferA, bufferB, inputRowPitch, 0, writeImage.buffer,
                                          0, null, events==null ? null : events.IDs);
         checkForError(ret, "can not write Image");
@@ -187,7 +189,7 @@ public class CLCommandQueue implements CLResource {
         copy2NIO(bufferA, originX, originY, originZ);
         copy2NIO(bufferB, rangeX, rangeY, rangeZ);
 
-        int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, blockingWrite ? CL_TRUE : CL_FALSE,
+        int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, clBoolean(blockingWrite),
                                          bufferA, bufferB, inputRowPitch, inputSlicePitch, writeImage.buffer,
                                          0, null, events==null ? null : events.IDs);
         checkForError(ret, "can not write Image");
@@ -220,7 +222,7 @@ public class CLCommandQueue implements CLResource {
         copy2NIO(bufferA, originX, originY, 0);
         copy2NIO(bufferB, rangeX, rangeY, 1);
 
-        int ret = cl.clEnqueueReadImage(ID, readImage.ID, blockingRead ? CL_TRUE : CL_FALSE,
+        int ret = cl.clEnqueueReadImage(ID, readImage.ID, clBoolean(blockingRead),
                                          bufferA, bufferB, inputRowPitch, 0, readImage.buffer,
                                          0, null, events==null ? null : events.IDs);
         checkForError(ret, "can not read Image");
@@ -251,9 +253,9 @@ public class CLCommandQueue implements CLResource {
         copy2NIO(bufferA, originX, originY, originZ);
         copy2NIO(bufferB, rangeX, rangeY, rangeZ);
 
-        int ret = cl.clEnqueueReadImage(ID, readImage.ID, blockingRead ? CL_TRUE : CL_FALSE,
-                                         bufferA, bufferB, inputRowPitch, inputSlicePitch, readImage.buffer,
-                                         0, null, events==null ? null : events.IDs);
+        int ret = cl.clEnqueueReadImage(ID, readImage.ID, clBoolean(blockingRead),
+                                        bufferA, bufferB, inputRowPitch, inputSlicePitch, readImage.buffer,
+                                        0, null, events==null ? null : events.IDs);
         checkForError(ret, "can not read Image");
 
         if(events != null) {
@@ -492,7 +494,7 @@ public class CLCommandQueue implements CLResource {
 
     public ByteBuffer putMapBuffer(CLBuffer<?> buffer, CLMemory.Map flag, long offset, long length, boolean blockingMap, CLEventList events) {
         IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
-        ByteBuffer mappedBuffer = cl.clEnqueueMapBuffer(ID, buffer.ID, blockingMap ? CL_TRUE : CL_FALSE,
+        ByteBuffer mappedBuffer = cl.clEnqueueMapBuffer(ID, buffer.ID, clBoolean(blockingMap),
                                          flag.FLAGS, offset, length,
                                          0, null, events==null ? null : events.IDs, error);
         checkForError(error.get(), "can not map buffer");
@@ -527,7 +529,7 @@ public class CLCommandQueue implements CLResource {
         copy2NIO(bufferB, offsetX, offsetY, 0);
         copy2NIO(bufferC, rangeX, rangeY, 1);
 
-        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, blockingMap ? CL_TRUE : CL_FALSE,
+        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, clBoolean(blockingMap),
                                          flag.FLAGS, bufferB, bufferC, null, null,
                                          0, null, events==null ? null : events.IDs, error);
         checkForError(error.get(), "can not map image2d");
@@ -560,7 +562,7 @@ public class CLCommandQueue implements CLResource {
         IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
         copy2NIO(bufferB, offsetX, offsetY, offsetZ);
         copy2NIO(bufferC, rangeX, rangeY, rangeZ);
-        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, blockingMap ? CL_TRUE : CL_FALSE,
+        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, clBoolean(blockingMap),
                                          flag.FLAGS, bufferB, bufferC, null, null,
                                          0, null, events==null ? null : events.IDs, error);
         checkForError(error.get(), "can not map image3d");
@@ -823,7 +825,7 @@ public class CLCommandQueue implements CLResource {
      * please refere to the specification ({@native clSetCommandQueueProperty}) or vendor documentation.
      */
     public void setProperty(Mode property, boolean enabled) {
-        int ret = cl.clSetCommandQueueProperty(ID, property.QUEUE_MODE, enabled ? CL_TRUE : CL_FALSE, null);
+        int ret = cl.clSetCommandQueueProperty(ID, property.QUEUE_MODE, clBoolean(enabled), null);
         if(ret != CL_SUCCESS) {
             checkForError(ret, "can not set command queue property: " + property);
         }

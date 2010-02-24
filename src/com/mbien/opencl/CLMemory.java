@@ -32,12 +32,12 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     /**
      * Returns true if a host pointer must be specified on mem object creation.
      */
-    protected static final boolean isHostPointerFlag(int flags) {
+    protected static boolean isHostPointerFlag(int flags) {
         return (flags & CL_MEM_COPY_HOST_PTR) != 0
             || (flags & CL_MEM_USE_HOST_PTR)  != 0;
     }
 
-    protected static final int sizeOfBufferElem(Buffer buffer) {
+    protected static int sizeOfBufferElem(Buffer buffer) {
         if (buffer instanceof ByteBuffer) {
             return BufferFactory.SIZEOF_BYTE;
         } else if (buffer instanceof IntBuffer) {
@@ -175,7 +175,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
          * Enum representing CL_MEM_ALLOC_HOST_PTR.
          * This flag specifies that the application wants the OpenCL implementation
          * to allocate memory from host accessible memory.
-         * {@link #ALLOC_HOST_PTR} and {@link #USE_BUFFER} are mutually exclusive.
+         * {@link #ALLOCATE_BUFFER} and {@link #USE_BUFFER} are mutually exclusive.
          */
         ALLOCATE_BUFFER(CL_MEM_ALLOC_HOST_PTR),
 
@@ -230,8 +230,10 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     }
 
     /**
-     * Configures the mapping process of
-     * {@link com.mbien.opencl.CLCommandQueue#putMapBuffer(CLBuffer, CLMemory.Map, boolean)}.
+     * Configures the mapping process.
+     * @see com.mbien.opencl.CLCommandQueue#putMapBuffer(CLBuffer, com.mbien.opencl.CLMemory.Map, boolean).
+     * @see com.mbien.opencl.CLCommandQueue#putMapImage(CLImage2d, com.mbien.opencl.CLMemory.Map, boolean)
+     * @see com.mbien.opencl.CLCommandQueue#putMapImage(CLImage3d, com.mbien.opencl.CLMemory.Map, boolean)
      */
     public enum Map {
 

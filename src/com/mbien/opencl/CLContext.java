@@ -56,7 +56,7 @@ public class CLContext extends CLObject implements CLResource {
         this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
     }
 
-    private final void initDevices() {
+    private void initDevices() {
         
         if (devices == null) {
 
@@ -81,7 +81,7 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a context on all available devices (CL_DEVICE_TYPE_ALL).
      * The platform to be used is implementation dependent.
      */
-    public static final CLContext create() {
+    public static CLContext create() {
         return create((CLPlatform)null, Type.ALL);
     }
 
@@ -89,7 +89,7 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a context on the specified device types.
      * The platform to be used is implementation dependent.
      */
-    public static final CLContext create(CLDevice.Type... deviceTypes) {
+    public static CLContext create(CLDevice.Type... deviceTypes) {
         return create(null, deviceTypes);
     }
 
@@ -97,14 +97,14 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a context on the specified devices.
      * The platform to be used is implementation dependent.
      */
-    public static final CLContext create(CLDevice... devices) {
+    public static CLContext create(CLDevice... devices) {
         return create(null, devices);
     }
 
     /**
      * Creates a context on the specified platform on all available devices (CL_DEVICE_TYPE_ALL).
      */
-    public static final CLContext create(CLPlatform platform) {
+    public static CLContext create(CLPlatform platform) {
         return create(platform, CLDevice.Type.ALL);
     }
 
@@ -112,7 +112,7 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a context on the specified platform and with the specified
      * device types.
      */
-    public static final CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
+    public static CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
 
         if(platform == null) {
             platform = CLPlatform.getDefault();
@@ -128,7 +128,7 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a context on the specified platform and with the specified
      * devices.
      */
-    public static final CLContext create(CLPlatform platform, CLDevice... devices) {
+    public static CLContext create(CLPlatform platform, CLDevice... devices) {
 
         if(platform == null) {
             platform = CLPlatform.getDefault();
@@ -144,7 +144,7 @@ public class CLContext extends CLObject implements CLResource {
         return context;
     }
 
-    protected static final long createContextFromType(PointerBuffer properties, long deviceType) {
+    protected static long createContextFromType(PointerBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
         long context = CLPlatform.getLowLevelCLInterface().clCreateContextFromType(properties, deviceType, null, null, status);
@@ -154,7 +154,7 @@ public class CLContext extends CLObject implements CLResource {
         return context;
     }
 
-    protected static final long createContext(PointerBuffer properties, CLDevice... devices) {
+    protected static long createContext(PointerBuffer properties, CLDevice... devices) {
 
         IntBuffer status = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
         PointerBuffer pb = null;
@@ -171,7 +171,7 @@ public class CLContext extends CLObject implements CLResource {
         return context;
     }
 
-    private static final PointerBuffer setupContextProperties(CLPlatform platform) {
+    private static PointerBuffer setupContextProperties(CLPlatform platform) {
 
         if(platform == null) {
             throw new RuntimeException("no OpenCL installation found");
@@ -216,10 +216,10 @@ public class CLContext extends CLObject implements CLResource {
 
     /**
      * Creates a program from the given binaries, the program is not build yet.
-     * <br/>Creating a programm will fail if:<br/>
+     * <br/>Creating a program will fail if:<br/>
      * <ul>
      * <li>the submitted binaries are invalid or can not be loaded from the OpenCL driver</li>
-     * <li>the binaries do not fitt to the CLDevices associated with this context</li>
+     * <li>the binaries do not fit to the CLDevices associated with this context</li>
      * <li>binaries are missing for one or more CLDevices</li>
      * </ul>
      */
@@ -414,7 +414,7 @@ public class CLContext extends CLObject implements CLResource {
 
     /**
      * Returns the device with maximal FLOPS from this context.
-     * The device speed is estimated by calulating the product of
+     * The device speed is estimated by calculating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      * @see #getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
      */

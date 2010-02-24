@@ -28,7 +28,7 @@ public final class CLGLContext extends CLContext {
     /**
      * Creates a shared context on all available devices (CL_DEVICE_TYPE_ALL).
      */
-    public static final CLGLContext create(GLContext glContext) {
+    public static CLGLContext create(GLContext glContext) {
         return create(glContext, (CLPlatform)null, CLDevice.Type.ALL);
     }
 
@@ -51,7 +51,7 @@ public final class CLGLContext extends CLContext {
      * Creates a shared context on the specified devices.
      * The platform to be used is implementation dependent.
      */
-    public static final CLGLContext create(GLContext glContext, CLDevice... devices) {
+    public static CLGLContext create(GLContext glContext, CLDevice... devices) {
         return create(glContext, null, devices);
     }
 
@@ -59,7 +59,7 @@ public final class CLGLContext extends CLContext {
      * Creates a shared context on the specified platform and with the specified
      * device types.
      */
-    public static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice.Type... deviceTypes) {
+    public static CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice.Type... deviceTypes) {
 
         if(platform == null) {
             platform = CLPlatform.getDefault();
@@ -77,7 +77,7 @@ public final class CLGLContext extends CLContext {
      * Creates a shared context on the specified platform and with the specified
      * devices.
      */
-    public static final CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice... devices) {
+    public static CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice... devices) {
 
         if(platform == null) {
             platform = CLPlatform.getDefault();
@@ -97,7 +97,7 @@ public final class CLGLContext extends CLContext {
     }
 
 
-    private static final PointerBuffer setupContextProperties(CLPlatform platform, GLContext glContext, long[] glID) {
+    private static PointerBuffer setupContextProperties(CLPlatform platform, GLContext glContext, long[] glID) {
 
         if(platform == null) {
             throw new RuntimeException("no OpenCL installation found");

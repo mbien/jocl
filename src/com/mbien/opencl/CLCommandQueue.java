@@ -18,7 +18,7 @@ import static com.mbien.opencl.CLUtils.*;
  * not being shared.<br/>
  * Sharing of objects across multiple queues or using a CLCommandQueue
  * form multiple Threads will require the application to perform appropriate synchronization.
- * @see CLDevice#createCommandQueue(com.mbien.opencl.CLCommandQueue.Mode[])
+ * @see CLDevice#createCommandQueue(com.mbien.opencl.CLCommandQueue.Mode...)
  * @author Michael Bien
  */
 public class CLCommandQueue extends CLObject implements CLResource {
@@ -97,21 +97,6 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         return this;
     }
-/*
-    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, Buffer buffer, boolean blockingRead) {
-
-        int ret = cl.clEnqueueReadBuffer(
-                ID, readBuffer.ID, blockingRead ? CL_TRUE : CL_FALSE,
-                0, readBuffer.getSizeInBytes(), buffer,
-//                0, null, null); //TODO solve NPE in gluegen when PointerBuffer == null (fast dircet memory path)
-                0, null, 0, null, 0); //TODO events
-
-        if(ret != CL_SUCCESS)
-            throw new CLException(ret, "can not enqueue ReadBuffer: " + readBuffer);
-
-        return this;
-    }
-*/
 
     public CLCommandQueue putCopyBuffer(CLBuffer<?> src, CLBuffer<?> dest) {
         return putCopyBuffer(src, dest, 0, 0, src.getCLSize(), null);
@@ -620,7 +605,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     }
 
     /**
-     * {@link #putTask} equivalent to calling
+     * Equivalent to calling
      * {@link #put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize)}
      * with globalWorkOffset = null, globalWorkSize set to 1, and localWorkSize set to 1.
      */
@@ -794,15 +779,15 @@ public class CLCommandQueue extends CLObject implements CLResource {
         checkForError(ret, "can not release command queue");
     }
 
-    private final static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
+    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
         return buffer.put(2, a).position(2);
     }
 
-    private final static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
+    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
         return buffer.position(1).put(a).put(b).position(1);
     }
 
-    private final static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
+    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
         return buffer.rewind().put(a).put(b).put(c).rewind();
     }
 

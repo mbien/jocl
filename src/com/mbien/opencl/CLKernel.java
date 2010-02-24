@@ -131,13 +131,13 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         return this;
     }
 
-    private final void setArgs(int startIndex, CLMemory<?>... values) {
+    private void setArgs(int startIndex, CLMemory<?>... values) {
         for (int i = 0; i < values.length; i++) {
             setArg(i+startIndex, values[i]);
         }
     }
 
-    private final void setArgument(int argumentIndex, int size, Buffer value) {
+    private void setArgument(int argumentIndex, int size, Buffer value) {
         if(argumentIndex >= numArgs || argumentIndex < 0) {
             throw new IndexOutOfBoundsException("kernel "+ toString() +" has "+numArgs+
                     " arguments, can not set argument with index "+argumentIndex);
@@ -171,19 +171,19 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         return force32BitArgs;
     }
 
-    private final Buffer wrap(float value) {
+    private Buffer wrap(float value) {
         return buffer.putFloat(value).rewind();
     }
 
-    private final Buffer wrap(double value) {
+    private Buffer wrap(double value) {
         return buffer.putDouble(value).rewind();
     }
 
-    private final Buffer wrap(int value) {
+    private Buffer wrap(int value) {
         return buffer.putInt(value).rewind();
     }
 
-    private final Buffer wrap(long value) {
+    private Buffer wrap(long value) {
         return buffer.putLong(value).rewind();
     }
 

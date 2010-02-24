@@ -8,7 +8,7 @@ import static com.mbien.opencl.CLException.*;
 
 /**
  * Event objects can be used for synchronizing command queues, e.g you can wait until a
- * event accures or they can also be used to capture profiling information that
+ * event occurs or they can also be used to capture profiling information that
  * measure execution time of a command.
  * Profiling of OpenCL commands can be enabled by using a {@link com.mbien.opencl.CLCommandQueue} created with
  * {@link com.mbien.opencl.CLCommandQueue.Mode#PROFILING_MODE}.
@@ -190,7 +190,7 @@ public class CLEvent extends CLObject implements CLResource {
 
 
         /**
-         * Value of wrapped OpenCL command excecution status.
+         * Value of wrapped OpenCL command execution status.
          */
         public final int STATUS;
 

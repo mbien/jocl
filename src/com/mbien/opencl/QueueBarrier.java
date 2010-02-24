@@ -76,7 +76,7 @@ public class QueueBarrier {
         return this;
     }
 
-    private final void checkQueue(CLCommandQueue queue) throws IllegalArgumentException {
+    private void checkQueue(CLCommandQueue queue) throws IllegalArgumentException {
         if (queues != null && !queues.contains(queue)) {
             throw new IllegalArgumentException(queue + " is not in the allowedQueues Set: " + queues);
         }

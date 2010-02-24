@@ -32,7 +32,7 @@ public class CLException extends RuntimeException {
     /**
      * Throws a CLException when <code>status != CL_SUCCESS</code>.
      */
-    public static final void checkForError(int status, String message) {
+    public static void checkForError(int status, String message) {
         if(status != CL_SUCCESS) {
             CLException ex = newException(status, message);
             ex.fillInStackTrace();
@@ -43,7 +43,7 @@ public class CLException extends RuntimeException {
     /**
      * Returns a CLException specific to the error code.
      */
-    public static final CLException newException(int status, String message) {
+    public static CLException newException(int status, String message) {
         CLException specificEx = createSpecificException(status, message);
         if(specificEx != null) {
             specificEx.fillInStackTrace();

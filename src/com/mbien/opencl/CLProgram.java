@@ -83,7 +83,7 @@ public class CLProgram extends CLObject implements CLResource {
         return new CLProgram(context, id);
     }
 
-    private final void initBuildStatus() {
+    private void initBuildStatus() {
 
         if(buildStatusMap == null) {
             Map<CLDevice, Status> map = new HashMap<CLDevice, Status>();
@@ -99,7 +99,7 @@ public class CLProgram extends CLObject implements CLResource {
         }
     }
 
-    private final String getBuildInfoString(long device, int flag) {
+    private String getBuildInfoString(long device, int flag) {
 
         if(released) {
             return "";
@@ -118,7 +118,7 @@ public class CLProgram extends CLObject implements CLResource {
         return CLUtils.clString2JavaString(bb, (int)pb.get(0));
     }
 
-    private final String getProgramInfoString(int flag) {
+    private String getProgramInfoString(int flag) {
 
         if(released) {
             return "";

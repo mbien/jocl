@@ -50,7 +50,7 @@ public final class CLPlatform {
     }
 
     /**
-     * Lists all available OpenCL implementaitons.
+     * Lists all available OpenCL implementations.
      * @throws CLException if something went wrong initializing OpenCL
      */
     public static CLPlatform[] listCLPlatforms() {
@@ -128,11 +128,11 @@ public final class CLPlatform {
 
     }
 
-    static final CLDevice findMaxFlopsDevice(CLDevice[] devices) {
+    static CLDevice findMaxFlopsDevice(CLDevice[] devices) {
         return findMaxFlopsDevice(devices, null);
     }
     
-    static final CLDevice findMaxFlopsDevice(CLDevice[] devices, CLDevice.Type type) {
+    static CLDevice findMaxFlopsDevice(CLDevice[] devices, CLDevice.Type type) {
 
         CLDevice maxFLOPSDevice = null;
 
@@ -162,7 +162,7 @@ public final class CLPlatform {
 
     /**
      * Returns the device with maximal FLOPS from this platform.
-     * The device speed is estimated by calulating the product of
+     * The device speed is estimated by calculating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      * @see #getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
      */
@@ -172,7 +172,7 @@ public final class CLPlatform {
 
     /**
      * Returns the device with maximal FLOPS and the specified type from this platform.
-     * The device speed is estimated by calulating the product of
+     * The device speed is estimated by calculating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      */
     public CLDevice getMaxFlopsDevice(CLDevice.Type type) {

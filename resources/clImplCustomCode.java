@@ -118,7 +118,7 @@
   private native java.nio.ByteBuffer clEnqueueMapImage0(long command_queue, long image, int blocking_map, long map_flags, Object origin, int origin_byte_offset, Object range, int range_byte_offset, Object image_row_pitch, int image_row_pitch_byte_offset, Object image_slice_pitch, int image_slice_pitch_byte_offset, int num_events_in_wait_list, Object event_wait_list, int event_wait_list_byte_offset, Object event, int event_byte_offset, Object errcode_ret, int errcode_ret_byte_offset);
 
 
-    private final static void convert32To64(long[] values) {
+    private static void convert32To64(long[] values) {
         if(values.length%2 == 1) {
             values[values.length-1] = values[values.length/2]>>>32;
         }

@@ -26,7 +26,7 @@ public class CLBufferTest {
 
         CLContext context = CLContext.create();
 
-         // the CL.MEM_* flag is probably completly irrelevant in our case since we do not use a kernel in this test
+         // the CL.MEM_* flag is probably completely irrelevant in our case since we do not use a kernel in this test
         CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
         CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements*SIZEOF_INT, Mem.READ_ONLY);
 
@@ -101,9 +101,9 @@ public class CLBufferTest {
         final int elements = NUM_ELEMENTS;
         final int sizeInBytes = elements*SIZEOF_INT;
 
-        CLContext context = null;
-        CLBuffer<?> clBufferA = null;
-        CLBuffer<?> clBufferB = null;
+        CLContext context;
+        CLBuffer<?> clBufferA;
+        CLBuffer<?> clBufferB;
 
         // We will have to allocate mappable NIO memory on non CPU contexts
         // since we can't map e.g GPU memory.

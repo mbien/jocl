@@ -807,7 +807,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
     /**
      * Setting properties after a command queue has been created can be implementation specific,
-     * please refere to the specification ({@native clSetCommandQueueProperty}) or vendor documentation.
+     * please refer to the specification ({@native clSetCommandQueueProperty}) or vendor documentation.
      */
     public void setProperty(Mode property, boolean enabled) {
         int ret = cl.clSetCommandQueueProperty(ID, property.QUEUE_MODE, clBoolean(enabled), null);

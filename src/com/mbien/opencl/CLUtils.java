@@ -100,12 +100,12 @@ class CLUtils {
         map.put("CL_DEVICE_DOUBLE_FP_CONFIG", dev.getDoubleFPConfig()+"");
         map.put("CL_DEVICE_EXTENSIONS",     dev.getExtensions()+"");
 
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT",   dev.getPreferedShortVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR",    dev.getPreferedCharVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT",     dev.getPreferedIntVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG",    dev.getPreferedLongVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT",   dev.getPreferedFloatVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE",  dev.getPreferedDoubleVectorWidth()+"");
+        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT",   dev.getPreferredShortVectorWidth()+"");
+        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR",    dev.getPreferredCharVectorWidth()+"");
+        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT",     dev.getPreferredIntVectorWidth()+"");
+        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG",    dev.getPreferredLongVectorWidth()+"");
+        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT",   dev.getPreferredFloatVectorWidth()+"");
+        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE",  dev.getPreferredDoubleVectorWidth()+"");
 
         //TODO device extensions -> properties
 

@@ -10,7 +10,7 @@ import static com.mbien.opencl.CLException.*;
  */
 public class CLBuffer<B extends Buffer> extends CLMemory<B> {
 
-    public CLBuffer(CLContext context, long id) {
+    protected CLBuffer(CLContext context, long id) {
         super(context, id);
     }
 

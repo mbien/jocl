@@ -130,7 +130,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in short vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
-    public int getPreferedShortVectorWidth() {
+    public int getPreferredShortVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT);
     }
 
@@ -138,7 +138,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in char vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
-    public int getPreferedCharVectorWidth() {
+    public int getPreferredCharVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR);
     }
 
@@ -146,7 +146,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in int vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
-    public int getPreferedIntVectorWidth() {
+    public int getPreferredIntVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT);
     }
 
@@ -154,7 +154,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in long vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
-    public int getPreferedLongVectorWidth() {
+    public int getPreferredLongVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG);
     }
 
@@ -162,7 +162,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in float vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
-    public int getPreferedFloatVectorWidth() {
+    public int getPreferredFloatVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT);
     }
 
@@ -170,7 +170,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in double vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
-    public int getPreferedDoubleVectorWidth() {
+    public int getPreferredDoubleVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE);
     }
 

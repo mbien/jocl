@@ -108,7 +108,7 @@ public final class CLGLContext extends CLContext {
         DefaultGraphicsConfiguration config = (DefaultGraphicsConfiguration)ctxImpl.getDrawableImpl()
              .getNativeWindow().getGraphicsConfiguration().getNativeGraphicsConfiguration();
 
-        PointerBuffer properties = null;
+        PointerBuffer properties;
         if(glContext instanceof X11GLXContext) {
             properties = PointerBuffer.allocateDirect(7);
             long handle = config.getScreen().getDevice().getHandle();

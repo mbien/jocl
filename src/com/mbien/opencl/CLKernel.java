@@ -144,7 +144,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         }
         if(!program.isExecutable()) {
             throw new IllegalStateException("can not set program" +
-                    " arguments for a not excecutable program. "+program);
+                    " arguments for a not executable program. "+program);
         }
 
         int ret = cl.clSetKernelArg(ID, argumentIndex, size, value);
@@ -153,7 +153,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
 
     /**
      * Forces double and long arguments to be passed as float and int to the OpenCL kernel.
-     * This can be used in applications which want to mix kernels with different floating point precison.
+     * This can be used in applications which want to mix kernels with different floating point precision.
      */
     public CLKernel setForce32BitArgs(boolean force) {
         this.force32BitArgs = force;

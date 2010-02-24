@@ -35,7 +35,7 @@ public final class CLPlatform {
         cl = new CLImpl();
     }
 
-    CLPlatform(long id) {
+    private CLPlatform(long id) {
         this.ID = id;
     }
 

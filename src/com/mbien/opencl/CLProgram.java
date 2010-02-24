@@ -206,6 +206,10 @@ public class CLProgram extends CLObject implements CLResource {
      */
     public CLProgram build(String options, CLDevice... devices) {
 
+        if(released) {
+            throw new CLException("can not build a released program");
+        }
+
         if(!kernels.isEmpty()) {
             //No changes to the program executable are allowed while there are
             //kernel objects associated with a program object.
@@ -214,13 +218,18 @@ public class CLProgram extends CLObject implements CLResource {
 
         PointerBuffer deviceIDs = null;
         int count = 0;
-        if(devices != null) {
+        if(devices != null && devices.length != 0) {
             deviceIDs = PointerBuffer.allocateDirect(devices.length);
             for (int i = 0; i < devices.length; i++) {
                 deviceIDs.put(i, devices[i].ID);
             }
             deviceIDs.rewind();
             count = devices.length;
+        }
+
+        // nvidia driver doesn't like empty strings
+        if(options != null && options.trim().isEmpty()) {
+            options = null;
         }
 
         // invalidate build status
@@ -235,6 +244,13 @@ public class CLProgram extends CLObject implements CLResource {
         }
 
         return this;
+    }
+
+    /**
+     * Prepares the build for this program by returning a {@link CLProgramBuilder}.
+     */
+    public CLProgramBuilder prepare() {
+        return new CLProgramBuilder(this);
     }
 
     /**
@@ -254,24 +270,6 @@ public class CLProgram extends CLObject implements CLResource {
         kernels.add(kernel);
         return kernel;
     }
-
-    /**
-     * Creates n instances of a kernel with the specified kernel name.
-     */
-    /*
-    public CLKernel[] createCLKernels(String kernelName, int instanceCount) {
-
-        if(released) {
-            return new CLKernel[0];
-        }
-
-        CLKernel[] newKernels = new CLKernel[instanceCount];
-        for (int i = 0; i < newKernels.length; i++) {
-            newKernels[i] = createCLKernel(kernelName);
-        }
-        return newKernels;
-    }
-    */
 
     /**
      * Creates all kernels of this program and stores them a Map with the kernel name as key.
@@ -596,7 +594,7 @@ public class CLProgram extends CLObject implements CLResource {
          * This option is ignored for single precision numbers if the device does not support single precision denormalized
          * numbers i.e. {@link CLDevice.FPConfig#DENORM} is not present in the set returned by {@link CLDevice#getSingleFPConfig()}<br>
          * This option is ignored for double precision numbers if the device does not support double precision or if it does support
-         * double precison but {@link CLDevice.FPConfig#DENORM} is not present in the set returned by {@link CLDevice#getDoubleFPConfig()}.<br>
+         * double precision but {@link CLDevice.FPConfig#DENORM} is not present in the set returned by {@link CLDevice#getDoubleFPConfig()}.<br>
          * This flag only applies for scalar and vector single precision floating-point variables and computations on
          * these floating-point variables inside a program. It does not apply to reading from or writing to image objects.
          */

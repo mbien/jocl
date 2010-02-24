@@ -8,7 +8,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.CLProgram.CompilerOptions.*;
-import static com.mbien.opencl.CLProgram.Status.*;
 
 /**
  *
@@ -140,6 +139,45 @@ public class CLProgramTest {
         assertNotNull(program.createCLKernel("Test"));
 
         assertTrue(program.isExecutable());
+
+    }
+
+    @Test
+    public void builderTest() throws IOException {
+        out.println(" - - - CLProgramTest; builder test - - - ");
+
+        CLContext context = CLContext.create();
+        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"));
+
+        // same as program.build()
+        program.prepare().build();
+
+        assertTrue(program.isExecutable());
+//        program.release();
+
+
+        // complex build
+        program.prepare().withOption(ENABLE_MAD)
+                         .forDevice(context.getMaxFlopsDevice())
+                         .withDefine("RADIUS", 5)
+                         .withDefine("ENABLE_FOOBAR")
+                         .build();
+
+        assertTrue(program.isExecutable());
+//        program.release();
+
+        // reusable builder
+        CLProgramBuilder builder = new CLProgramBuilder()
+                                     .withOption(ENABLE_MAD)
+                                     .forDevice(context.getMaxFlopsDevice())
+                                     .withDefine("RADIUS", 5)
+                                     .withDefine("ENABLE_FOOBAR");
+
+        builder.build(program);
+
+        assertTrue(program.isExecutable());
+//        program.release();
+        
 
     }
 

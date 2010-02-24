@@ -10,5 +10,5 @@ echo "#Generated, do not edit, edit createTagletProps.sh instead.
 #to the function specific OpenCL documentation man pages.
 nativetaglet.baseUrl=${root}" > native-taglet.properties;
 #add all links as properties to file and cleanup
-sed -r 's/\s+<li><a href="([a-Z0-9.]+)"[^>]+>([a-Z0-9]+)<\/a><\/li>/\2=\1/' links >> native-taglet.properties;
+sed -r 's/\s+<li><a href="([a-Z0-9.]+)"[^>]+>([a-Z0-9]+)<\/a><\/li>/\2=\1/' links | tr -d [:blank:] | sort -u >> native-taglet.properties;
 rm ./${toc} ./links

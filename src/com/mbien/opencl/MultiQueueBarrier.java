@@ -7,20 +7,28 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
+ * A high-level utility to synchronize multiple {@link CLCommandQueue}s.
  * @author Michael Bien
  */
-public class QueueBarrier {
+public class MultiQueueBarrier {
 
-    private final CountDownLatch latch;
+    private CountDownLatch latch;
     private final Set<CLCommandQueue> queues;
 
-    public QueueBarrier(int queueCount) {
+    /**
+     * Creates a new MultiQueueBarrier with the given queueCount.
+     * It is recommented to use {@link #MultiQueueBarrier(CLCommandQueue... allowedQueues)} if possible
+     * which restricts the set of allowed queues for the barrier.
+     */
+    public MultiQueueBarrier(int queueCount) {
         this.latch = new CountDownLatch(queueCount);
         this.queues = null;
     }
 
-    public QueueBarrier(CLCommandQueue... allowedQueues) {
+    /**
+     * Creates a new MultiQueueBarrier for the given queues.
+     */
+    public MultiQueueBarrier(CLCommandQueue... allowedQueues) {
         this.latch = new CountDownLatch(allowedQueues.length);
 
         HashSet<CLCommandQueue> set = new HashSet<CLCommandQueue>(allowedQueues.length);
@@ -31,11 +39,11 @@ public class QueueBarrier {
     }
 
     /**
-     * Blocks the current Thread until all commands on the CLCommandQueue finished excecution.
-     * This method may be invoked concurrently without synchronization on the QueueBarrier object
+     * Blocks the current Thread until all commands on the {@link CLCommandQueue} finished excecution.
+     * This method may be invoked concurrently without synchronization on the MultiQueueBarrier object
      * as long each Thread passes a distinct CLCommandQueue as parameter to this method.
      */
-    public QueueBarrier waitFor(CLCommandQueue queue) {
+    public MultiQueueBarrier waitFor(CLCommandQueue queue) {
         checkQueue(queue);
 
         queue.putBarrier();
@@ -44,11 +52,11 @@ public class QueueBarrier {
     }
 
     /**
-     * Blocks the current Thread until the given events on the CLCommandQueue occurred.
-     * This method may be invoked concurrently without synchronization on the QueueBarrier object
+     * Blocks the current Thread until the given events on the {@link CLCommandQueue} occurred.
+     * This method may be invoked concurrently without synchronization on the MultiQueueBarrier object
      * as long each Thread passes a distinct CLCommandQueue as parameter to this method.
      */
-    public QueueBarrier waitFor(CLCommandQueue queue, CLEventList events) {
+    public MultiQueueBarrier waitFor(CLCommandQueue queue, CLEventList events) {
         checkQueue(queue);
 
         queue.putWaitForEvents(events, true);
@@ -58,10 +66,10 @@ public class QueueBarrier {
 
     /**
      * Blocks until all Threads which called {@link #waitFor}
-     * continue excecution.
+     * continue execution.
      * This method blocks only once, all subsequent calls are ignored.
      */
-    public QueueBarrier await() throws InterruptedException {
+    public MultiQueueBarrier await() throws InterruptedException {
         latch.await();
         return this;
     }
@@ -71,9 +79,25 @@ public class QueueBarrier {
      * @param timeout the maximum time to wait
      * @param unit the time unit of the {@code timeout} argument
      */
-    public QueueBarrier await(long timeout, TimeUnit unit) throws InterruptedException {
+    public MultiQueueBarrier await(long timeout, TimeUnit unit) throws InterruptedException {
         latch.await(timeout, unit);
         return this;
+    }
+    
+    /**
+     * Cancels this barrier and unblocks all waiting threads.
+     */
+    public void cancelBarrier() {
+        while(latch.getCount() > 0)
+            latch.countDown();
+    }
+
+    /**
+     * Returns the current number of events which must occure before this barrier unblocks the waiting threads.
+     * This method is typically used for debugging and testing purposes.
+     */
+    public long getCount() {
+        return latch.getCount();
     }
 
     private void checkQueue(CLCommandQueue queue) throws IllegalArgumentException {

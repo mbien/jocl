@@ -195,7 +195,7 @@ public class CLCommandQueueTest {
             System.out.println("using two devices");
         }
 
-        final QueueBarrier barrier = new QueueBarrier(2);
+        final MultiQueueBarrier barrier = new MultiQueueBarrier(2);
 
         Thread thread1 = new Thread("C") {
 

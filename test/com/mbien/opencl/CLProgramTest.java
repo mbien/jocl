@@ -167,12 +167,11 @@ public class CLProgramTest {
 //        program.release();
 
         // reusable builder
-        CLProgramBuilder builder = new CLProgramBuilder()
+        CLBuildConfiguration builder = CLProgramBuilder.createConfiguration()
                                      .withOption(ENABLE_MAD)
                                      .forDevice(context.getMaxFlopsDevice())
                                      .withDefine("RADIUS", 5)
                                      .withDefine("ENABLE_FOOBAR");
-
         builder.build(program);
 
         assertTrue(program.isExecutable());

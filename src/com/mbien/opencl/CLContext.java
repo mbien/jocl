@@ -192,15 +192,15 @@ public class CLContext extends CLObject implements CLResource {
     }
 
     /**
-     * Creates a program and reads the sources from stream, the program is not build yet.
+     * Creates a program and reads the source from stream, the program is not build yet.
      * @throws IOException when a IOException occurred while reading or closing the stream.
      */
-    public CLProgram createProgram(InputStream sources) throws IOException {
+    public CLProgram createProgram(InputStream source) throws IOException {
 
-        if(sources == null)
-            throw new IllegalArgumentException("input stream for program sources must not be null");
+        if(source == null)
+            throw new IllegalArgumentException("input stream for program source must not be null");
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(sources));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(source));
         StringBuilder sb = new StringBuilder();
 
         String line;
@@ -208,7 +208,7 @@ public class CLContext extends CLObject implements CLResource {
             while ((line = reader.readLine()) != null)
                 sb.append(line).append("\n");
         } finally {
-            sources.close();
+            source.close();
         }
 
         return createProgram(sb.toString());

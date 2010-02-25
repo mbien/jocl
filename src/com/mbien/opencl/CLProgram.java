@@ -247,10 +247,10 @@ public class CLProgram extends CLObject implements CLResource {
     }
 
     /**
-     * Prepares the build for this program by returning a {@link CLProgramBuilder}.
+     * Prepares the build for this program by returning a new {@link CLProgramConfiguration}.
      */
-    public CLProgramBuilder prepare() {
-        return new CLProgramBuilder(this);
+    public CLProgramConfiguration prepare() {
+        return CLProgramBuilder.createForProgram(this);
     }
 
     /**

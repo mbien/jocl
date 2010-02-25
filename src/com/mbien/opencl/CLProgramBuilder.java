@@ -13,99 +13,99 @@ import java.util.Set;
  * @see CLProgram#prepare()
  * @author Michael Bien
  */
-public final class CLProgramBuilder {
+public final class CLProgramBuilder implements CLProgramConfiguration {
 
     private transient CLProgram program;
-    private final Set<String> optionList = new HashSet<String>();
-    private final Set<String> defineList = new HashSet<String>();
-    private final Set<CLDevice> deviceList = new HashSet<CLDevice>();
+    private String source;
+    private Map<CLDevice, byte[]> binaries;
 
-    public CLProgramBuilder() {  }
+    private final Set<String> optionSet = new HashSet<String>();
+    private final Set<String> defineSet = new HashSet<String>();
+    private final Set<CLDevice> deviceSet = new HashSet<CLDevice>();
 
-    public CLProgramBuilder(CLProgram program) {
+
+    private CLProgramBuilder() {  }
+
+    private CLProgramBuilder(CLProgram program) {
         this.program = program;
     }
 
+    public static CLProgramConfiguration createForProgram(CLProgram program) {
+        return new CLProgramBuilder(program);
+    }
+
+    public static CLBuildConfiguration createConfiguration() {
+        return new CLProgramBuilder();
+    }
+
     public CLProgramBuilder withOption(String option) {
-        this.optionList.add(option);
+        optionSet.add(option);
         return this;
     }
 
     public CLProgramBuilder withOptions(String... options) {
         for (String option : options) {
-            this.optionList.add(option);
+            optionSet.add(option);
         }
         return this;
     }
 
     public CLProgramBuilder withDefine(String name) {
-        this.defineList.add(CLProgram.define(name));
+        defineSet.add(CLProgram.define(name));
         return this;
     }
 
     public CLProgramBuilder withDefines(String... names) {
         for (String name : names) {
-            this.defineList.add(CLProgram.define(name));
+            defineSet.add(CLProgram.define(name));
         }
         return this;
     }
 
     public CLProgramBuilder withDefine(String name, Object value) {
-        this.defineList.add(CLProgram.define(name, value.toString()));
+        defineSet.add(CLProgram.define(name, value.toString()));
         return this;
     }
 
     public CLProgramBuilder withDefines(Map<String, String> defines) {
         for (String name : defines.keySet()) {
-            defineList.add(CLProgram.define(name, defines.get(name)));
+            defineSet.add(CLProgram.define(name, defines.get(name)));
         }
         return this;
     }
 
     public CLProgramBuilder forDevice(CLDevice device) {
-        CLDevice[] devices = new CLDevice[]{device};
-        for (CLDevice device1 : devices) {
-            this.deviceList.add(device1);
-        }
+        deviceSet.add(device);
         return this;
     }
 
     public CLProgramBuilder forDevices(CLDevice... devices) {
         for (CLDevice device : devices) {
-            this.deviceList.add(device);
+            deviceSet.add(device);
         }
         return this;
     }
 
-    /**
-     * Builds or rebuilds a program.
-     */
     public CLProgram build() {
         return build(program);
     }
 
-    /**
-     * Builds or rebuilds a program.
-     */
     public CLProgram build(CLProgram program) {
         if(program == null) {
             throw new NullPointerException("no program has been set");
         }
         List<String> setup = new ArrayList<String>();
-        setup.addAll(optionList);
-        setup.addAll(defineList);
+        setup.addAll(optionSet);
+        setup.addAll(defineSet);
         String options = CLProgram.optionsOf(setup.toArray(new String[setup.size()]));
-        CLDevice[] devices = deviceList.toArray(new CLDevice[deviceList.size()]);
+        CLDevice[] devices = deviceSet.toArray(new CLDevice[deviceSet.size()]);
         return program.build(options, devices);
     }
 
-    /**
-     * Resets this builder's configuration like options, devices and defines.
-     */
     public CLProgramBuilder reset() {
-        optionList.clear();
-        defineList.clear();
-        deviceList.clear();
+        optionSet.clear();
+        defineSet.clear();
+        deviceSet.clear();
         return this;
     }
 
@@ -125,9 +125,9 @@ public final class CLProgramBuilder {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("CLProgramBuilder");
-        sb.append("{optionList=").append(optionList);
-        sb.append(", defineList=").append(defineList);
-        sb.append(", deviceList=").append(deviceList);
+        sb.append("{options=").append(optionSet);
+        sb.append(", defines=").append(defineSet);
+        sb.append(", devices=").append(deviceSet);
         sb.append('}');
         return sb.toString();
     }
@@ -139,18 +139,19 @@ public final class CLProgramBuilder {
 
         CLProgramBuilder that = (CLProgramBuilder) o;
 
-        if (defineList != null ? !defineList.equals(that.defineList) : that.defineList != null) return false;
-        if (deviceList != null ? !deviceList.equals(that.deviceList) : that.deviceList != null) return false;
-        if (optionList != null ? !optionList.equals(that.optionList) : that.optionList != null) return false;
+        if (defineSet != null ? !defineSet.equals(that.defineSet) : that.defineSet != null) return false;
+        if (deviceSet != null ? !deviceSet.equals(that.deviceSet) : that.deviceSet != null) return false;
+        if (optionSet != null ? !optionSet.equals(that.optionSet) : that.optionSet != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = optionList != null ? optionList.hashCode() : 0;
-        result = 31 * result + (defineList != null ? defineList.hashCode() : 0);
-        result = 31 * result + (deviceList != null ? deviceList.hashCode() : 0);
+        int result = optionSet != null ? optionSet.hashCode() : 0;
+        result = 31 * result + (defineSet != null ? defineSet.hashCode() : 0);
+        result = 31 * result + (deviceSet != null ? deviceSet.hashCode() : 0);
         return result;
     }
+
 }

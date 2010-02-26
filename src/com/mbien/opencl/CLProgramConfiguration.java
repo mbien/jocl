@@ -7,6 +7,8 @@ import java.util.Map;
  * CLProgramConfiguration is a helper for building programs with more complex configurations or
  * building multiple programs with the similar configuration.
  * @see CLProgram#prepare()
+ * @see CLProgramBuilder#createConfiguration(com.mbien.opencl.CLProgram)
+ * @see CLProgramBuilder#loadConfiguration(java.io.ObjectInputStream, com.mbien.opencl.CLContext)
  * @author Michael Bien
  */
 public interface CLProgramConfiguration extends CLBuildConfiguration {
@@ -21,6 +23,12 @@ public interface CLProgramConfiguration extends CLBuildConfiguration {
      */
     public CLProgram getProgram();
 
+    /**
+     * Returns a new instance of of this configuration without a {@link CLProgram},
+     * program binaries or sources associated with it.
+     */
+    public CLBuildConfiguration asBuildConfiguration();
+
 
     // overwrite with CLProgramConfiguration as return type
     @Override public CLProgramConfiguration forDevice(CLDevice device);
@@ -32,6 +40,9 @@ public interface CLProgramConfiguration extends CLBuildConfiguration {
     @Override public CLProgramConfiguration withOption(String option);
     @Override public CLProgramConfiguration withOptions(String... options);
     @Override public CLProgramConfiguration reset();
+    @Override public CLProgramConfiguration resetOptions();
+    @Override public CLProgramConfiguration resetDefines();
+    @Override public CLProgramConfiguration resetDevices();
     @Override public CLProgramConfiguration clone();
 
 }

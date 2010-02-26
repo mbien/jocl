@@ -181,6 +181,8 @@ public class CLProgramTest {
                                      .forDevices(context.getDevices())
                                      .withDefine("RADIUS", 5)
                                      .withDefine("ENABLE_FOOBAR");
+
+        out.println(builder);
         
         builder.setProgram(program).build();
         assertTrue(program.isExecutable());
@@ -191,18 +193,27 @@ public class CLProgramTest {
         builder.save(oos);
         oos.close();
 
+        // build configuration
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-        CLBuildConfiguration builder2 = builder.load(ois);
+        CLBuildConfiguration buildConfig = CLProgramBuilder.loadConfiguration(ois);
         ois.close();
 
-        assertEquals(builder, builder2);
+        assertEquals(builder, buildConfig);
 
-        builder2.build(program);
+        buildConfig.build(program);
         assertTrue(program.isExecutable());
 
+        // program configuration
+        ois = new ObjectInputStream(new FileInputStream(file));
+        CLProgramConfiguration programConfig = CLProgramBuilder.loadConfiguration(ois, context);
+        assertNotNull(programConfig.getProgram());
+        ois.close();
+        program = programConfig.build();
+        assertTrue(program.isExecutable());
+
+        
         // cloneing
         assertEquals(builder, builder.clone());
-        
 
     }
 

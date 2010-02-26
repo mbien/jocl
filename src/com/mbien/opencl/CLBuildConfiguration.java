@@ -1,13 +1,14 @@
 package com.mbien.opencl;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
 
 /**
  * Configuration representing everything needed to build an OpenCL program.
  * @author Michael Bien
+ * @see CLProgramBuilder#createConfiguration()
+ * @see CLProgramBuilder#loadConfiguration(java.io.ObjectInputStream)
  */
 public interface CLBuildConfiguration extends Cloneable {
 
@@ -36,6 +37,21 @@ public interface CLBuildConfiguration extends Cloneable {
      * Resets this builder's configuration like options, devices and definitions.
      */
     public CLBuildConfiguration reset();
+
+    /**
+     * Resets this builder's configuration options.
+     */
+    public CLBuildConfiguration resetOptions();
+
+    /**
+     * Resets this builder's macro definitions.
+     */
+    public CLBuildConfiguration resetDefines();
+
+    /**
+     * Resets this builder's device list.
+     */
+    public CLBuildConfiguration resetDevices();
 
     /**
      * Adds the definition to the build configuration.
@@ -78,8 +94,10 @@ public interface CLBuildConfiguration extends Cloneable {
      */
     public CLBuildConfiguration clone();
 
+    /**
+     * Saves this configuration to the ObjectOutputStream.
+     * The caller is responsible for closing the stream.
+     */
     public void save(ObjectOutputStream oos) throws IOException;
-
-    public CLBuildConfiguration load(ObjectInputStream ois)  throws IOException, ClassNotFoundException;
 
 }

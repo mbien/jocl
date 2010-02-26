@@ -20,7 +20,8 @@ import java.util.Set;
  * @see CLProgram#prepare()
  * @see #createConfiguration()
  * @see #createConfiguration(com.mbien.opencl.CLProgram)
- * @see #load(java.io.ObjectInputStream) 
+ * @see #loadConfiguration(java.io.ObjectInputStream)
+ * @see #loadConfiguration(java.io.ObjectInputStream, com.mbien.opencl.CLContext)
  * @author Michael Bien
  */
 public final class CLProgramBuilder implements CLProgramConfiguration, Serializable {
@@ -54,14 +55,58 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         }
     }
 
+    /**
+     * Creates a new CLBuildConfiguration.
+     */
     public static CLBuildConfiguration createConfiguration() {
         return createConfiguration(null);
     }
 
+    /**
+     * Creates a new CLProgramConfiguration for this program.
+     */
     public static CLProgramConfiguration createConfiguration(CLProgram program) {
         return new CLProgramBuilder(program);
     }
 
+    /**
+     * Loads a CLBuildConfiguration.
+     * @param ois The ObjectInputStream for reading the object.
+     */
+    public static CLBuildConfiguration loadConfiguration(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        return (CLBuildConfiguration) ois.readObject();
+    }
+
+    /**
+     * Loads a CLProgramConfiguration containing a CLProgram.
+     * The CLProgram is initialized and ready to be build after this method call.
+     * This method preferes program initialization from binaries if this fails or if
+     * no binaries have been found, it will try to load the program from sources. If
+     * This also fails an appropriate exception will be thrown.
+     * @param ois The ObjectInputStream for reading the object.
+     * @param context The context used for program initialization.
+     */
+    public static CLProgramConfiguration loadConfiguration(ObjectInputStream ois, CLContext context) throws IOException, ClassNotFoundException {
+        CLProgramBuilder config = (CLProgramBuilder) ois.readObject();
+        if(config.binariesMap.size() > 0 && config.binariesMap.values().iterator().next().length > 0) {
+            try{
+                config.program = context.createProgram(config.binariesMap);
+            }catch(CLException.CLInvalidBinaryException ex) {
+                if(config.source != null) {
+                    config.program = context.createProgram(config.source);
+                }else{
+                    throw new IOException("Program configuration contained invalid program binaries and no source.", ex);
+                }
+            }
+        }else if(config.source != null) {
+            config.program = context.createProgram(config.source);
+        }else{
+            throw new IOException("Program configuration did not contain program sources or binaries");
+        }
+        return config;
+    }
+
+    @Override
     public void save(ObjectOutputStream oos) throws IOException {
         if(program != null) {
             this.source = program.getSource();
@@ -72,16 +117,14 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         oos.writeObject(this);
     }
 
-    public CLProgramConfiguration load(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        return (CLProgramConfiguration) ois.readObject();
-    }
 
-
+    @Override
     public CLProgramBuilder withOption(String option) {
         optionSet.add(option);
         return this;
     }
 
+    @Override
     public CLProgramBuilder withOptions(String... options) {
         for (String option : options) {
             optionSet.add(option);
@@ -89,11 +132,13 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         return this;
     }
 
+    @Override
     public CLProgramBuilder withDefine(String name) {
         defineSet.add(CLProgram.define(name));
         return this;
     }
 
+    @Override
     public CLProgramBuilder withDefines(String... names) {
         for (String name : names) {
             defineSet.add(CLProgram.define(name));
@@ -101,11 +146,13 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         return this;
     }
 
+    @Override
     public CLProgramBuilder withDefine(String name, Object value) {
         defineSet.add(CLProgram.define(name, value.toString()));
         return this;
     }
 
+    @Override
     public CLProgramBuilder withDefines(Map<String, String> defines) {
         for (String name : defines.keySet()) {
             defineSet.add(CLProgram.define(name, defines.get(name)));
@@ -113,11 +160,13 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         return this;
     }
 
+    @Override
     public CLProgramBuilder forDevice(CLDevice device) {
         binariesMap.put(device, NO_BINARIES);
         return this;
     }
 
+    @Override
     public CLProgramBuilder forDevices(CLDevice... devices) {
         for (CLDevice device : devices) {
             binariesMap.put(device, NO_BINARIES);
@@ -125,10 +174,12 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         return this;
     }
 
+    @Override
     public CLProgram build() {
         return build(program);
     }
 
+    @Override
     public CLProgram build(CLProgram program) {
         if(program == null) {
             throw new NullPointerException("no program has been set");
@@ -141,10 +192,29 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         return program.build(options, devices);
     }
 
+    @Override
     public CLProgramBuilder reset() {
-        optionSet.clear();
+        resetOptions();
+        resetDefines();
+        resetDevices();
+        return this;
+    }
+
+    @Override
+    public CLProgramConfiguration resetDefines() {
         defineSet.clear();
+        return this;
+    }
+
+    @Override
+    public CLProgramConfiguration resetDevices() {
         binariesMap.clear();
+        return this;
+    }
+
+    @Override
+    public CLProgramConfiguration resetOptions() {
+        optionSet.clear();
         return this;
     }
 
@@ -176,6 +246,14 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         }
     }
 
+    @Override
+    public CLProgramBuilder asBuildConfiguration() {
+        CLProgramBuilder builder = new CLProgramBuilder();
+        builder.defineSet.addAll(defineSet);
+        builder.optionSet.addAll(optionSet);
+        return builder;
+    }
+    
     @Override
     public CLProgramBuilder clone() {
         CLProgramBuilder builder = new CLProgramBuilder(program, source, binariesMap);

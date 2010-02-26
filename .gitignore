@@ -2,5 +2,6 @@ build
 dist
 gensrc
 resources/includes/CL
+.idea/workspace.xml
 **~
 nbproject/private

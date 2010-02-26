@@ -105,7 +105,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     /**
      * Returns the OpenGL buffer type of this shared buffer.
      */
-    /*public*/ GLObjectType getGLObjectType() {
+    /*public*/ final GLObjectType _getGLObjectType() {
         int[] array = new int[1];
         int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, array, 0, null, 0);
         CLException.checkForError(ret, "error while asking for gl object info");
@@ -115,7 +115,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     /**
      * Returns the OpenGL object id of this shared buffer.
      */
-    /*public*/ int getGLObjectID() {
+    /*public*/ final int _getGLObjectID() {
         int[] array = new int[1];
         int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
         CLException.checkForError(ret, "error while asking for gl object info");

@@ -11,7 +11,7 @@ import static com.mbien.opencl.CL.*;
  */
 public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
 
-    protected final CLImageFormat format;
+    protected CLImageFormat format;
 
     final CLInfoAccessor imageInfo;
 
@@ -19,8 +19,12 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
     public final int height;
 
     protected CLImage(CLContext context, B directBuffer, CLImageFormat format, int width, int height, long id) {
+        this(context, directBuffer, format, new CLImageInfoAccessor(context.cl, id), width, height, id);
+    }
+
+    protected CLImage(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id) {
         super(context, directBuffer, id);
-        this.imageInfo = new CLImageInfoAccessor();
+        this.imageInfo = accessor;
         this.format = format;
         this.width = width;
         this.height = height;
@@ -63,11 +67,18 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
     }
 
 
+    protected final static class CLImageInfoAccessor extends CLInfoAccessor {
 
-    private final class CLImageInfoAccessor extends CLInfoAccessor {
+        private final long id;
+        private final CL cl;
+
+        public CLImageInfoAccessor(CL cl, long id) {
+            this.cl = cl;
+            this.id = id;
+        }
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
-            return cl.clGetImageInfo(ID, name, valueSize, value, valueSizeRet);
+            return cl.clGetImageInfo(id, name, valueSize, value, valueSizeRet);
         }
     }
 

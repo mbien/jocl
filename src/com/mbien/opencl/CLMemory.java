@@ -10,10 +10,10 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import static com.mbien.opencl.CLException.*;
-import static com.mbien.opencl.CL.*;
+import static com.mbien.opencl.CLGLI.*;
 
 /**
- *
+ * Common superclass for all OpenCL memory types.
  * @author Michael Bien
  */
 public abstract class CLMemory <B extends Buffer> extends CLObject implements CLResource {
@@ -99,6 +99,27 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         int ret = cl.clReleaseMemObject(ID);
         context.onMemoryReleased(this);
         checkForError(ret, "can not release mem object");
+    }
+
+    // kept only for debugging purposes
+    /**
+     * Returns the OpenGL buffer type of this shared buffer.
+     */
+    /*public*/ GLObjectType getGLObjectType() {
+        int[] array = new int[1];
+        int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, array, 0, null, 0);
+        CLException.checkForError(ret, "error while asking for gl object info");
+        return GLObjectType.valueOf(array[0]);
+    }
+
+    /**
+     * Returns the OpenGL object id of this shared buffer.
+     */
+    /*public*/ int getGLObjectID() {
+        int[] array = new int[1];
+        int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
+        CLException.checkForError(ret, "error while asking for gl object info");
+        return array[0];
     }
 
     @Override
@@ -276,6 +297,30 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     }
 
-   
+    public enum GLObjectType {
+
+        GL_OBJECT_BUFFER(CL_GL_OBJECT_BUFFER),
+        GL_OBJECT_TEXTURE2D(CL_GL_OBJECT_TEXTURE2D),
+        GL_OBJECT_TEXTURE3D(CL_GL_OBJECT_TEXTURE3D),
+        GL_OBJECT_RENDERBUFFER(CL_GL_OBJECT_RENDERBUFFER);
+
+        public final int TYPE;
+
+        private GLObjectType(int type) {
+            this.TYPE = type;
+        }
+
+        public static GLObjectType valueOf(int type) {
+            if(type == CL_GL_OBJECT_BUFFER)
+                return GL_OBJECT_BUFFER;
+            else if(type == CL_GL_OBJECT_TEXTURE2D)
+                return GL_OBJECT_TEXTURE2D;
+            else if(type == CL_GL_OBJECT_TEXTURE3D)
+                return GL_OBJECT_TEXTURE3D;
+            else if(type == CL_GL_OBJECT_RENDERBUFFER)
+                return GL_OBJECT_RENDERBUFFER;
+            return null;
+        }
+    }
 
 }

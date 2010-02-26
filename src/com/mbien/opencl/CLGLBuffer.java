@@ -1,15 +1,15 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.CLMemory.GLObjectType;
 import java.nio.Buffer;
 
-
-import static com.mbien.opencl.CLGLI.*;
 
 /**
  * Shared buffer between OpenGL and OpenCL contexts.
  * @author Michael Bien
  */
-public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> {
+public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements CLGLObject {
+
 
     /**
      * The OpenGL object handle.
@@ -23,13 +23,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> {
 
 
     static <B extends Buffer> CLGLBuffer<B> create(CLContext context, B directBuffer, int flags, int glObject) {
-        if(directBuffer != null && !directBuffer.isDirect())
-            throw new IllegalArgumentException("buffer is not a direct buffer");
-
-        if(isHostPointerFlag(flags)) {
-            throw new IllegalArgumentException(
-                    "CL_MEM_COPY_HOST_PTR or CL_MEM_USE_HOST_PTR can not be used with OpenGL Buffers.");
-        }
+        checkBuffer(directBuffer, flags);
         
         CL cl = context.cl;
         int[] result = new int[1];
@@ -40,60 +34,31 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> {
         return new CLGLBuffer<B>(context, directBuffer, id, glObject);
     }
 
+    static <B extends Buffer> void checkBuffer(B directBuffer, int flags) throws IllegalArgumentException {
+        if (directBuffer != null && !directBuffer.isDirect()) {
+            throw new IllegalArgumentException("buffer is not a direct buffer");
+        }
+        if (isHostPointerFlag(flags)) {
+            throw new IllegalArgumentException("CL_MEM_COPY_HOST_PTR or CL_MEM_USE_HOST_PTR can not be used with OpenGL Buffers.");
+        }
+    }
+
+    public int getGLObjectID() {
+        return GLID;
+    }
+
+    public GLObjectType getGLObjectType() {
+        return GLObjectType.GL_OBJECT_BUFFER;
+    }
+
     @Override
     public <T extends Buffer> CLGLBuffer<T> cloneWith(T directBuffer) {
         return new CLGLBuffer<T>(context, directBuffer, ID, GLID);
     }
 
-    /**
-     * Returns the OpenGL buffer type of this shared buffer.
-     */
-    public GLObjectType getGLObjectType() {
-        int[] array = new int[1];
-        int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, array, 0, null, 0);
-        CLException.checkForError(ret, "error while asking for gl object info");
-        return GLObjectType.valueOf(array[0]);
-    }
-
-    /**
-     * Returns the OpenGL object id of this shared buffer.
-     */
-    public int getGLObjectID() {
-        int[] array = new int[1];
-        int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
-        CLException.checkForError(ret, "error while asking for gl object info");
-        return array[0];
-    }
-
     @Override
     public String toString() {
-        return "CLMemory [id: " + ID+" glID: "+GLID+"]";
-    }
-
-    public enum GLObjectType {
-
-        GL_OBJECT_BUFFER(CL_GL_OBJECT_BUFFER),
-        GL_OBJECT_TEXTURE2D(CL_GL_OBJECT_TEXTURE2D),
-        GL_OBJECT_TEXTURE3D(CL_GL_OBJECT_TEXTURE3D),
-        GL_OBJECT_RENDERBUFFER(CL_GL_OBJECT_RENDERBUFFER);
-
-        public final int TYPE;
-
-        private GLObjectType(int type) {
-            this.TYPE = type;
-        }
-
-        public static GLObjectType valueOf(int type) {
-            if(type == CL_GL_OBJECT_BUFFER)
-                return GL_OBJECT_BUFFER;
-            else if(type == CL_GL_OBJECT_TEXTURE2D)
-                return GL_OBJECT_TEXTURE2D;
-            else if(type == CL_GL_OBJECT_TEXTURE3D)
-                return GL_OBJECT_TEXTURE3D;
-            else if(type == CL_GL_OBJECT_RENDERBUFFER)
-                return GL_OBJECT_RENDERBUFFER;
-            return null;
-        }
+        return "CLGLBuffer [id: " + ID+" glID: "+GLID+"]";
     }
 
 }

@@ -1,6 +1,7 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.CLMemory.Mem;
+import com.mbien.opencl.CLMemory.GLObjectType;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
 import com.mbien.opencl.CLImageFormat.ChannelOrder;
@@ -63,6 +64,10 @@ public class HighLevelBindingTest {
         // CLMemory enums
         for (Mem e : Mem.values()) {
             assertEquals(e, Mem.valueOf(e.CONFIG));
+        }
+
+        for (GLObjectType e : GLObjectType.values()) {
+            assertEquals(e, GLObjectType.valueOf(e.TYPE));
         }
 
         // CLSampler enums

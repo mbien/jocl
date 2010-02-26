@@ -10,10 +10,14 @@ import static com.mbien.opencl.CLException.*;
  *
  * @author Michael Bien
  */
-public final class CLImage2d<B extends Buffer> extends CLImage<B> {
+public class CLImage2d<B extends Buffer> extends CLImage<B> {
 
     private CLImage2d(CLContext context, B directBuffer, CLImageFormat format, int width, int height, long id) {
         super(context, directBuffer, format, width, height, id);
+    }
+    
+    protected CLImage2d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id) {
+        super(context, directBuffer, format, accessor, width, height, id);
     }
 
     static <B extends Buffer> CLImage2d<B> createImage(CLContext context, B directBuffer,
@@ -31,6 +35,12 @@ public final class CLImage2d<B extends Buffer> extends CLImage<B> {
     @Override
     public <T extends Buffer> CLImage2d<T> cloneWith(T directBuffer) {
         return new CLImage2d<T>(context, directBuffer, format, width, height, ID);
+    }
+
+
+    @Override
+    public String toString() {
+        return "CLImage2d [id: " + ID+" width: "+width+" height: "+height+"]";
     }
 
 }

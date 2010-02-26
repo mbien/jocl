@@ -12,6 +12,9 @@ public final class CLImageFormat {
 
     private final CLImageFormatImpl format = CLImageFormatImpl.create();
 
+    CLImageFormat() {
+    }
+
     public CLImageFormat(ChannelOrder order, ChannelType type) {
         setImageChannelOrder(order);
         setImageChannelDataType(type);

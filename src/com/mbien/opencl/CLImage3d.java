@@ -11,7 +11,7 @@ import static com.mbien.opencl.CLException.*;
  *
  * @author Michael Bien
  */
-public final class CLImage3d<B extends Buffer> extends CLImage<B> {
+public class CLImage3d<B extends Buffer> extends CLImage<B> {
 
     public final int depth;
 
@@ -19,6 +19,12 @@ public final class CLImage3d<B extends Buffer> extends CLImage<B> {
         super(context, directBuffer, format, width, height, id);
         this.depth = depth;
     }
+
+    protected CLImage3d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, int depth, long id) {
+        super(context, directBuffer, format, accessor, width, height, id);
+        this.depth = depth;
+    }
+    
 
     static <B extends Buffer> CLImage3d<B> createImage(CLContext context, B directBuffer,
             int width, int height, int depth, int rowPitch, int slicePitch, CLImageFormat format, int flags) {
@@ -49,5 +55,10 @@ public final class CLImage3d<B extends Buffer> extends CLImage<B> {
      */
     public int getDepth() {
         return depth;
+    }
+
+    @Override
+    public String toString() {
+        return "CLImage3d [id: " + ID+" width: "+width+" height: "+height+" depth: "+depth+"]";
     }
 }

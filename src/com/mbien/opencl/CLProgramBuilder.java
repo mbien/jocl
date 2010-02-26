@@ -1,7 +1,14 @@
 package com.mbien.opencl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,32 +18,64 @@ import java.util.Set;
  * CLProgramBuilder is a helper for building programs with more complex configurations or
  * building multiple programs with the same configuration.
  * @see CLProgram#prepare()
+ * @see #createConfiguration()
+ * @see #createConfiguration(com.mbien.opencl.CLProgram)
+ * @see #load(java.io.ObjectInputStream) 
  * @author Michael Bien
  */
-public final class CLProgramBuilder implements CLProgramConfiguration {
+public final class CLProgramBuilder implements CLProgramConfiguration, Serializable {
+
+    static final long serialVersionUID = 42;
+
+    private static final byte[] NO_BINARIES = new byte[0];
 
     private transient CLProgram program;
+    private transient Map<CLDevice, byte[]> binariesMap = new LinkedHashMap<CLDevice, byte[]>();
+
     private String source;
-    private Map<CLDevice, byte[]> binaries;
 
-    private final Set<String> optionSet = new HashSet<String>();
-    private final Set<String> defineSet = new HashSet<String>();
-    private final Set<CLDevice> deviceSet = new HashSet<CLDevice>();
+    private final Set<String> optionSet = new LinkedHashSet<String>();
+    private final Set<String> defineSet = new LinkedHashSet<String>();
 
 
-    private CLProgramBuilder() {  }
-
-    private CLProgramBuilder(CLProgram program) {
-        this.program = program;
+    private CLProgramBuilder() {
+        this(null);
     }
 
-    public static CLProgramConfiguration createForProgram(CLProgram program) {
-        return new CLProgramBuilder(program);
+    private CLProgramBuilder(CLProgram program) {
+        this(program, null, null);
+    }
+
+    private CLProgramBuilder(CLProgram program, String source, Map<CLDevice, byte[]> map) {
+        this.program = program;
+        this.source = source;
+        if(map != null) {
+            this.binariesMap.putAll(map);
+        }
     }
 
     public static CLBuildConfiguration createConfiguration() {
-        return new CLProgramBuilder();
+        return createConfiguration(null);
     }
+
+    public static CLProgramConfiguration createConfiguration(CLProgram program) {
+        return new CLProgramBuilder(program);
+    }
+
+    public void save(ObjectOutputStream oos) throws IOException {
+        if(program != null) {
+            this.source = program.getSource();
+            if(program.isExecutable()) {
+                binariesMap = program.getBinaries();
+            }
+        }
+        oos.writeObject(this);
+    }
+
+    public CLProgramConfiguration load(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        return (CLProgramConfiguration) ois.readObject();
+    }
+
 
     public CLProgramBuilder withOption(String option) {
         optionSet.add(option);
@@ -75,13 +114,13 @@ public final class CLProgramBuilder implements CLProgramConfiguration {
     }
 
     public CLProgramBuilder forDevice(CLDevice device) {
-        deviceSet.add(device);
+        binariesMap.put(device, NO_BINARIES);
         return this;
     }
 
     public CLProgramBuilder forDevices(CLDevice... devices) {
         for (CLDevice device : devices) {
-            deviceSet.add(device);
+            binariesMap.put(device, NO_BINARIES);
         }
         return this;
     }
@@ -98,24 +137,57 @@ public final class CLProgramBuilder implements CLProgramConfiguration {
         setup.addAll(optionSet);
         setup.addAll(defineSet);
         String options = CLProgram.optionsOf(setup.toArray(new String[setup.size()]));
-        CLDevice[] devices = deviceSet.toArray(new CLDevice[deviceSet.size()]);
+        CLDevice[] devices = binariesMap.keySet().toArray(new CLDevice[binariesMap.size()]);
         return program.build(options, devices);
     }
 
     public CLProgramBuilder reset() {
         optionSet.clear();
         defineSet.clear();
-        deviceSet.clear();
+        binariesMap.clear();
         return this;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeInt(binariesMap.size());
+
+        for (CLDevice device : binariesMap.keySet()) {
+            byte[] binaries = binariesMap.get(device);
+            out.writeLong(device.ID);
+            out.writeInt(binaries.length);
+            out.write(binaries);
+        }
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.binariesMap = new LinkedHashMap<CLDevice, byte[]>();
+        int mapSize = in.readInt();
+
+        for (int i = 0; i < mapSize; i++) {
+            long deviceID = in.readLong();
+            int length = in.readInt();
+            byte[] binaries = new byte[length];
+            in.readFully(binaries);
+
+            CLDevice device = new CLDevice(CLPlatform.getLowLevelCLInterface(), deviceID);
+            binariesMap.put(device, binaries);
+        }
+    }
+
+    @Override
+    public CLProgramBuilder clone() {
+        CLProgramBuilder builder = new CLProgramBuilder(program, source, binariesMap);
+        builder.defineSet.addAll(defineSet);
+        builder.optionSet.addAll(optionSet);
+        return builder;
     }
 
     public CLProgram getProgram() {
         return program;
     }
 
-    /**
-     * Sets the program which should be build.
-     */
     public CLProgramBuilder setProgram(CLProgram program) {
         this.program = program;
         return this;
@@ -127,7 +199,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration {
         sb.append("CLProgramBuilder");
         sb.append("{options=").append(optionSet);
         sb.append(", defines=").append(defineSet);
-        sb.append(", devices=").append(deviceSet);
+        sb.append(", devices=").append(binariesMap);
         sb.append('}');
         return sb.toString();
     }
@@ -139,9 +211,25 @@ public final class CLProgramBuilder implements CLProgramConfiguration {
 
         CLProgramBuilder that = (CLProgramBuilder) o;
 
+        if (source    != null ? !source.equals(that.source)       : that.source    != null) return false;
         if (defineSet != null ? !defineSet.equals(that.defineSet) : that.defineSet != null) return false;
-        if (deviceSet != null ? !deviceSet.equals(that.deviceSet) : that.deviceSet != null) return false;
         if (optionSet != null ? !optionSet.equals(that.optionSet) : that.optionSet != null) return false;
+
+        if(binariesMap != null && that.binariesMap != null) {
+            if(binariesMap.size() != that.binariesMap.size()) {
+                return false;
+            }
+            Iterator<CLDevice> iterator0 = binariesMap.keySet().iterator();
+            Iterator<CLDevice> iterator1 = that.binariesMap.keySet().iterator();
+            for (int i = 0; i < binariesMap.size(); i++) {
+                CLDevice device0 = iterator0.next();
+                CLDevice device1 = iterator1.next();
+                if(!device0.equals(device1) || !Arrays.equals(binariesMap.get(device0), that.binariesMap.get(device1)))
+                    return false;
+            }
+        }else if(binariesMap != null || that.binariesMap != null) {
+            return false;
+        }
 
         return true;
     }
@@ -150,7 +238,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration {
     public int hashCode() {
         int result = optionSet != null ? optionSet.hashCode() : 0;
         result = 31 * result + (defineSet != null ? defineSet.hashCode() : 0);
-        result = 31 * result + (deviceSet != null ? deviceSet.hashCode() : 0);
+        result = 31 * result + (binariesMap != null ? binariesMap.hashCode() : 0);
         return result;
     }
 

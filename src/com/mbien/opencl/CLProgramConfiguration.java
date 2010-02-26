@@ -4,6 +4,9 @@ import java.util.Map;
 
 /**
  * Configuration representing everything needed to build an OpenCL program (program included).
+ * CLProgramConfiguration is a helper for building programs with more complex configurations or
+ * building multiple programs with the similar configuration.
+ * @see CLProgram#prepare()
  * @author Michael Bien
  */
 public interface CLProgramConfiguration extends CLBuildConfiguration {
@@ -18,11 +21,6 @@ public interface CLProgramConfiguration extends CLBuildConfiguration {
      */
     public CLProgram getProgram();
 
-    /**
-     * Sets the program which should be build.
-     */
-    public CLProgramConfiguration setProgram(CLProgram program);
-
 
     // overwrite with CLProgramConfiguration as return type
     @Override public CLProgramConfiguration forDevice(CLDevice device);
@@ -34,5 +32,6 @@ public interface CLProgramConfiguration extends CLBuildConfiguration {
     @Override public CLProgramConfiguration withOption(String option);
     @Override public CLProgramConfiguration withOptions(String... options);
     @Override public CLProgramConfiguration reset();
+    @Override public CLProgramConfiguration clone();
 
 }

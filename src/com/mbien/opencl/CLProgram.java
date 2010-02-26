@@ -9,6 +9,7 @@ import java.nio.IntBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Map;
 
@@ -250,7 +251,7 @@ public class CLProgram extends CLObject implements CLResource {
      * Prepares the build for this program by returning a new {@link CLProgramConfiguration}.
      */
     public CLProgramConfiguration prepare() {
-        return CLProgramBuilder.createForProgram(this);
+        return CLProgramBuilder.createConfiguration(this);
     }
 
     /**
@@ -437,7 +438,7 @@ public class CLProgram extends CLObject implements CLResource {
     }
 
     /**
-     * Returns the binaries for this program in a Map containing the device as key
+     * Returns the binaries for this program in an ordered Map containing the device as key
      * and the program binaries as value.
      */
     public Map<CLDevice, byte[]> getBinaries() {
@@ -471,7 +472,7 @@ public class CLProgram extends CLObject implements CLResource {
         ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity(), addresses.getBuffer(), null);
         checkForError(ret, "on clGetProgramInfo");
 
-        Map<CLDevice, byte[]> map = new HashMap<CLDevice, byte[]>();
+        Map<CLDevice, byte[]> map = new LinkedHashMap<CLDevice, byte[]>();
         sizes.rewind();
         for (int i = 0; i < devices.length; i++) {
             byte[] bytes = new byte[(int)sizes.getLong()];

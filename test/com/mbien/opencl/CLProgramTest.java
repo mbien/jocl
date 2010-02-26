@@ -1,9 +1,16 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.CLProgram.Status;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
 import static java.lang.System.*;
@@ -14,6 +21,10 @@ import static com.mbien.opencl.CLProgram.CompilerOptions.*;
  * @author Michael Bien
  */
 public class CLProgramTest {
+
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
 
     @Test
     public void enumsTest() {
@@ -143,8 +154,8 @@ public class CLProgramTest {
     }
 
     @Test
-    public void builderTest() throws IOException {
-        out.println(" - - - CLProgramTest; builder test - - - ");
+    public void builderTest() throws IOException, ClassNotFoundException {
+        out.println(" - - - CLProgramTest; program builder test - - - ");
 
         CLContext context = CLContext.create();
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"));
@@ -153,7 +164,6 @@ public class CLProgramTest {
         program.prepare().build();
 
         assertTrue(program.isExecutable());
-//        program.release();
 
 
         // complex build
@@ -164,18 +174,34 @@ public class CLProgramTest {
                          .build();
 
         assertTrue(program.isExecutable());
-//        program.release();
 
         // reusable builder
         CLBuildConfiguration builder = CLProgramBuilder.createConfiguration()
                                      .withOption(ENABLE_MAD)
-                                     .forDevice(context.getMaxFlopsDevice())
+                                     .forDevices(context.getDevices())
                                      .withDefine("RADIUS", 5)
                                      .withDefine("ENABLE_FOOBAR");
-        builder.build(program);
-
+        
+        builder.setProgram(program).build();
         assertTrue(program.isExecutable());
-//        program.release();
+
+        // serialization test
+        File file = tmpFolder.newFile("foobar.builder");
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+        builder.save(oos);
+        oos.close();
+
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+        CLBuildConfiguration builder2 = builder.load(ois);
+        ois.close();
+
+        assertEquals(builder, builder2);
+
+        builder2.build(program);
+        assertTrue(program.isExecutable());
+
+        // cloneing
+        assertEquals(builder, builder.clone());
         
 
     }

@@ -153,7 +153,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
     }
 
     @Override
-    public CLProgramBuilder withDefines(Map<String, String> defines) {
+    public CLProgramBuilder withDefines(Map<String, ? extends Object> defines) {
         for (String name : defines.keySet()) {
             defineSet.add(CLProgram.define(name, defines.get(name)));
         }

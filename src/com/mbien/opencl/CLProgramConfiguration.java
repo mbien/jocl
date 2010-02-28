@@ -36,7 +36,7 @@ public interface CLProgramConfiguration extends CLBuildConfiguration {
     @Override public CLProgramConfiguration withDefine(String name);
     @Override public CLProgramConfiguration withDefine(String name, Object value);
     @Override public CLProgramConfiguration withDefines(String... names);
-    @Override public CLProgramConfiguration withDefines(Map<String, String> defines);
+    @Override public CLProgramConfiguration withDefines(Map<String, ? extends Object> defines);
     @Override public CLProgramConfiguration withOption(String option);
     @Override public CLProgramConfiguration withOptions(String... options);
     @Override public CLProgramConfiguration reset();

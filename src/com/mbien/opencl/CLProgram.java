@@ -506,7 +506,7 @@ public class CLProgram extends CLObject implements CLResource {
     /**
      * Utility method for defining macros as build options (Returns "-D name=value").
      */
-    public static String define(String name, String value) {
+    public static String define(String name, Object value) {
         return "-D "+name+"="+value;
     }
 

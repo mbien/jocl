@@ -188,6 +188,46 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     }
 
     /**
+     * Returns the amount of local memory in bytes being used by a kernel.
+     * This includes local memory that may be needed by an implementation to execute the kernel,
+     * variables declared inside the kernel with the <code>__local</code> address qualifier and local memory
+     * to be allocated for arguments to the kernel declared as pointers with the <code>__local</code> address
+     * qualifier and whose size is specified with clSetKernelArg.
+     * If the local memory size, for any pointer argument to the kernel declared with
+     * the <code>__local</code> address qualifier, is not specified, its size is assumed to be 0.
+     */
+    public long getLocalMemorySize(CLDevice device) {
+        return getWorkGroupInfo(device, CL_KERNEL_LOCAL_MEM_SIZE);
+    }
+
+    /**
+     * Returns the work group size for this kernel on the given device.
+     * This provides a mechanism for the application to query the work-group size
+     * that can be used to execute a kernel on a specific device given by device.
+     * The OpenCL implementation uses the resource requirements of the kernel
+     * (register usage etc.) to determine what this work-group size should be. 
+     */
+    public long getWorkGroupSize(CLDevice device) {
+        return getWorkGroupInfo(device, CL_KERNEL_WORK_GROUP_SIZE);
+    }
+
+    /**
+     * Returns the work-group size specified by the <code>__attribute__((reqd_work_gr oup_size(X, Y, Z)))</code> qualifier in kernel sources.
+     * If the work-group size is not specified using the above attribute qualifier <code>new long[]{(0, 0, 0)}</code> is returned.
+     */
+    public long[] getCompileWorkGroupSize(CLDevice device) {
+        int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 8*3, buffer, null);
+        checkForError(ret, "error while asking for clGetKernelWorkGroupInfo");
+        return new long[] { buffer.getLong(0), buffer.getLong(1), buffer.getLong(2) };
+    }
+
+    private long getWorkGroupInfo(CLDevice device, int flag) {
+        int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, flag, 8, buffer, null);
+        checkForError(ret, "error while asking for clGetKernelWorkGroupInfo");
+        return buffer.getLong(0);
+    }
+
+    /**
      * Releases all resources of this kernel from its context.
      */
     public void release() {

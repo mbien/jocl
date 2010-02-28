@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.impl.CLImpl;
 import com.sun.gluegen.runtime.CPU;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -358,7 +359,7 @@ public class LowLevelBindingTest {
 
     private final void checkError(String msg, int ret) {
         if(ret != CL.CL_SUCCESS)
-            throw new CLException(ret, msg);
+            throw CLException.newException(ret, msg);
     }
 
 

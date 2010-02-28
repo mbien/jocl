@@ -779,6 +779,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
         checkForError(ret, "can not release command queue");
     }
 
+    public void close() {
+        release();
+    }
+
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
         return buffer.put(2, a).position(2);
     }

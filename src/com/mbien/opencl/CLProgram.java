@@ -331,6 +331,10 @@ public class CLProgram extends CLObject implements CLResource {
         checkForError(ret, "can not release program");
     }
 
+    public void close() {
+        release();
+    }
+
     private void releaseKernels() {
         if(!kernels.isEmpty()) {
             // copy to array to prevent concurrent modification exception

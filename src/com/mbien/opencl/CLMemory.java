@@ -101,6 +101,10 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         checkForError(ret, "can not release mem object");
     }
 
+    public void close() {
+        release();
+    }
+
     // kept only for debugging purposes
     /**
      * Returns the OpenGL buffer type of this shared buffer.

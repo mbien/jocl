@@ -236,6 +236,10 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         checkForError(ret, "can not release kernel");
     }
 
+    public void close() {
+        release();
+    }
+
     @Override
     public String toString() {
         return "CLKernel [id: " + ID

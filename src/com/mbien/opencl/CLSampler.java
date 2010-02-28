@@ -49,6 +49,10 @@ public class CLSampler extends CLObject implements CLResource {
         checkForError(ret, "can not release sampler");
     }
 
+    public void close() {
+        release();
+    }
+
     private class CLSamplerInfoAccessor extends CLInfoAccessor {
 
         @Override

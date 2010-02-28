@@ -40,6 +40,10 @@ public final class CLEventList implements CLResource, Iterable<CLEvent> {
         IDs.rewind();
     }
 
+    public void close() {
+        release();
+    }
+
     public CLEvent getEvent(int index) {
         if(index >= size)
             throw new IndexOutOfBoundsException("list contains "+size+" events, can not return event with index "+index);

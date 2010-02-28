@@ -378,6 +378,10 @@ public class CLContext extends CLObject implements CLResource {
         checkForError(ret, "error releasing context");
     }
 
+    public void close() {
+        release();
+    }
+
     /**
      * Returns the CLPlatform this context is running on.
      */

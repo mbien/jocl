@@ -643,7 +643,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         if(globalWorkSize != 0) {
             globWS = copy2NIO(bufferB, globalWorkSize);
         }
-        if(globalWorkSize != 0) {
+        if(localWorkSize != 0) {
             locWS = copy2NIO(bufferC, localWorkSize);
         }
 

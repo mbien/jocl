@@ -990,6 +990,15 @@ public class CLCommandQueue extends CLObject implements CLResource {
     }
 
     /**
+     * Calls {@native clFlush}.
+     */
+    public CLCommandQueue flush() {
+        int ret = cl.clFlush(ID);
+        checkForError(ret, "can not flush command queue");
+        return this;
+    }
+
+    /**
      * Returns true only when {@link Mode#PROFILING_MODE} has been enabled.
      */
     public boolean isProfilingEnabled() {

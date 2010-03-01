@@ -76,7 +76,17 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     }
 
     /**
-     * Returns the size of the wrapped direct buffer in byte.
+     * Returns the capacity of the wrapped direct buffer or 0 if no buffer available.
+     */
+    public int getCapacity() {
+        if(buffer == null) {
+            return 0;
+        }
+        return buffer.capacity();
+    }
+
+    /**
+     * Returns the size of the wrapped direct buffer in byte or 0 if no buffer available.
      */
     public int getSize() {
         if(buffer == null) {

@@ -82,6 +82,11 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         return this;
     }
 
+    public CLKernel putNullArg(int size) {
+        setNullArg(argIndex++, size);
+        return this;
+    }
+
     public CLKernel putArgs(CLMemory<?>... values) {
         setArgs(argIndex, values);
         argIndex += values.length;
@@ -123,6 +128,11 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         }else{
             setArgument(argumentIndex, 8, wrap(value));
         }
+        return this;
+    }
+
+    public CLKernel setNullArg(int argumentIndex, int size) {
+        setArgument(argumentIndex, size, null);
         return this;
     }
 

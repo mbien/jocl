@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.util.MultiQueueBarrier;
 import com.mbien.opencl.CLCommandQueue.Mode;
 import com.mbien.opencl.CLMemory.Mem;
 import java.io.IOException;
@@ -191,6 +192,8 @@ public class CLCommandQueueTest {
         final CLCommandQueue queue1 = devices[0           ].createCommandQueue();
         final CLCommandQueue queue2 = devices[secondDevice].createCommandQueue();
 
+        fillBuffer(clBufferC.buffer, 12345);
+
         if (secondDevice > 0) {
             System.out.println("using two devices");
         }
@@ -206,8 +209,8 @@ public class CLCommandQueueTest {
                 fillBuffer(clBufferB1.buffer, 67890);
 
 //                System.out.println("C buffer");
-                queue1.putWriteBuffer(clBufferA1, false) // write A
-                      .putWriteBuffer(clBufferB1, true); // write B
+                queue1.putWriteBuffer(clBufferA1, false)  // write A
+                      .putWriteBuffer(clBufferB1, false); // write B
 
 //                System.out.println("C args");
                 vectorAddKernel1.setArgs(clBufferA1, clBufferB1, clBufferC); // C = A+B
@@ -231,15 +234,15 @@ public class CLCommandQueueTest {
                 fillBuffer(clBufferB2.buffer, 67890);
 
 //                System.out.println("D buffer");
-                queue2.putWriteBuffer(clBufferA2, false) // write A
-                      .putWriteBuffer(clBufferB2, true); // write B
+                queue2.putWriteBuffer(clBufferA2, false)  // write A
+                      .putWriteBuffer(clBufferB2, false); // write B
 
 //                System.out.println("D args");
                 vectorAddKernel2.setArgs(clBufferA2, clBufferB2, clBufferD); // D = A+B
 
 //                System.out.println("D kernels");
                 CLEventList events2 = new CLEventList(2);
-                queue2.put1DRangeKernel(vectorAddKernel2, 0, elements, 256, events2)
+                queue2.put1DRangeKernel(vectorAddKernel2, 0, elements, groupSize, events2)
                       .putReadBuffer(clBufferD, false, events2);
 
                 barrier.waitFor(queue2, events2);

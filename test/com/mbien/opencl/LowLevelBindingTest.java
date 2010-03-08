@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
-import static com.mbien.opencl.CLUtils.*;
+import static com.mbien.opencl.util.CLUtil.*;
 import static com.sun.gluegen.runtime.BufferFactory.*;
 
 /**
@@ -52,13 +52,16 @@ public class LowLevelBindingTest {
 
     @Test
     public void contextlessTest() {
-        System.out.println("low level tests temporary disabled");
-/*
+        out.println("low level tests temporary disabled");
         out.println(" - - - lowLevelTest; contextless binding - - - ");
 
-        int ret = CL.CL_SUCCESS;
 
-        CL cl = CLPlatform.getLowLevelBinding();
+        CL cl = CLPlatform.getLowLevelCLInterface();
+
+        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clCreateFromGLBuffer").getLong());
+        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clEnqueueAcquireGLObjects").getLong());
+/*
+        int ret = CL.CL_SUCCESS;
 
         int[] intBuffer = new int[1];
         // find all available OpenCL platforms

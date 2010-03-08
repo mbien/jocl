@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.util.CLUtil;
 import com.sun.gluegen.runtime.BufferFactory;
 import com.sun.gluegen.runtime.CPU;
 import com.sun.gluegen.runtime.PointerBuffer;
@@ -17,6 +18,8 @@ import static com.mbien.opencl.CL.*;
  * function declared in a program and the argument values to be used when executing this
  * <code>kernel</code> function.
  * CLKernel is not threadsafe.
+ * @see CLProgram#createCLKernel(java.lang.String)
+ * @see CLProgram#createCLKernels()
  * @author Michael Bien
  */
 public class CLKernel extends CLObject implements CLResource, Cloneable {
@@ -47,7 +50,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
         checkForError(ret, "error while asking for kernel function name");
 
-        this.name = CLUtils.clString2JavaString(bb, bb.capacity());
+        this.name = CLUtil.clString2JavaString(bb, bb.capacity());
 
         // get number of arguments
         ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, bb.capacity(), bb, null);
@@ -56,6 +59,11 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         numArgs = bb.getInt(0);
 
     }
+
+//    public CLKernel putArg(Buffer value) {
+//        setArg(argIndex++, value);
+//        return this;
+//    }
     
     public CLKernel putArg(CLMemory<?> value) {
         setArg(argIndex++, value);
@@ -97,6 +105,11 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         argIndex = 0;
         return this;
     }
+
+//    public CLKernel setArg(int argumentIndex, Buffer value) {
+//        setArgument(argumentIndex, CLMemory.sizeOfBufferElem(value)*value.capacity(), value);
+//        return this;
+//    }
 
     public CLKernel setArg(int argumentIndex, CLMemory<?> value) {
         setArgument(argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));

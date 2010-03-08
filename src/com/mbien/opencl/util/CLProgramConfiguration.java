@@ -1,5 +1,7 @@
-package com.mbien.opencl;
+package com.mbien.opencl.util;
 
+import com.mbien.opencl.CLDevice;
+import com.mbien.opencl.CLProgram;
 import java.util.Map;
 
 /**
@@ -7,8 +9,8 @@ import java.util.Map;
  * CLProgramConfiguration is a helper for building programs with more complex configurations or
  * building multiple programs with the similar configuration.
  * @see CLProgram#prepare()
- * @see CLProgramBuilder#createConfiguration(com.mbien.opencl.CLProgram)
- * @see CLProgramBuilder#loadConfiguration(java.io.ObjectInputStream, com.mbien.opencl.CLContext)
+ * @see com.mbien.opencl.CLProgramBuilder#createConfiguration(com.mbien.opencl.CLProgram)
+ * @see com.mbien.opencl.CLProgramBuilder#loadConfiguration(java.io.ObjectInputStream, com.mbien.opencl.CLContext)
  * @author Michael Bien
  */
 public interface CLProgramConfiguration extends CLBuildConfiguration {

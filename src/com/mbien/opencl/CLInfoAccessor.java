@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.util.CLUtil;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -51,7 +52,7 @@ abstract class CLInfoAccessor {
         byte[] array = new byte[clSize-1]; // last char is always null
         buffer.get(array).rewind();
 
-        return CLUtils.clString2JavaString(array, clSize);
+        return CLUtil.clString2JavaString(array, clSize);
 
     }
 

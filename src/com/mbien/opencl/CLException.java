@@ -49,7 +49,7 @@ public class CLException extends RuntimeException {
             specificEx.fillInStackTrace();
             return specificEx;
         }
-        return new CLException(status, "unknown", "unknown cause: code" + status);
+        return new CLException(status, "unknown", "unknown cause: code " + status);
     }
 
     /**

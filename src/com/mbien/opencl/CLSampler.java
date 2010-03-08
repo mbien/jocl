@@ -5,10 +5,11 @@ import java.nio.Buffer;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
-import static com.mbien.opencl.CLUtils.*;
+import static com.mbien.opencl.util.CLUtil.*;
 
 /**
  * Object representing an OpenCL sampler.
+ * @see CLContext#createSampler(com.mbien.opencl.CLSampler.AddressingMode, com.mbien.opencl.CLSampler.FilteringMode, boolean) 
  * @author Michael Bien
  */
 public class CLSampler extends CLObject implements CLResource {

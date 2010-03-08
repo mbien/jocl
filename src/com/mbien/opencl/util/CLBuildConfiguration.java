@@ -1,5 +1,7 @@
-package com.mbien.opencl;
+package com.mbien.opencl.util;
 
+import com.mbien.opencl.CLDevice;
+import com.mbien.opencl.CLProgram;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Map;
@@ -7,8 +9,8 @@ import java.util.Map;
 /**
  * Configuration representing everything needed to build an OpenCL program.
  * @author Michael Bien
- * @see CLProgramBuilder#createConfiguration()
- * @see CLProgramBuilder#loadConfiguration(java.io.ObjectInputStream)
+ * @see com.mbien.opencl.CLProgramBuilder#createConfiguration()
+ * @see com.mbien.opencl.CLProgramBuilder#loadConfiguration(java.io.ObjectInputStream)
  */
 public interface CLBuildConfiguration extends Cloneable {
 

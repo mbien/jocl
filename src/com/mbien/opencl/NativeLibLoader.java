@@ -10,9 +10,8 @@ import com.sun.nativewindow.impl.NativeLibLoaderBase;
  */
 class NativeLibLoader extends NativeLibLoaderBase {
 
-    @SuppressWarnings("unchecked")
     public static void loadJOCL() {
-        AccessController.doPrivileged(new PrivilegedAction() {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
             public Object run() {
                 loadLibrary("jocl", null, true);
                 return null;

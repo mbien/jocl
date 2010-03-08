@@ -1,5 +1,8 @@
-package com.mbien.opencl;
+package com.mbien.opencl.util;
 
+import com.mbien.opencl.CL;
+import com.mbien.opencl.CLDevice;
+import com.mbien.opencl.CLPlatform;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -9,7 +12,7 @@ import java.util.Map;
  *
  * @author Michael Bien
  */
-class CLUtils {
+public class CLUtil {
 
     public static String clString2JavaString(byte[] chars, int clLength) {
         return clLength==0 ? "" : new String(chars, 0, clLength-1);

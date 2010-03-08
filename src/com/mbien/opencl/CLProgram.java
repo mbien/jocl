@@ -1,5 +1,7 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.util.CLProgramConfiguration;
+import com.mbien.opencl.util.CLUtil;
 import com.sun.gluegen.runtime.BufferFactory;
 import com.sun.gluegen.runtime.CPU;
 import com.sun.gluegen.runtime.PointerBuffer;
@@ -25,6 +27,8 @@ import static com.mbien.opencl.CL.*;
  * @author Michael Bien
  */
 public class CLProgram extends CLObject implements CLResource {
+
+//    private final static Object buildLock = new Object();
     
     private final Set<CLKernel> kernels;
     private Map<CLDevice, Status> buildStatusMap;
@@ -87,16 +91,18 @@ public class CLProgram extends CLObject implements CLResource {
     private void initBuildStatus() {
 
         if(buildStatusMap == null) {
-            Map<CLDevice, Status> map = new HashMap<CLDevice, Status>();
-            CLDevice[] devices = getCLDevices();
-            for (CLDevice device : devices) {
-                Status status = getBuildStatus(device);
-                if(status == Status.BUILD_SUCCESS) {
-                    executable = true;
+//            synchronized(buildLock) {
+                Map<CLDevice, Status> map = new HashMap<CLDevice, Status>();
+                CLDevice[] devices = getCLDevices();
+                for (CLDevice device : devices) {
+                    Status status = getBuildStatus(device);
+                    if(status == Status.BUILD_SUCCESS) {
+                        executable = true;
+                    }
+                    map.put(device, status);
                 }
-                map.put(device, status);
-            }
-            this.buildStatusMap = Collections.unmodifiableMap(map);
+                this.buildStatusMap = Collections.unmodifiableMap(map);
+//            }
         }
     }
 
@@ -116,7 +122,7 @@ public class CLProgram extends CLObject implements CLResource {
         ret = cl.clGetProgramBuildInfo(ID, device, flag, bb.capacity(), bb, null);
         checkForError(ret, "on clGetProgramBuildInfo");
 
-        return CLUtils.clString2JavaString(bb, (int)pb.get(0));
+        return CLUtil.clString2JavaString(bb, (int)pb.get(0));
     }
 
     private String getProgramInfoString(int flag) {
@@ -135,7 +141,7 @@ public class CLProgram extends CLObject implements CLResource {
         ret = cl.clGetProgramInfo(ID, flag, bb.capacity(), bb, null);
         checkForError(ret, "on clGetProgramInfo");
 
-        return CLUtils.clString2JavaString(bb, (int)pb.get(0));
+        return CLUtil.clString2JavaString(bb, (int)pb.get(0));
     }
 
 //    private int getProgramInfoInt(int flag) {
@@ -238,7 +244,11 @@ public class CLProgram extends CLObject implements CLResource {
         executable = false;
 
         // Build the program
-        int ret = cl.clBuildProgram(ID, count, deviceIDs, options, null, null);
+        int ret = 0;
+        // building programs is not threadsafe
+//        synchronized(buildLock) {
+            ret = cl.clBuildProgram(ID, count, deviceIDs, options, null, null);
+//        }
 
         if(ret != CL_SUCCESS) {
             throw newException(ret, "\n"+getBuildLog());

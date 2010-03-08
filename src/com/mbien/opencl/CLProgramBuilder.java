@@ -1,5 +1,7 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.util.CLBuildConfiguration;
+import com.mbien.opencl.util.CLProgramConfiguration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

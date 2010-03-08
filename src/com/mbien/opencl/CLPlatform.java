@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.util.CLUtil;
 import com.mbien.opencl.impl.CLImpl;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -243,7 +244,7 @@ public final class CLPlatform {
         int ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, pb);
         checkForError(ret, "can not receive info string");
 
-        return CLUtils.clString2JavaString(bb, (int)pb.get(0));
+        return CLUtil.clString2JavaString(bb, (int)pb.get(0));
     }
 
     @Override

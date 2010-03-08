@@ -9,7 +9,7 @@ import java.util.List;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
-import static com.mbien.opencl.CLUtils.*;
+import static com.mbien.opencl.util.CLUtil.*;
 
 /**
  * The command queue is used to queue a set of operations for a specific {@link CLDevice}.

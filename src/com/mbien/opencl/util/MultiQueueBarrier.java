@@ -1,5 +1,7 @@
-package com.mbien.opencl;
+package com.mbien.opencl.util;
 
+import com.mbien.opencl.CLCommandQueue;
+import com.mbien.opencl.CLEventList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,7 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A high-level utility to synchronize multiple {@link CLCommandQueue}s.
+ * An utility for synchronizing multiple concurrent {@link CLCommandQueue}s.
  * @author Michael Bien
  */
 public class MultiQueueBarrier {

@@ -202,6 +202,7 @@
         <!-- download new headers from OpenCL registry if necessary -->
         <update-headers header="${headers.orig}/cl.h" url="${registry.url}cl.h"/>
         <update-headers header="${headers.orig}/cl_gl.h" url="${registry.url}cl_gl.h"/>
+        <update-headers header="${headers.orig}/cl_gl_ext.h" url="${registry.url}cl_gl_ext.h"/>
         <update-headers header="${headers.orig}/cl_ext.h" url="${registry.url}cl_ext.h"/>
         <update-headers header="${headers.orig}/cl_platform.h" url="${registry.url}cl_platform.h"/>
 
@@ -218,6 +219,7 @@
         <!--nothing to uncomment in this headers-->
         <copy file="${headers.orig}/cl_platform.h" toDir="${headers.dest}" overwrite="true"/>
         <copy file="${headers.orig}/cl_ext.h" toDir="${headers.dest}" overwrite="true"/>
+        <copy file="${headers.orig}/cl_gl_ext.h" toDir="${headers.dest}" overwrite="true"/>
         <copy file="${headers.orig}/cl_vendor_ext.h" toDir="${headers.dest}" overwrite="true"/>
 
     </target>

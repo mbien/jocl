@@ -13,3 +13,4 @@
 //#include    <GL/gl.h>
 #include    <gltypes.h>
 #include    <CL/cl_gl.h>
+#include    <CL/cl_gl_ext.h>

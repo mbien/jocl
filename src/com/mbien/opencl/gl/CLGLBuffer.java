@@ -3,7 +3,6 @@ package com.mbien.opencl.gl;
 import com.mbien.opencl.CL;
 import com.mbien.opencl.CLBuffer;
 import com.mbien.opencl.CLContext;
-import com.mbien.opencl.CLGLI;
 import com.mbien.opencl.CLMemory.GLObjectType;
 import java.nio.Buffer;
 

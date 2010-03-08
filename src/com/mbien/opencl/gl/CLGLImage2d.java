@@ -2,7 +2,6 @@ package com.mbien.opencl.gl;
 
 import com.mbien.opencl.CL;
 import com.mbien.opencl.CLContext;
-import com.mbien.opencl.CLGLI;
 import com.mbien.opencl.CLImage2d;
 import com.mbien.opencl.CLImageFormat;
 import com.mbien.opencl.CLMemory.GLObjectType;

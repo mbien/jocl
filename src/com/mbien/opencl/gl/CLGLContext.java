@@ -13,7 +13,7 @@ import com.sun.opengl.impl.x11.glx.X11GLXContext;
 import javax.media.nativewindow.DefaultGraphicsConfiguration;
 import javax.media.opengl.GLContext;
 
-import static com.mbien.opencl.CLGLI.*;
+import static com.mbien.opencl.gl.CLGLI.*;
 
 /**
  * OpenCL Context supporting JOGL-JOCL interoperablity.

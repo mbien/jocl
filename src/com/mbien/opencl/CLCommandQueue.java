@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.gl.CLGLI;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

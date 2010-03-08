@@ -382,6 +382,10 @@ public class CLContext extends CLObject implements CLResource {
         release();
     }
 
+    protected void overrideContext(CLDevice device) {
+        device.setContext(this);
+    }
+
     /**
      * Returns the CLPlatform this context is running on.
      */

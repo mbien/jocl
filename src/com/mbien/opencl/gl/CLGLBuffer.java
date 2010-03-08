@@ -1,5 +1,9 @@
-package com.mbien.opencl;
+package com.mbien.opencl.gl;
 
+import com.mbien.opencl.CL;
+import com.mbien.opencl.CLBuffer;
+import com.mbien.opencl.CLContext;
+import com.mbien.opencl.CLGLI;
 import com.mbien.opencl.CLMemory.GLObjectType;
 import java.nio.Buffer;
 
@@ -25,7 +29,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
     static <B extends Buffer> CLGLBuffer<B> create(CLContext context, B directBuffer, int flags, int glObject) {
         checkBuffer(directBuffer, flags);
         
-        CL cl = context.cl;
+        CL cl = getCL(context);
         int[] result = new int[1];
         CLGLI clgli = (CLGLI)cl;
         

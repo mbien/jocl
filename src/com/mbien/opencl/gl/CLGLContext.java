@@ -1,7 +1,10 @@
-package com.mbien.opencl;
+package com.mbien.opencl.gl;
 
+import com.mbien.opencl.CLContext;
+import com.mbien.opencl.CLDevice;
 import java.nio.Buffer;
 import com.mbien.opencl.CLMemory.Mem;
+import com.mbien.opencl.CLPlatform;
 import com.sun.gluegen.runtime.PointerBuffer;
 import com.sun.opengl.impl.GLContextImpl;
 import com.sun.opengl.impl.macosx.cgl.MacOSXCGLContext;
@@ -90,7 +93,7 @@ public final class CLGLContext extends CLContext {
         CLGLContext context = new CLGLContext(platform, clID, glID[0]);
         if(devices != null) {
             for (int i = 0; i < devices.length; i++) {
-                devices[i].setContext(context);
+                context.overrideContext(devices[i]);
             }
         }
         return context;

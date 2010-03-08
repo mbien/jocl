@@ -32,7 +32,7 @@ abstract class CLInfoAccessor {
 
     };
 
-    final long getLong(int key) {
+    public final long getLong(int key) {
 
         ByteBuffer buffer = localBB.get();
         int ret = getInfo(key, 8, buffer, null);
@@ -41,7 +41,7 @@ abstract class CLInfoAccessor {
         return buffer.getLong(0);
     }
 
-    final String getString(int key) {
+    public final String getString(int key) {
         
         ByteBuffer buffer = localBB.get();
         PointerBuffer pbuffer = localPB.get();

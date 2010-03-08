@@ -30,6 +30,10 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
         this.height = height;
     }
 
+    protected static CLImageFormat createUninitializedImageFormat() {
+        return new CLImageFormat();
+    }
+
     /**
      * Returns the image format descriptor specified when image was created.
      */
@@ -77,7 +81,7 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
             this.id = id;
         }
         @Override
-        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+        public int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
             return cl.clGetImageInfo(id, name, valueSize, value, valueSizeRet);
         }
     }

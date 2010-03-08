@@ -69,25 +69,25 @@ public interface CLBuildConfiguration extends Cloneable {
 
     /**
      * Adds the definitions to the build configuration.
-     * @see CLProgram#define(java.lang.String)
+     * @see com.mbien.opencl.CLProgram#define(java.lang.String)
      */
     public CLBuildConfiguration withDefines(String... names);
 
     /**
      * Adds the definitions to the build configuration.
-     * @see CLProgram#define(java.lang.String, java.lang.Object)
+     * @see com.mbien.opencl.CLProgram#define(java.lang.String, java.lang.Object)
      */
     public CLBuildConfiguration withDefines(Map<String, ? extends Object> defines);
 
     /**
      * Adds the compiler option to the build configuration.
-     * @see CLProgram.CompilerOptions
+     * @see com.mbien.opencl.CLProgram.CompilerOptions
      */
     public CLBuildConfiguration withOption(String option);
 
     /**
      * Adds the compiler options to the build configuration.
-     * @see CLProgram.CompilerOptions
+     * @see com.mbien.opencl.CLProgram.CompilerOptions
      */
     public CLBuildConfiguration withOptions(String... options);
 

@@ -52,6 +52,10 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         throw new RuntimeException("Unexpected buffer type " + buffer.getClass().getName());
     }
 
+    protected static CL getCL(CLContext context) {
+        return context.cl;
+    }
+
     /**
      * Returns a new instance of CLMemory pointing to the same CLResource but using a different Buffer.
      */
@@ -250,7 +254,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
             return null;
         }
 
-        static int flagsToInt(Mem[] flags) {
+        public static int flagsToInt(Mem[] flags) {
             int clFlags = 0;
             if (flags != null) {
                 for (int i = 0; i < flags.length; i++) {

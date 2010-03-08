@@ -1,6 +1,9 @@
-package com.mbien.opencl;
+package com.mbien.opencl.gl;
 
-import com.mbien.opencl.CLImage.CLImageInfoAccessor;
+import com.mbien.opencl.CL;
+import com.mbien.opencl.CLContext;
+import com.mbien.opencl.CLGLI;
+import com.mbien.opencl.CLImageFormat;
 import com.mbien.opencl.CLMemory.GLObjectType;
 import com.mbien.opencl.impl.CLImageFormatImpl;
 import java.nio.Buffer;
@@ -27,7 +30,7 @@ public class CLGLTexture2d<B extends Buffer> extends CLGLImage2d<B> implements C
 
         CLGLBuffer.checkBuffer(directBuffer, flags);
 
-        CL cl = context.cl;
+        CL cl = getCL(context);
         int[] result = new int[1];
         CLGLI clgli = (CLGLI)cl;
 
@@ -35,7 +38,7 @@ public class CLGLTexture2d<B extends Buffer> extends CLGLImage2d<B> implements C
 
         CLImageInfoAccessor accessor = new CLImageInfoAccessor(cl, id);
 
-        CLImageFormat format = new CLImageFormat();
+        CLImageFormat format = createUninitializedImageFormat();
         accessor.getInfo(CL_IMAGE_FORMAT, CLImageFormatImpl.size(), format.getFormatImpl().getBuffer(), null);
 
         int width = (int)accessor.getLong(CL_IMAGE_WIDTH);

@@ -1,7 +1,7 @@
 /*
  * Created on Friday, February 26 2010
  */
-package com.mbien.opencl;
+package com.mbien.opencl.gl;
 
 import com.mbien.opencl.CLMemory.GLObjectType;
 

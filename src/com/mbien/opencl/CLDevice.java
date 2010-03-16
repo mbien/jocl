@@ -355,6 +355,13 @@ public final class CLDevice extends CLObject {
     }
 
     /**
+     * Returns the execution capabilities as EnumSet.
+     */
+    public EnumSet<Capabilities> getExecutionCapabilities() {
+        return Capabilities.valuesOf((int)deviceInfo.getLong(CL_DEVICE_EXECUTION_CAPABILITIES));
+    }
+
+    /**
      * Returns the optional half precision floating-point capability of the device.
      * The required minimum half precision floating-point capabilities as implemented by this
      * extension are {@link FPConfig#ROUND_TO_ZERO}, {@link FPConfig#ROUND_TO_INF}
@@ -432,7 +439,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns true if the OpenCL device is a little endian device and false otherwise.
      */
-    public boolean isLittleEndianAvailable() {
+    public boolean isLittleEndian() {
         return deviceInfo.getLong(CL_DEVICE_ENDIAN_LITTLE) == CL_TRUE;
     }
 
@@ -543,6 +550,55 @@ public final class CLDevice extends CLObject {
         int hash = 3;
         hash = 79 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
+    }
+
+    /**
+     * Enumeration for the execution capabilities of the device.
+     */
+    public enum Capabilities {
+
+        /**
+         * The OpenCL device can execute OpenCL kernels.
+         */
+        EXEC_KERNEL(CL_EXEC_KERNEL),
+
+        /**
+         * The OpenCL device can execute native kernels.
+         */
+        EXEC_NATIVE_KERNEL(CL_EXEC_NATIVE_KERNEL);
+
+        /**
+         * Value of wrapped OpenCL device type.
+         */
+        public final int CAPS;
+
+        private Capabilities(int type) {
+            this.CAPS = type;
+        }
+
+        public static Capabilities valueOf(int caps) {
+            switch(caps) {
+                case(CL_EXEC_KERNEL):
+                    return EXEC_KERNEL;
+                case(CL_EXEC_NATIVE_KERNEL):
+                    return EXEC_NATIVE_KERNEL;
+            }
+            return null;
+        }
+
+        public static EnumSet<Capabilities> valuesOf(int bitfield) {
+            if((EXEC_KERNEL.CAPS & bitfield) != 0) {
+                if((EXEC_NATIVE_KERNEL.CAPS & bitfield) != 0) {
+                    return EnumSet.of(EXEC_KERNEL, EXEC_NATIVE_KERNEL);
+                }else{
+                    return EnumSet.of(EXEC_KERNEL);
+                }
+            }else if((EXEC_NATIVE_KERNEL.CAPS & bitfield) != 0){
+                return EnumSet.of(EXEC_NATIVE_KERNEL);
+            }
+            return null;
+        }
+
     }
 
     /**

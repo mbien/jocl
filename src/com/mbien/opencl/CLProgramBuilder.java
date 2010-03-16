@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * CLProgramBuilder is a helper for building programs with more complex configurations or
- * building multiple programs with the same configuration.
+ * building multiple programs with similar configurations.
  * @see CLProgram#prepare()
  * @see #createConfiguration()
  * @see #createConfiguration(com.mbien.opencl.CLProgram)

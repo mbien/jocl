@@ -93,11 +93,12 @@ public class CLUtil {
         map.put("CL_DEVICE_IMAGE2D_MAX_DIMENSIONS", Arrays.asList(dev.getMaxImage2dWidth(), dev.getMaxImage2dHeight()).toString());
         map.put("CL_DEVICE_IMAGE3D_MAX_DIMENSIONS", Arrays.asList(dev.getMaxImage2dWidth(), dev.getMaxImage2dHeight(), dev.getMaxImage3dDepth()).toString());
         map.put("CL_DEVICE_MAX_SAMPLERS",           dev.getMaxSamplers()+"");
+        map.put("CL_DEVICE_EXECUTION_CAPABILITIES", dev.getExecutionCapabilities()+"");
 
         map.put("CL_DEVICE_ADDRESS_BITS",   dev.getAddressBits()+"");
         map.put("cl_khr_fp16",              dev.isHalfFPAvailable()+"");
         map.put("cl_khr_fp64",              dev.isDoubleFPAvailable()+"");
-        map.put("CL_DEVICE_ENDIAN_LITTLE",  dev.isLittleEndianAvailable()+"");
+        map.put("CL_DEVICE_ENDIAN_LITTLE",  dev.isLittleEndian()+"");
         map.put("CL_DEVICE_HALF_FP_CONFIG", dev.getHalfFPConfig()+"");
         map.put("CL_DEVICE_SINGLE_FP_CONFIG", dev.getSingleFPConfig()+"");
         map.put("CL_DEVICE_DOUBLE_FP_CONFIG", dev.getDoubleFPConfig()+"");

@@ -10,6 +10,7 @@ import com.mbien.opencl.CLDevice.FPConfig;
 import com.mbien.opencl.CLDevice.GlobalMemCacheType;
 import com.mbien.opencl.CLDevice.LocalMemType;
 import com.mbien.opencl.CLDevice.Type;
+import com.mbien.opencl.CLDevice.Capabilities;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -59,6 +60,9 @@ public class HighLevelBindingTest {
         }
         for (Type e : Type.values()) {
             assertEquals(e, Type.valueOf(e.TYPE));
+        }
+        for (Capabilities e : Capabilities.values()) {
+            assertEquals(e, Capabilities.valueOf(e.CAPS));
         }
 
         // CLMemory enums
@@ -145,10 +149,11 @@ public class HighLevelBindingTest {
                 out.println("    number of address bits: "+device.getAddressBits());
                 out.println("    half FP available: "+device.isHalfFPAvailable());
                 out.println("    double FP available: "+device.isDoubleFPAvailable());
-                out.println("    little endian: "+device.isLittleEndianAvailable());
+                out.println("    little endian: "+device.isLittleEndian());
                 out.println("    half FP config: "+device.getHalfFPConfig());
                 out.println("    single FP config: "+device.getSingleFPConfig());
                 out.println("    double FP config: "+device.getDoubleFPConfig());
+                out.println("    execution capabilities: "+device.getExecutionCapabilities());
                 out.println("    extensions: "+device.getExtensions());
             }
         }

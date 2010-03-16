@@ -7,6 +7,7 @@ import com.mbien.opencl.CLImageFormat;
 import com.mbien.opencl.CLMemory.GLObjectType;
 import com.mbien.opencl.impl.CLImageFormatImpl;
 import java.nio.Buffer;
+import javax.media.opengl.GLContext;
 
 import static com.mbien.opencl.CL.*;
 
@@ -59,6 +60,15 @@ public class CLGLImage2d<B extends Buffer> extends CLImage2d<B> implements CLGLO
     @Override
     public int getGLObjectID() {
         return GLID;
+    }
+
+    @Override
+    public CLGLContext getContext() {
+        return (CLGLContext) super.getContext();
+    }
+
+    public GLContext getGLContext() {
+        return getContext().getGLContext();
     }
 
 }

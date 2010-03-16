@@ -22,10 +22,12 @@ import static com.mbien.opencl.gl.CLGLI.*;
 public final class CLGLContext extends CLContext {
 
     final long glID;
+    private final GLContext glContext;
 
-    private CLGLContext(CLPlatform platform, long clContextID, long glContextID) {
+    private CLGLContext(CLPlatform platform, GLContext glContext, long clContextID, long glContextID) {
         super(platform, clContextID);
         this.glID = glContextID;
+        this.glContext = glContext;
     }
 
     /**
@@ -72,7 +74,7 @@ public final class CLGLContext extends CLContext {
         PointerBuffer properties = setupContextProperties(platform, glContext, glID);
         long clID = createContextFromType(properties, toDeviceBitmap(deviceTypes));
 
-        return new CLGLContext(platform, clID, glID[0]);
+        return new CLGLContext(platform, glContext, clID, glID[0]);
 
     }
 
@@ -90,7 +92,7 @@ public final class CLGLContext extends CLContext {
         PointerBuffer properties = setupContextProperties(platform, glContext, glID);
         long clID = createContext(properties, devices);
 
-        CLGLContext context = new CLGLContext(platform, clID, glID[0]);
+        CLGLContext context = new CLGLContext(platform, glContext, clID, glID[0]);
         if(devices != null) {
             for (int i = 0; i < devices.length; i++) {
                 context.overrideContext(devices[i]);
@@ -225,5 +227,24 @@ public final class CLGLContext extends CLContext {
         return buffer;
     }
 
+    /**
+     * Return the low level OpenCL interface with OpenGL interoperability.
+     */
+    @Override
+    public CLGLI getCL() {
+        return (CLGLI)super.getCL();
+    }
+
+    /**
+     * Returns the OpenGL context this context was shared with.
+     */
+    public GLContext getGLContext() {
+        return glContext;
+    }
+
+    @Override
+    public CLGLContext getContext() {
+        return this;
+    }
 
 }

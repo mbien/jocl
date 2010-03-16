@@ -8,7 +8,7 @@ package com.mbien.opencl.gl;
  *
  * @author Michael Bien
  */
-interface CLGLTexture {
+interface CLGLTexture extends CLGLObject {
 
     /**
      * Returns the OpenGL texture target of this texture.

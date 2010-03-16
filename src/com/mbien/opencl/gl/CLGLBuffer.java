@@ -5,6 +5,7 @@ import com.mbien.opencl.CLBuffer;
 import com.mbien.opencl.CLContext;
 import com.mbien.opencl.CLMemory.GLObjectType;
 import java.nio.Buffer;
+import javax.media.opengl.GLContext;
 
 
 /**
@@ -52,6 +53,15 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
 
     public GLObjectType getGLObjectType() {
         return GLObjectType.GL_OBJECT_BUFFER;
+    }
+
+    @Override
+    public CLGLContext getContext() {
+        return (CLGLContext) super.getContext();
+    }
+
+    public GLContext getGLContext() {
+        return getContext().getGLContext();
     }
 
     @Override

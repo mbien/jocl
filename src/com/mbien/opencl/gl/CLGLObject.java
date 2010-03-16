@@ -4,6 +4,7 @@
 package com.mbien.opencl.gl;
 
 import com.mbien.opencl.CLMemory.GLObjectType;
+import javax.media.opengl.GLContext;
 
 /**
  *
@@ -20,5 +21,15 @@ interface CLGLObject {
      * Returns the OpenGL buffer type of this shared object.
      */
     public GLObjectType getGLObjectType();
+    
+    /**
+     * Returns the OpenCL context of this shared object.
+     */
+    public CLGLContext getContext();
+
+    /**
+     * Returns the OpenGL context of this shared object.
+     */
+    public GLContext getGLContext();
 
 }

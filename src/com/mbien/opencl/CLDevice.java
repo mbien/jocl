@@ -416,7 +416,7 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns the command-queue properties properties supported by the device.
+     * Returns the command-queue properties supported by the device.
      */
     public EnumSet<CLCommandQueue.Mode> getQueueProperties() {
         return CLCommandQueue.Mode.valuesOf((int)deviceInfo.getLong(CL_DEVICE_QUEUE_PROPERTIES));
@@ -455,27 +455,27 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns {@link #getExtensions()}.contains("cl_khr_fp16");
+     * Returns {@link #isExtensionAvailable("cl_khr_fp16");
      * @see #getExtensions()
      */
     public boolean isHalfFPAvailable() {
-        return getExtensions().contains("cl_khr_fp16");
+        return isExtensionAvailable("cl_khr_fp16");
     }
 
     /**
-     * Returns {@link #getExtensions()}.contains("cl_khr_fp64");
+     * Returns {@link #isExtensionAvailable("cl_khr_fp64");
      * @see #getExtensions()
      */
     public boolean isDoubleFPAvailable() {
-        return getExtensions().contains("cl_khr_fp64");
+        return isExtensionAvailable("cl_khr_fp64");
     }
 
     /**
-     * Returns {@link #getExtensions()}.contains("cl_khr_gl_sharing");
+     * Returns {@link #isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_apple_gl_sharing");
      * @see #getExtensions()
      */
     public boolean isGLMemorySharingSupported() {
-        return getExtensions().contains("cl_khr_gl_sharing");
+        return isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_apple_gl_sharing");
     }
 
     /**

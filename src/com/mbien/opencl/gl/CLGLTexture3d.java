@@ -7,6 +7,7 @@ import com.mbien.opencl.CLImageFormat;
 import com.mbien.opencl.CLMemory.GLObjectType;
 import com.mbien.opencl.impl.CLImageFormatImpl;
 import java.nio.Buffer;
+import javax.media.opengl.GLContext;
 
 import static com.mbien.opencl.CL.*;
 
@@ -68,6 +69,19 @@ public class CLGLTexture3d<B extends Buffer> extends CLImage3d<B> implements CLG
 
     public GLObjectType getGLObjectType() {
         return GLObjectType.GL_OBJECT_TEXTURE3D;
+    }
+
+    /**
+     * Returns the shared CLGLContext.
+     */
+    @Override
+    public CLGLContext getContext() {
+        return (CLGLContext) super.getContext();
+    }
+
+    @Override
+    public GLContext getGLContext() {
+        return getContext().getGLContext();
     }
 
 }

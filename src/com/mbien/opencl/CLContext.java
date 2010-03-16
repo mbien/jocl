@@ -447,6 +447,13 @@ public class CLContext extends CLObject implements CLResource {
         return devices;
     }
 
+    /**
+     * Return the low level OpenCL interface.
+     */
+    public CL getCL() {
+        return cl;
+    }
+
     CLDevice getDevice(long dID) {
         CLDevice[] deviceArray = getDevices();
         for (int i = 0; i < deviceArray.length; i++) {

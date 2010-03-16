@@ -19,8 +19,8 @@ public class CLGLTexture2d<B extends Buffer> extends CLGLImage2d<B> implements C
     
     public final int mipMapLevel;
 
-    public CLGLTexture2d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int target, int mipLevel, int width, int height, long id, int glid) {
-        super(context, directBuffer, format, accessor, width, height, id, glid);
+    public CLGLTexture2d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int target, int mipLevel, int width, int height, long id, int glid, int flags) {
+        super(context, directBuffer, format, accessor, width, height, id, glid, flags);
         this.target = target;
         this.mipMapLevel = mipLevel;
     }
@@ -43,7 +43,7 @@ public class CLGLTexture2d<B extends Buffer> extends CLGLImage2d<B> implements C
         int width = (int)accessor.getLong(CL_IMAGE_WIDTH);
         int height = (int)accessor.getLong(CL_IMAGE_HEIGHT);
 
-        return new CLGLTexture2d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, id, width);
+        return new CLGLTexture2d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, id, width, flags);
 
     }
 

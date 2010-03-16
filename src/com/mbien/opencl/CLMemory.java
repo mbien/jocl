@@ -9,6 +9,9 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.gl.CLGLI.*;
@@ -20,14 +23,17 @@ import static com.mbien.opencl.gl.CLGLI.*;
 public abstract class CLMemory <B extends Buffer> extends CLObject implements CLResource {
     
     B buffer;
+    protected final int FLAGS;
     
-    protected <Buffer> CLMemory(CLContext context, long id) {
+    protected <Buffer> CLMemory(CLContext context, long id, int flags) {
         super(context, id);
+        this.FLAGS = flags;
     }
     
-    protected CLMemory(CLContext context, B directBuffer, long id) {
+    protected CLMemory(CLContext context, B directBuffer, long id, int flags) {
         super(context, id);
         this.buffer = directBuffer;
+        this.FLAGS = flags;
     }
 
     /**
@@ -108,6 +114,34 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         int ret = cl.clGetMemObjectInfo(ID, CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
         checkForError(ret, "can not obtain buffer info");
         return pb.get();
+    }
+
+    /**
+     * Returns the configuration of this memory object.
+     */
+    public EnumSet<Mem> getConfig() {
+        return Mem.valuesOf(FLAGS);
+    }
+
+    /**
+     * Returns true if this memory object was created with the {@link Mem#READ_ONLY} flag.
+     */
+    public boolean isReadOnly() {
+        return (Mem.READ_ONLY.CONFIG & FLAGS) != 0;
+    }
+
+    /**
+     * Returns true if this memory object was created with the {@link Mem#WRITE_ONLY} flag.
+     */
+    public boolean isWriteOnly() {
+        return (Mem.WRITE_ONLY.CONFIG & FLAGS) != 0;
+    }
+
+    /**
+     * Returns true if this memory object was created with the {@link Mem#READ_WRITE} flag.
+     */
+    public boolean isReadWrite() {
+        return (Mem.READ_WRITE.CONFIG & FLAGS) != 0;
     }
 
     public void release() {
@@ -253,6 +287,19 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
                     return Mem.COPY_BUFFER;
             }
             return null;
+        }
+
+        public static EnumSet<Mem> valuesOf(int bitfield) {
+            List<Mem> matching = new ArrayList<Mem>();
+            Mem[] values = Mem.values();
+            for (Mem value : values) {
+                if((value.CONFIG & bitfield) != 0)
+                    matching.add(value);
+            }
+            if(matching.isEmpty())
+                return EnumSet.noneOf(Mem.class);
+            else
+                return EnumSet.copyOf(matching);
         }
 
         public static int flagsToInt(Mem[] flags) {

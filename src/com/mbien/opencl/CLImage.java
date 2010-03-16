@@ -18,12 +18,12 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
     public final int width;
     public final int height;
 
-    protected CLImage(CLContext context, B directBuffer, CLImageFormat format, int width, int height, long id) {
-        this(context, directBuffer, format, new CLImageInfoAccessor(context.cl, id), width, height, id);
+    protected CLImage(CLContext context, B directBuffer, CLImageFormat format, int width, int height, long id, int flags) {
+        this(context, directBuffer, format, new CLImageInfoAccessor(context.cl, id), width, height, id, flags);
     }
 
-    protected CLImage(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id) {
-        super(context, directBuffer, id);
+    protected CLImage(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id, int flags) {
+        super(context, directBuffer, id, flags);
         this.imageInfo = accessor;
         this.format = format;
         this.width = width;

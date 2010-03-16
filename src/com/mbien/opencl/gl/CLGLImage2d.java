@@ -21,8 +21,8 @@ public class CLGLImage2d<B extends Buffer> extends CLImage2d<B> implements CLGLO
      */
     public final int GLID;
 
-    protected CLGLImage2d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id, int glid) {
-        super(context, directBuffer, format, accessor, width, height, id);
+    protected CLGLImage2d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id, int glid, int flags) {
+        super(context, directBuffer, format, accessor, width, height, id, flags);
         this.GLID = glid;
     }
 
@@ -36,10 +36,10 @@ public class CLGLImage2d<B extends Buffer> extends CLImage2d<B> implements CLGLO
 
         long id = clgli.clCreateFromGLRenderbuffer(context.ID, flags, glObject, result, 0);
 
-        return createImage(context, id, directBuffer, glObject);
+        return createImage(context, id, directBuffer, glObject, flags);
     }
 
-    static <B extends Buffer> CLGLImage2d<B> createImage(CLContext context, long id, B directBuffer, int glObject) {
+    static <B extends Buffer> CLGLImage2d<B> createImage(CLContext context, long id, B directBuffer, int glObject, int flags) {
         CLImageInfoAccessor accessor = new CLImageInfoAccessor(getCL(context), id);
 
         CLImageFormat format = createUninitializedImageFormat();
@@ -48,7 +48,7 @@ public class CLGLImage2d<B extends Buffer> extends CLImage2d<B> implements CLGLO
         int width = (int)accessor.getLong(CL_IMAGE_WIDTH);
         int height = (int)accessor.getLong(CL_IMAGE_HEIGHT);
 
-        return new CLGLImage2d<B>(context, directBuffer, format, accessor, width, height, id, glObject);
+        return new CLGLImage2d<B>(context, directBuffer, format, accessor, width, height, id, glObject, flags);
     }
 
     @Override

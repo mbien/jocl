@@ -154,6 +154,7 @@ public class HighLevelBindingTest {
                 out.println("    single FP config: "+device.getSingleFPConfig());
                 out.println("    double FP config: "+device.getDoubleFPConfig());
                 out.println("    execution capabilities: "+device.getExecutionCapabilities());
+                out.println("    gl memory sharing: "+device.isGLMemorySharingSupported());
                 out.println("    extensions: "+device.getExtensions());
             }
         }

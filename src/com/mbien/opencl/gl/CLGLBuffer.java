@@ -19,8 +19,8 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
      */
     public final int GLID;
 
-    private CLGLBuffer(CLContext context, B directBuffer, long id, int glObject) {
-        super(context, directBuffer, id);
+    private CLGLBuffer(CLContext context, B directBuffer, long id, int glObject, int flags) {
+        super(context, directBuffer, id, flags);
         this.GLID = glObject;
     }
 
@@ -34,7 +34,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
         
         long id = clgli.clCreateFromGLBuffer(context.ID, flags, glObject, result, 0);
 
-        return new CLGLBuffer<B>(context, directBuffer, id, glObject);
+        return new CLGLBuffer<B>(context, directBuffer, id, glObject, flags);
     }
 
     static <B extends Buffer> void checkBuffer(B directBuffer, int flags) throws IllegalArgumentException {
@@ -56,7 +56,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
 
     @Override
     public <T extends Buffer> CLGLBuffer<T> cloneWith(T directBuffer) {
-        return new CLGLBuffer<T>(context, directBuffer, ID, GLID);
+        return new CLGLBuffer<T>(context, directBuffer, ID, GLID, FLAGS);
     }
 
     @Override

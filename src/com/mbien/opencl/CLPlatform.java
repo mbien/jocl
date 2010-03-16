@@ -6,8 +6,11 @@ import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -92,7 +95,7 @@ public final class CLPlatform {
 
     /**
      * Lists all physical devices available on this platform.
-     * @see #listCLDevices(com.mbien.opencl.CLDevice.Type)
+     * @see #listCLDevices(com.mbien.opencl.CLDevice.Type...)
      */
     public CLDevice[] listCLDevices() {
         return this.listCLDevices(CLDevice.Type.ALL);
@@ -101,29 +104,37 @@ public final class CLPlatform {
     /**
      * Lists all physical devices available on this platform matching the given {@link CLDevice.Type}.
      */
-    public CLDevice[] listCLDevices(CLDevice.Type type) {
+    public CLDevice[] listCLDevices(CLDevice.Type... types) {
 
         IntBuffer ib = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 
-        //find all devices
-        int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, ib);
+        List<CLDevice> list = new ArrayList<CLDevice>();
+        for(int t = 0; t < types.length; t++) {
+            CLDevice.Type type = types[t];
 
-        // return an empty array rather than throwing an exception
-        if(ret == CL.CL_DEVICE_NOT_FOUND) {
-            return new CLDevice[0];
+            //find all devices
+            int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, ib);
+
+            // return an empty array rather than throwing an exception
+            if(ret == CL.CL_DEVICE_NOT_FOUND) {
+                continue;
+            }
+
+            checkForError(ret, "error while enumerating devices");
+
+            PointerBuffer deviceIDs = PointerBuffer.allocateDirect(ib.get(0));
+            ret = cl.clGetDeviceIDs(ID, type.TYPE, deviceIDs.capacity(), deviceIDs, null);
+            checkForError(ret, "error while enumerating devices");
+
+            //add device to list
+            for (int n = 0; n < deviceIDs.capacity(); n++)
+                list.add(new CLDevice(cl, deviceIDs.get(n)));
         }
 
-        checkForError(ret, "error while enumerating devices");
-
-        PointerBuffer deviceIDs = PointerBuffer.allocateDirect(ib.get(0));
-        ret = cl.clGetDeviceIDs(ID, type.TYPE, deviceIDs.capacity(), deviceIDs, null);
-        checkForError(ret, "error while enumerating devices");
-
-        CLDevice[] devices = new CLDevice[deviceIDs.capacity()];
-
-        //print device info
-        for (int i = 0; i < deviceIDs.capacity(); i++)
-            devices[i] = new CLDevice(cl, deviceIDs.get(i));
+        CLDevice[] devices = new CLDevice[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            devices[i] = list.get(i);
+        }
 
         return devices;
 
@@ -165,7 +176,7 @@ public final class CLPlatform {
      * Returns the device with maximal FLOPS from this platform.
      * The device speed is estimated by calculating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
-     * @see #getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
+     * @see #getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type...)
      */
     public CLDevice getMaxFlopsDevice() {
         return findMaxFlopsDevice(listCLDevices());
@@ -176,8 +187,8 @@ public final class CLPlatform {
      * The device speed is estimated by calculating the product of
      * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
      */
-    public CLDevice getMaxFlopsDevice(CLDevice.Type type) {
-        return findMaxFlopsDevice(listCLDevices(type));
+    public CLDevice getMaxFlopsDevice(CLDevice.Type... types) {
+        return findMaxFlopsDevice(listCLDevices(types));
     }
 
     /**
@@ -232,6 +243,14 @@ public final class CLPlatform {
         }
 
         return extensions;
+    }
+
+    /**
+     * Returns a Map of platform properties with the enum names as keys.
+     * @see CLUtil#obtainPlatformProperties(com.mbien.opencl.CLPlatform)
+     */
+    public Map<String, String> getProperties() {
+        return CLUtil.obtainPlatformProperties(this);
     }
 
     /**

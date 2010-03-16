@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.mbien.opencl.util.CLUtil;
 import com.sun.gluegen.runtime.CPU;
 import com.sun.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -16,8 +18,8 @@ import static com.mbien.opencl.CL.*;
 
 /**
  * This object represents an OpenCL device.
- * @see CLPlatform#listCLDevices(com.mbien.opencl.CLDevice.Type)
- * @see CLPlatform#getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
+ * @see CLPlatform#listCLDevices(com.mbien.opencl.CLDevice.Type...)
+ * @see CLPlatform#getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type...)
  * @see CLContext#getDevices()
  * @see CLContext#getMaxFlopsDevice(com.mbien.opencl.CLDevice.Type)
  * @author Michael Bien
@@ -454,6 +456,7 @@ public final class CLDevice extends CLObject {
 
     /**
      * Returns {@link #getExtensions()}.contains("cl_khr_fp16");
+     * @see #getExtensions()
      */
     public boolean isHalfFPAvailable() {
         return getExtensions().contains("cl_khr_fp16");
@@ -461,13 +464,23 @@ public final class CLDevice extends CLObject {
 
     /**
      * Returns {@link #getExtensions()}.contains("cl_khr_fp64");
+     * @see #getExtensions()
      */
     public boolean isDoubleFPAvailable() {
         return getExtensions().contains("cl_khr_fp64");
     }
 
     /**
+     * Returns {@link #getExtensions()}.contains("cl_khr_gl_sharing");
+     * @see #getExtensions()
+     */
+    public boolean isGLMemorySharingSupported() {
+        return getExtensions().contains("cl_khr_gl_sharing");
+    }
+
+    /**
      * Returns true if the extension is supported on this device.
+     * @see #getExtensions()
      */
     public boolean isExtensionAvailable(String extension) {
         return getExtensions().contains(extension);
@@ -492,6 +505,13 @@ public final class CLDevice extends CLObject {
         return extensions;
     }
 
+    /**
+     * Returns a Map of device properties with the enum names as keys.
+     * @see CLUtil#obtainDeviceProperties(com.mbien.opencl.CLDevice)
+     */
+    public Map<String, String> getProperties() {
+        return CLUtil.obtainDeviceProperties(this);
+    }
 
     private final class CLDeviceInfoAccessor extends CLInfoAccessor {
 

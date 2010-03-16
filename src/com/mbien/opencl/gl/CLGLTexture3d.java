@@ -25,8 +25,8 @@ public class CLGLTexture3d<B extends Buffer> extends CLImage3d<B> implements CLG
     
     public final int mipMapLevel;
 
-    private CLGLTexture3d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int target, int mipLevel, int width, int height, int depth, long id, int glid) {
-        super(context, directBuffer, format, accessor, width, height, depth, id);
+    private CLGLTexture3d(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int target, int mipLevel, int width, int height, int depth, long id, int glid, int flags) {
+        super(context, directBuffer, format, accessor, width, height, depth, id, flags);
         this.GLID = glid;
         this.target = target;
         this.mipMapLevel = mipLevel;
@@ -51,7 +51,7 @@ public class CLGLTexture3d<B extends Buffer> extends CLImage3d<B> implements CLG
         int height = (int)accessor.getLong(CL_IMAGE_HEIGHT);
         int depth = (int)accessor.getLong(CL_IMAGE_DEPTH);
 
-        return new CLGLTexture3d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, depth, id, texture);
+        return new CLGLTexture3d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, depth, id, texture, flags);
     }
 
     public int getGLObjectID() {

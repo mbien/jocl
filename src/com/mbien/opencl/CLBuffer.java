@@ -10,12 +10,12 @@ import static com.mbien.opencl.CLException.*;
  */
 public class CLBuffer<B extends Buffer> extends CLMemory<B> {
 
-    protected CLBuffer(CLContext context, long id) {
-        super(context, id);
+    protected CLBuffer(CLContext context, long id, int flags) {
+        super(context, id, flags);
     }
 
-    protected CLBuffer(CLContext context, B directBuffer, long id) {
-        super(context, directBuffer, id);
+    protected CLBuffer(CLContext context, B directBuffer, long id, int flags) {
+        super(context, directBuffer, id, flags);
     }
 
     @SuppressWarnings("unchecked")
@@ -31,7 +31,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
         long id = cl.clCreateBuffer(context.ID, flags, size, null, result, 0);
         checkForError(result[0], "can not create cl buffer");
 
-        return new CLBuffer(context, id);
+        return new CLBuffer(context, id, flags);
     }
 
     static <B extends Buffer> CLBuffer<B> create(CLContext context, B directBuffer, int flags) {
@@ -49,12 +49,12 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
         long id = cl.clCreateBuffer(context.ID, flags, sizeOfBufferElem(directBuffer)*directBuffer.capacity(), host_ptr, result, 0);
         checkForError(result[0], "can not create cl buffer");
         
-        return new CLBuffer<B>(context, directBuffer, id);
+        return new CLBuffer<B>(context, directBuffer, id, flags);
     }
     
     @Override
     public <T extends Buffer> CLBuffer<T> cloneWith(T directBuffer) {
-        return new CLBuffer<T>(context, directBuffer, ID);
+        return new CLBuffer<T>(context, directBuffer, ID, FLAGS);
     }
 
 }

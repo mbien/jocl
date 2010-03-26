@@ -455,7 +455,7 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns {@link #isExtensionAvailable("cl_khr_fp16");
+     * Returns {@link #isExtensionAvailable}("cl_khr_fp16").
      * @see #getExtensions()
      */
     public boolean isHalfFPAvailable() {
@@ -463,7 +463,7 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns {@link #isExtensionAvailable("cl_khr_fp64");
+     * Returns {@link #isExtensionAvailable}("cl_khr_fp64").
      * @see #getExtensions()
      */
     public boolean isDoubleFPAvailable() {
@@ -471,7 +471,7 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns {@link #isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_apple_gl_sharing");
+     * Returns {@link #isExtensionAvailable}("cl_khr_gl_sharing") || {@link #isExtensionAvailable}("cl_apple_gl_sharing").
      * @see #getExtensions()
      */
     public boolean isGLMemorySharingSupported() {

@@ -7,8 +7,8 @@
 
     <import file="nbproject/build-impl.xml"/>
 
-    <property name="gluegen.root" value="${basedir}/../gluegen" />
-    <property name="jogl.root" value="${basedir}/../jogl" />
+    <property name="gluegen.root" value="../gluegen" />
+    <property name="jogl.root" value="../jogl" />
 
     <property name="etc.build.dir" value="${basedir}/etc/build" />
     <property name="headers.dest" value="${basedir}/resources/includes/CL" />

@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.sun.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.BufferFactory;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 

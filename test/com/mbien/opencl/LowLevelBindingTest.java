@@ -1,8 +1,8 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
-import com.sun.gluegen.runtime.CPU;
-import com.sun.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.CPU;
+import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
 import static com.mbien.opencl.util.CLUtil.*;
-import static com.sun.gluegen.runtime.BufferFactory.*;
+import static com.jogamp.gluegen.runtime.BufferFactory.*;
 
 /**
  * Test testing the low level bindings.

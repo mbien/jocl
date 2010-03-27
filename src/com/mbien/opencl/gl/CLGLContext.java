@@ -5,7 +5,7 @@ import com.mbien.opencl.CLDevice;
 import java.nio.Buffer;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLPlatform;
-import com.sun.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.PointerBuffer;
 import com.sun.opengl.impl.GLContextImpl;
 import com.sun.opengl.impl.macosx.cgl.MacOSXCGLContext;
 import com.sun.opengl.impl.windows.wgl.WindowsWGLContext;

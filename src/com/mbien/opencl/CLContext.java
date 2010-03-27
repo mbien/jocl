@@ -4,9 +4,9 @@ import com.mbien.opencl.CLDevice.Type;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
-import com.sun.gluegen.runtime.BufferFactory;
-import com.sun.gluegen.runtime.CPU;
-import com.sun.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.CPU;
+import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static com.mbien.opencl.CLException.*;
-import static com.sun.gluegen.runtime.BufferFactory.*;
+import static com.jogamp.gluegen.runtime.BufferFactory.*;
 
 /**
  * CLContext is responsible for managing objects such as command-queues, memory,

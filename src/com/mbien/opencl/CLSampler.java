@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.sun.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 
 import static com.mbien.opencl.CLException.*;

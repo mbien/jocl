@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
 import static com.mbien.opencl.CLEvent.*;
-import static com.sun.gluegen.runtime.BufferFactory.*;
+import static com.jogamp.gluegen.runtime.BufferFactory.*;
 
 /**
  *

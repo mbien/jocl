@@ -2,9 +2,9 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.util.CLProgramConfiguration;
 import com.mbien.opencl.util.CLUtil;
-import com.sun.gluegen.runtime.BufferFactory;
-import com.sun.gluegen.runtime.CPU;
-import com.sun.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.CPU;
+import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;

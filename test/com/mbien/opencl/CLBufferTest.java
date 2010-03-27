@@ -2,7 +2,7 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLMemory.Map;
-import com.sun.opengl.util.BufferUtil;
+import com.jogamp.opengl.util.BufferUtil;
 import java.nio.ByteBuffer;
 import org.junit.Test;
 

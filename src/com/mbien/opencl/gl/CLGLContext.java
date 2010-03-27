@@ -6,10 +6,10 @@ import java.nio.Buffer;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLPlatform;
 import com.jogamp.gluegen.runtime.PointerBuffer;
-import com.sun.opengl.impl.GLContextImpl;
-import com.sun.opengl.impl.macosx.cgl.MacOSXCGLContext;
-import com.sun.opengl.impl.windows.wgl.WindowsWGLContext;
-import com.sun.opengl.impl.x11.glx.X11GLXContext;
+import com.jogamp.opengl.impl.GLContextImpl;
+import com.jogamp.opengl.impl.macosx.cgl.MacOSXCGLContext;
+import com.jogamp.opengl.impl.windows.wgl.WindowsWGLContext;
+import com.jogamp.opengl.impl.x11.glx.X11GLXContext;
 import javax.media.nativewindow.DefaultGraphicsConfiguration;
 import javax.media.opengl.GLContext;
 

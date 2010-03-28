@@ -2,7 +2,7 @@ package com.mbien.opencl;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import com.sun.nativewindow.impl.NativeLibLoaderBase;
+import com.jogamp.nativewindow.impl.NativeLibLoaderBase;
 
 /**
  *

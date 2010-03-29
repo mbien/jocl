@@ -17,10 +17,10 @@
             System.err.println("WARNING: userData not yet implemented... ignoring");
 
         return this.clCreateContext0(
-                properties!=null?properties.getBuffer():null, BufferFactory.getDirectBufferByteOffset(properties),
-                devices!=null?devices.remaining():0, devices!=null?devices.getBuffer():null, BufferFactory.getDirectBufferByteOffset(devices),
+                properties!=null?properties.getBuffer():null, Buffers.getDirectBufferByteOffset(properties),
+                devices!=null?devices.remaining():0, devices!=null?devices.getBuffer():null, Buffers.getDirectBufferByteOffset(devices),
                 null, null,
-                errcode_ret, BufferFactory.getDirectBufferByteOffset(errcode_ret) );
+                errcode_ret, Buffers.getDirectBufferByteOffset(errcode_ret) );
     }
     private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
 
@@ -37,9 +37,9 @@
             System.err.println("WARNING: userData not yet implemented... ignoring");
 
         return this.clCreateContextFromType0(
-                properties!=null?properties.getBuffer():null, BufferFactory.getDirectBufferByteOffset(properties),
+                properties!=null?properties.getBuffer():null, Buffers.getDirectBufferByteOffset(properties),
                 device_type, pfn_notify, null,
-                errcode_ret, BufferFactory.getDirectBufferByteOffset(errcode_ret) );
+                errcode_ret, Buffers.getDirectBufferByteOffset(errcode_ret) );
     }
     private native long clCreateContextFromType0(Object properties, int props_offset, long device_type, CreateContextCallback pfn_notify, Object userData, Object errcode_ret, int err_offset);
 
@@ -57,7 +57,7 @@
             System.err.println("WARNING: userData not yet implemented... ignoring");
 
         return clBuildProgram0(program, deviceCount,
-                               deviceList!=null?deviceList.getBuffer():null, BufferFactory.getDirectBufferByteOffset(deviceList),
+                               deviceList!=null?deviceList.getBuffer():null, Buffers.getDirectBufferByteOffset(deviceList),
                                options, cb, userData);
     }
     /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
@@ -78,32 +78,32 @@
               int num_events_in_wait_list,
               com.jogamp.gluegen.runtime.PointerBuffer event_wait_list, com.jogamp.gluegen.runtime.PointerBuffer event, java.nio.IntBuffer errcode_ret)  {
 
-    if (!BufferFactory.isDirect(origin))
+    if (!Buffers.isDirect(origin))
       throw new CLException("Argument \"origin\" was not a direct buffer");
-    if (!BufferFactory.isDirect(range))
+    if (!Buffers.isDirect(range))
       throw new CLException("Argument \"range\" was not a direct buffer");
-    if (!BufferFactory.isDirect(image_row_pitch))
+    if (!Buffers.isDirect(image_row_pitch))
       throw new CLException("Argument \"image_row_pitch\" was not a direct buffer");
-    if (!BufferFactory.isDirect(image_slice_pitch))
+    if (!Buffers.isDirect(image_slice_pitch))
       throw new CLException("Argument \"image_slice_pitch\" was not a direct buffer");
-    if (!BufferFactory.isDirect(event_wait_list))
+    if (!Buffers.isDirect(event_wait_list))
       throw new CLException("Argument \"event_wait_list\" was not a direct buffer");
-    if (!BufferFactory.isDirect(event))
+    if (!Buffers.isDirect(event))
       throw new CLException("Argument \"event\" was not a direct buffer");
-    if (!BufferFactory.isDirect(errcode_ret))
+    if (!Buffers.isDirect(errcode_ret))
       throw new CLException("Argument \"errcode_ret\" was not a direct buffer");
 
     java.nio.ByteBuffer _res;
     _res = clEnqueueMapImage0(command_queue, image, blocking_map, map_flags, origin!=null?origin.getBuffer():null,
-            BufferFactory.getDirectBufferByteOffset(origin), range!=null?range.getBuffer():null,
-            BufferFactory.getDirectBufferByteOffset(range), image_row_pitch!=null?image_row_pitch.getBuffer():null,
-            BufferFactory.getDirectBufferByteOffset(image_row_pitch), image_slice_pitch!=null?image_slice_pitch.getBuffer():null,
-            BufferFactory.getDirectBufferByteOffset(image_slice_pitch), num_events_in_wait_list,
-            event_wait_list!=null?event_wait_list.getBuffer():null, BufferFactory.getDirectBufferByteOffset(event_wait_list),
-            event!=null?event.getBuffer():null, BufferFactory.getDirectBufferByteOffset(event), errcode_ret,
-            BufferFactory.getDirectBufferByteOffset(errcode_ret));
+            Buffers.getDirectBufferByteOffset(origin), range!=null?range.getBuffer():null,
+            Buffers.getDirectBufferByteOffset(range), image_row_pitch!=null?image_row_pitch.getBuffer():null,
+            Buffers.getDirectBufferByteOffset(image_row_pitch), image_slice_pitch!=null?image_slice_pitch.getBuffer():null,
+            Buffers.getDirectBufferByteOffset(image_slice_pitch), num_events_in_wait_list,
+            event_wait_list!=null?event_wait_list.getBuffer():null, Buffers.getDirectBufferByteOffset(event_wait_list),
+            event!=null?event.getBuffer():null, Buffers.getDirectBufferByteOffset(event), errcode_ret,
+            Buffers.getDirectBufferByteOffset(errcode_ret));
     if (_res == null) return null;
-    BufferFactory.nativeOrder(_res);
+    Buffers.nativeOrder(_res);
     return _res;
   }
 

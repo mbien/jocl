@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
 import static com.mbien.opencl.util.CLUtil.*;
-import static com.jogamp.gluegen.runtime.BufferFactory.*;
+import static com.jogamp.gluegen.runtime.Buffers.*;
 
 /**
  * Test testing the low level bindings.

@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.jogamp.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.Buffers;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 
@@ -30,7 +30,7 @@ public class CLImage3d<B extends Buffer> extends CLImage<B> {
             int width, int height, int depth, int rowPitch, int slicePitch, CLImageFormat format, int flags) {
 
         CL cl = context.cl;
-        IntBuffer err = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+        IntBuffer err = Buffers.newDirectByteBuffer(4).asIntBuffer();
 
         long id = cl.clCreateImage3D(context.ID, flags, format.getFormatImpl(), width, height, depth, rowPitch, slicePitch, directBuffer, err);
         checkForError(err.get(), "can not create 2d image");

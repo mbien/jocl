@@ -4,7 +4,7 @@ import com.mbien.opencl.CLDevice.Type;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
-import com.jogamp.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.Buffers;
 import com.jogamp.gluegen.runtime.CPU;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.io.BufferedReader;
@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static com.mbien.opencl.CLException.*;
-import static com.jogamp.gluegen.runtime.BufferFactory.*;
+import static com.jogamp.gluegen.runtime.Buffers.*;
 
 /**
  * CLContext is responsible for managing objects such as command-queues, memory,
@@ -156,7 +156,7 @@ public class CLContext extends CLObject implements CLResource {
 
     protected static long createContext(PointerBuffer properties, CLDevice... devices) {
 
-        IntBuffer status = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+        IntBuffer status = Buffers.newDirectByteBuffer(4).asIntBuffer();
         PointerBuffer pb = null;
         if(devices != null && devices.length != 0) {
             pb = PointerBuffer.allocateDirect(devices.length);

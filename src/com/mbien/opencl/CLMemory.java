@@ -1,7 +1,7 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.gl.CLGLI;
-import com.jogamp.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.Buffers;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -46,15 +46,15 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     protected static int sizeOfBufferElem(Buffer buffer) {
         if (buffer instanceof ByteBuffer) {
-            return BufferFactory.SIZEOF_BYTE;
+            return Buffers.SIZEOF_BYTE;
         } else if (buffer instanceof IntBuffer) {
-            return BufferFactory.SIZEOF_INT;
+            return Buffers.SIZEOF_INT;
         } else if (buffer instanceof ShortBuffer) {
-            return BufferFactory.SIZEOF_SHORT;
+            return Buffers.SIZEOF_SHORT;
         } else if (buffer instanceof FloatBuffer) {
-            return BufferFactory.SIZEOF_FLOAT;
+            return Buffers.SIZEOF_FLOAT;
         } else if (buffer instanceof DoubleBuffer) {
-            return BufferFactory.SIZEOF_DOUBLE;
+            return Buffers.SIZEOF_DOUBLE;
         }
         throw new RuntimeException("Unexpected buffer type " + buffer.getClass().getName());
     }

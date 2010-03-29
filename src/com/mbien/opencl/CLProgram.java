@@ -2,7 +2,7 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.util.CLProgramConfiguration;
 import com.mbien.opencl.util.CLUtil;
-import com.jogamp.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.Buffers;
 import com.jogamp.gluegen.runtime.CPU;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -43,7 +43,7 @@ public class CLProgram extends CLObject implements CLResource {
     
     static CLProgram create(CLContext context, String src) {
 
-        IntBuffer status = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+        IntBuffer status = Buffers.newDirectByteBuffer(4).asIntBuffer();
         // Create the program
         long id = context.cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
                                PointerBuffer.allocateDirect(1).put(src.length()), status);
@@ -68,15 +68,15 @@ public class CLProgram extends CLObject implements CLResource {
             devices.put(device.ID);
             lengths.put(bytes.length);
 
-            codeBuffers[i] = BufferFactory.newDirectByteBuffer(bytes.length).put(bytes);
+            codeBuffers[i] = Buffers.newDirectByteBuffer(bytes.length).put(bytes);
             codeBuffers[i].rewind();
             i++;
         }
         devices.rewind();
         lengths.rewind();
 
-        IntBuffer err = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
-//        IntBuffer status = BufferFactory.newDirectByteBuffer(binaries.size()*4).asIntBuffer();
+        IntBuffer err = Buffers.newDirectByteBuffer(4).asIntBuffer();
+//        IntBuffer status = Buffers.newDirectByteBuffer(binaries.size()*4).asIntBuffer();
         long id = context.cl.clCreateProgramWithBinary(context.ID, devices.capacity(), devices, lengths, codeBuffers, /*status*/null, err);
 
 //        while(status.remaining() != 0) {
@@ -293,7 +293,7 @@ public class CLProgram extends CLObject implements CLResource {
 
         HashMap<String, CLKernel> newKernels = new HashMap<String, CLKernel>();
 
-        IntBuffer numKernels = BufferFactory.newDirectByteBuffer(4).asIntBuffer();
+        IntBuffer numKernels = Buffers.newDirectByteBuffer(4).asIntBuffer();
         int ret = cl.clCreateKernelsInProgram(ID, 0, null, numKernels);
         checkForError(ret, "can not create kernels for program");
 

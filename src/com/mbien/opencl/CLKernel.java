@@ -1,7 +1,7 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.util.CLUtil;
-import com.jogamp.gluegen.runtime.BufferFactory;
+import com.jogamp.gluegen.runtime.Buffers;
 import com.jogamp.gluegen.runtime.CPU;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
@@ -37,7 +37,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     CLKernel(CLProgram program, long id) {
         super(program.getContext(), id);
         this.program = program;
-        this.buffer = BufferFactory.newDirectByteBuffer(8);
+        this.buffer = Buffers.newDirectByteBuffer(8);
 
         PointerBuffer pb = PointerBuffer.allocateDirect(1);
 

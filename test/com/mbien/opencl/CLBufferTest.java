@@ -2,7 +2,7 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLMemory.Map;
-import com.jogamp.opengl.util.BufferUtil;
+import com.jogamp.gluegen.runtime.Buffers;
 import java.nio.ByteBuffer;
 import org.junit.Test;
 
@@ -58,7 +58,7 @@ public class CLBufferTest {
 
         CLContext context = CLContext.create();
 
-        ByteBuffer buffer = BufferUtil.newByteBuffer(elements*SIZEOF_INT);
+        ByteBuffer buffer = Buffers.newDirectByteBuffer(elements*SIZEOF_INT);
         // fill only first read buffer -> we will copy the payload to the second later.
         fillBuffer(buffer, 12345);
 

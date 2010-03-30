@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import static com.jogamp.gluegen.runtime.Buffers.*;
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
 import static com.mbien.opencl.util.CLUtil.*;
@@ -46,7 +47,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         this.ibB = Int64Buffer.allocateDirect(3);
         this.ibC = Int64Buffer.allocateDirect(3);
 
-        this.pbA = PointerBuffer.wrap(ibA.getBuffer());
+        this.pbA = PointerBuffer.allocateDirect(1);
 
     }
 

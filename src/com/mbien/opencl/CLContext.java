@@ -4,7 +4,6 @@ import com.mbien.opencl.CLDevice.Type;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
-import com.jogamp.gluegen.runtime.Buffers;
 import com.jogamp.gluegen.runtime.Int64Buffer;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.io.BufferedReader;
@@ -156,7 +155,7 @@ public class CLContext extends CLObject implements CLResource {
 
     protected static long createContext(PointerBuffer properties, CLDevice... devices) {
 
-        IntBuffer status = Buffers.newDirectByteBuffer(4).asIntBuffer();
+        IntBuffer status = newDirectIntBuffer(1);
         PointerBuffer pb = null;
         if(devices != null && devices.length != 0) {
             pb = PointerBuffer.allocateDirect(devices.length);
@@ -233,35 +232,35 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
      */
     public final CLBuffer<ShortBuffer> createShortBuffer(int size, Mem... flags) {
-        return createBuffer(newDirectByteBuffer(size*SIZEOF_SHORT).asShortBuffer(), flags);
+        return createBuffer(newDirectShortBuffer(size), flags);
     }
 
     /**
      * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
      */
     public final CLBuffer<IntBuffer> createIntBuffer(int size, Mem... flags) {
-        return createBuffer(newDirectByteBuffer(size*SIZEOF_INT).asIntBuffer(), flags);
+        return createBuffer(newDirectIntBuffer(size), flags);
     }
 
     /**
      * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
      */
     public final CLBuffer<LongBuffer> createLongBuffer(int size, Mem... flags) {
-        return createBuffer(newDirectByteBuffer(size*SIZEOF_LONG).asLongBuffer(), flags);
+        return createBuffer(newDirectLongBuffer(size), flags);
     }
 
     /**
      * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
      */
     public final CLBuffer<FloatBuffer> createFloatBuffer(int size, Mem... flags) {
-        return createBuffer(newDirectByteBuffer(size*SIZEOF_FLOAT).asFloatBuffer(), flags);
+        return createBuffer(newDirectFloatBuffer(size), flags);
     }
 
     /**
      * Creates a CLBuffer with the specified flags and element count. No flags creates a MEM.READ_WRITE buffer.
      */
     public final CLBuffer<DoubleBuffer> createDoubleBuffer(int size, Mem... flags) {
-        return createBuffer(newDirectByteBuffer(size*SIZEOF_DOUBLE).asDoubleBuffer(), flags);
+        return createBuffer(newDirectDoubleBuffer(size), flags);
     }
 
     /**

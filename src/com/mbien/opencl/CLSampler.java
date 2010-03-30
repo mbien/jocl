@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.jogamp.gluegen.runtime.Int64Buffer;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 
@@ -57,7 +58,7 @@ public class CLSampler extends CLObject implements CLResource {
     private class CLSamplerInfoAccessor extends CLInfoAccessor {
 
         @Override
-        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+        protected int getInfo(int name, long valueSize, Buffer value, Int64Buffer valueSizeRet) {
             return cl.clGetSamplerInfo(ID, name, valueSize, value, valueSizeRet);
         }
 

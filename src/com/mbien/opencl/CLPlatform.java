@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.jogamp.gluegen.runtime.Int64Buffer;
 import com.mbien.opencl.util.CLUtil;
 import com.mbien.opencl.impl.CLImpl;
 import com.jogamp.gluegen.runtime.PointerBuffer;
@@ -257,13 +258,14 @@ public final class CLPlatform {
      * Returns a info string in exchange for a key (CL_PLATFORM_*).
      */
     public String getInfoString(int key) {
-        PointerBuffer pb = PointerBuffer.allocateDirect(1);
+        Int64Buffer size = Int64Buffer.allocateDirect(1);
+        // TODO use cache/query size
         ByteBuffer bb = ByteBuffer.allocateDirect(512);
 
-        int ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, pb);
+        int ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, size);
         checkForError(ret, "can not receive info string");
 
-        return CLUtil.clString2JavaString(bb, (int)pb.get(0));
+        return CLUtil.clString2JavaString(bb, (int)size.get(0));
     }
 
     @Override

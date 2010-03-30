@@ -1,8 +1,8 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.util.CLUtil;
-import com.jogamp.gluegen.runtime.CPU;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.Int64Buffer;
+import com.jogamp.gluegen.runtime.Platform;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -516,7 +516,7 @@ public final class CLDevice extends CLObject {
     private final class CLDeviceInfoAccessor extends CLInfoAccessor {
 
         @Override
-        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+        protected int getInfo(int name, long valueSize, Buffer value, Int64Buffer valueSizeRet) {
             return cl.clGetDeviceInfo(ID, name, valueSize, value, valueSizeRet);
         }
 
@@ -528,7 +528,7 @@ public final class CLDevice extends CLObject {
 
             int[] array = new int[n];
             for(int i = 0; i < array.length; i++) {
-                if(CPU.is32Bit()) {
+                if(Platform.is32Bit()) {
                     array[i] = buffer.getInt();
                 }else{
                     array[i] = (int)buffer.getLong();

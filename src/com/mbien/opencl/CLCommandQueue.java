@@ -1,5 +1,6 @@
 package com.mbien.opencl;
 
+import com.jogamp.gluegen.runtime.Int64Buffer;
 import com.mbien.opencl.gl.CLGLI;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -30,9 +31,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /*
      * Those direct memory buffers are used to move data between the JVM and OpenCL.
      */
-    private final PointerBuffer bufferA;
-    private final PointerBuffer bufferB;
-    private final PointerBuffer bufferC;
+    private final PointerBuffer pbA;
+    private final Int64Buffer ibA;
+    private final Int64Buffer ibB;
+    private final Int64Buffer ibC;
 
     private CLCommandQueue(CLContext context, long id, CLDevice device, long properties) {
         super(context, id);
@@ -40,9 +42,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
         this.device = device;
         this.properties = properties;
 
-        this.bufferA = PointerBuffer.allocateDirect(3);
-        this.bufferB = PointerBuffer.allocateDirect(3);
-        this.bufferC = PointerBuffer.allocateDirect(3);
+        this.ibA = Int64Buffer.allocateDirect(3);
+        this.ibB = Int64Buffer.allocateDirect(3);
+        this.ibC = Int64Buffer.allocateDirect(3);
+
+        this.pbA = PointerBuffer.wrap(ibA.getBuffer());
 
     }
 
@@ -231,11 +235,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         // spec: CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0
         // or region[2] is not equal to 1 or slice_pitch is not equal to 0.
-        copy2NIO(bufferA, originX, originY, 0);
-        copy2NIO(bufferB, rangeX, rangeY, 1);
+        copy2NIO(ibA, originX, originY, 0);
+        copy2NIO(ibB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, clBoolean(blockingWrite),
-                                         bufferA, bufferB, inputRowPitch, 0, writeImage.buffer,
+                                         ibA, ibB, inputRowPitch, 0, writeImage.buffer,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not write Image");
 
@@ -288,11 +292,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        copy2NIO(bufferA, originX, originY, originZ);
-        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
+        copy2NIO(ibA, originX, originY, originZ);
+        copy2NIO(ibB, rangeX, rangeY, rangeZ);
 
         int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, clBoolean(blockingWrite),
-                                         bufferA, bufferB, inputRowPitch, inputSlicePitch, writeImage.buffer,
+                                         ibA, ibB, inputRowPitch, inputSlicePitch, writeImage.buffer,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not write Image");
 
@@ -347,11 +351,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         // spec: CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0
         // or region[2] is not equal to 1 or slice_pitch is not equal to 0.
-        copy2NIO(bufferA, originX, originY, 0);
-        copy2NIO(bufferB, rangeX, rangeY, 1);
+        copy2NIO(ibA, originX, originY, 0);
+        copy2NIO(ibB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueReadImage(ID, readImage.ID, clBoolean(blockingRead),
-                                         bufferA, bufferB, inputRowPitch, 0, readImage.buffer,
+                                         ibA, ibB, inputRowPitch, 0, readImage.buffer,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not read Image");
 
@@ -404,11 +408,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        copy2NIO(bufferA, originX, originY, originZ);
-        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
+        copy2NIO(ibA, originX, originY, originZ);
+        copy2NIO(ibB, rangeX, rangeY, rangeZ);
 
         int ret = cl.clEnqueueReadImage(ID, readImage.ID, clBoolean(blockingRead),
-                                        bufferA, bufferB, inputRowPitch, inputSlicePitch, readImage.buffer,
+                                        ibA, ibB, inputRowPitch, inputSlicePitch, readImage.buffer,
                                         conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not read Image");
 
@@ -467,11 +471,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         //spec: CL_INVALID_VALUE if src_image is a 2D image object and origin[2] or dst_origin[2] is not equal to 0
         // or region[2] is not equal to 1.
-        copy2NIO(bufferA, srcOriginX, srcOriginY, 0);
-        copy2NIO(bufferB, dstOriginX, dstOriginY, 0);
-        copy2NIO(bufferC, rangeX, rangeY, 1);
+        copy2NIO(ibA, srcOriginX, srcOriginY, 0);
+        copy2NIO(ibB, dstOriginX, dstOriginY, 0);
+        copy2NIO(ibC, rangeX, rangeY, 1);
 
-        int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, bufferA, bufferB, bufferC,
+        int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, ibA, ibB, ibC,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not copy Image");
 
@@ -530,11 +534,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        copy2NIO(bufferA, srcOriginX, srcOriginY, srcOriginZ);
-        copy2NIO(bufferB, dstOriginX, dstOriginY, dstOriginZ);
-        copy2NIO(bufferC, rangeX, rangeY, rangeZ);
+        copy2NIO(ibA, srcOriginX, srcOriginY, srcOriginZ);
+        copy2NIO(ibB, dstOriginX, dstOriginY, dstOriginZ);
+        copy2NIO(ibC, rangeX, rangeY, rangeZ);
 
-        int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, bufferA, bufferB, bufferC,
+        int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, ibA, ibB, ibC,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not copy Image");
 
@@ -592,11 +596,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         // spec: CL_INVALID_VALUE if dst_image is a 2D image object and dst_origin[2] is not equal to 0
         // or region[2] is not equal to 1.
-        copy2NIO(bufferA, dstOriginX, dstOriginY, 0);
-        copy2NIO(bufferB, rangeX, rangeY, 1);
+        copy2NIO(ibA, dstOriginX, dstOriginY, 0);
+        copy2NIO(ibB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueCopyBufferToImage(ID, srcBuffer.ID, dstImage.ID,
-                                         srcOffset, bufferA, bufferB,
+                                         srcOffset, ibA, ibB,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not copy buffer to image2d");
 
@@ -653,11 +657,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        copy2NIO(bufferA, dstOriginX, dstOriginY, dstOriginZ);
-        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
+        copy2NIO(ibA, dstOriginX, dstOriginY, dstOriginZ);
+        copy2NIO(ibB, rangeX, rangeY, rangeZ);
 
         int ret = cl.clEnqueueCopyBufferToImage(ID, srcBuffer.ID, dstImage.ID,
-                                         srcOffset, bufferA, bufferB,
+                                         srcOffset, ibA, ibB,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not copy buffer to image3d");
 
@@ -715,11 +719,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         // spec: CL_INVALID_VALUE if src_image is a 2D image object and src_origin[2] is not equal to 0
         // or region[2] is not equal to 1.
-        copy2NIO(bufferA, srcOriginX, srcOriginY, 0);
-        copy2NIO(bufferB, rangeX, rangeY, 1);
+        copy2NIO(ibA, srcOriginX, srcOriginY, 0);
+        copy2NIO(ibB, rangeX, rangeY, 1);
 
         int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
-                                         bufferA, bufferB, dstOffset,
+                                         ibA, ibB, dstOffset,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not copy buffer to image2d");
 
@@ -776,11 +780,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        copy2NIO(bufferA, srcOriginX, srcOriginY, srcOriginZ);
-        copy2NIO(bufferB, rangeX, rangeY, rangeZ);
+        copy2NIO(ibA, srcOriginX, srcOriginY, srcOriginZ);
+        copy2NIO(ibB, rangeX, rangeY, rangeZ);
 
         int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
-                                         bufferA, bufferB, dstOffset,
+                                         ibA, ibB, dstOffset,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         checkForError(ret, "can not copy buffer to image3d");
 
@@ -830,7 +834,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
+        IntBuffer error = pbA.position(0).getBuffer().asIntBuffer();
         ByteBuffer mappedBuffer = cl.clEnqueueMapBuffer(ID, buffer.ID, clBoolean(blockingMap),
                                          flag.FLAGS, offset, length,
                                          conditions, conditionIDs, events==null ? null : events.IDs, error);
@@ -887,14 +891,14 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
+        IntBuffer error = pbA.position(0).getBuffer().asIntBuffer();
 
         // spec: CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0 or region[2] is not equal to 1
-        copy2NIO(bufferB, offsetX, offsetY, 0);
-        copy2NIO(bufferC, rangeX, rangeY, 1);
+        copy2NIO(ibB, offsetX, offsetY, 0);
+        copy2NIO(ibC, rangeX, rangeY, 1);
 
         ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, clBoolean(blockingMap),
-                                         flag.FLAGS, bufferB, bufferC, null, null,
+                                         flag.FLAGS, ibB, ibC, null, null,
                                          conditions, conditionIDs, events==null ? null : events.IDs, error);
         checkForError(error.get(), "can not map image2d");
 
@@ -950,11 +954,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        IntBuffer error = bufferA.position(0).getBuffer().asIntBuffer();
-        copy2NIO(bufferB, offsetX, offsetY, offsetZ);
-        copy2NIO(bufferC, rangeX, rangeY, rangeZ);
+        IntBuffer error = pbA.position(0).getBuffer().asIntBuffer();
+        copy2NIO(ibB, offsetX, offsetY, offsetZ);
+        copy2NIO(ibC, rangeX, rangeY, rangeZ);
         ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, clBoolean(blockingMap),
-                                         flag.FLAGS, bufferB, bufferC, null, null,
+                                         flag.FLAGS, ibB, ibC, null, null,
                                          conditions, conditionIDs, events==null ? null : events.IDs, error);
         checkForError(error.get(), "can not map image3d");
 
@@ -1105,18 +1109,18 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * Calls {@native clEnqueueNDRangeKernel}.
      */
     public CLCommandQueue put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize, CLEventList condition, CLEventList events) {
-        PointerBuffer globWO = null;
-        PointerBuffer globWS = null;
-        PointerBuffer locWS = null;
+        Int64Buffer globWO = null;
+        Int64Buffer globWS = null;
+        Int64Buffer locWS = null;
 
         if(globalWorkOffset != 0) {
-            globWO = copy2NIO(bufferA, globalWorkOffset);
+            globWO = copy2NIO(ibA, globalWorkOffset);
         }
         if(globalWorkSize != 0) {
-            globWS = copy2NIO(bufferB, globalWorkSize);
+            globWS = copy2NIO(ibB, globalWorkSize);
         }
         if(localWorkSize != 0) {
-            locWS = copy2NIO(bufferC, localWorkSize);
+            locWS = copy2NIO(ibC, localWorkSize);
         }
 
         this.putNDRangeKernel(kernel, 1, globWO, globWS, locWS, condition, events);
@@ -1156,18 +1160,18 @@ public class CLCommandQueue extends CLObject implements CLResource {
     public CLCommandQueue put2DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY,
                                                             long globalWorkSizeX, long globalWorkSizeY,
                                                             long localWorkSizeX, long localWorkSizeY, CLEventList condition, CLEventList events) {
-        PointerBuffer globalWorkOffset = null;
-        PointerBuffer globalWorkSize = null;
-        PointerBuffer localWorkSize = null;
+        Int64Buffer globalWorkOffset = null;
+        Int64Buffer globalWorkSize = null;
+        Int64Buffer localWorkSize = null;
 
         if(globalWorkOffsetX != 0 && globalWorkOffsetY != 0) {
-            globalWorkOffset = copy2NIO(bufferA, globalWorkOffsetX, globalWorkOffsetY);
+            globalWorkOffset = copy2NIO(ibA, globalWorkOffsetX, globalWorkOffsetY);
         }
         if(globalWorkSizeX != 0 && globalWorkSizeY != 0) {
-            globalWorkSize = copy2NIO(bufferB, globalWorkSizeX, globalWorkSizeY);
+            globalWorkSize = copy2NIO(ibB, globalWorkSizeX, globalWorkSizeY);
         }
         if(localWorkSizeX != 0 && localWorkSizeY !=0) {
-            localWorkSize = copy2NIO(bufferC, localWorkSizeX, localWorkSizeY);
+            localWorkSize = copy2NIO(ibC, localWorkSizeX, localWorkSizeY);
         }
         this.putNDRangeKernel(kernel, 2, globalWorkOffset, globalWorkSize, localWorkSize, condition, events);
         return this;
@@ -1176,7 +1180,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueNDRangeKernel}.
      */
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset, PointerBuffer globalWorkSize, PointerBuffer localWorkSize) {
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, Int64Buffer globalWorkOffset, Int64Buffer globalWorkSize, Int64Buffer localWorkSize) {
         this.putNDRangeKernel(kernel, workDimension, globalWorkOffset, globalWorkSize, localWorkSize, null, null);
         return this;
     }
@@ -1184,7 +1188,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueNDRangeKernel}.
      */
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset, PointerBuffer globalWorkSize, PointerBuffer localWorkSize, CLEventList events) {
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, Int64Buffer globalWorkOffset, Int64Buffer globalWorkSize, Int64Buffer localWorkSize, CLEventList events) {
         this.putNDRangeKernel(kernel, workDimension, globalWorkOffset, globalWorkSize, localWorkSize, null, events);
         return this;
     }
@@ -1192,8 +1196,8 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueNDRangeKernel}.
      */
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset,
-            PointerBuffer globalWorkSize, PointerBuffer localWorkSize, CLEventList condition, CLEventList events) {
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, Int64Buffer globalWorkOffset,
+            Int64Buffer globalWorkSize, Int64Buffer localWorkSize, CLEventList condition, CLEventList events) {
 
         PointerBuffer conditionIDs = null;
         int conditions = 0;
@@ -1250,7 +1254,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = copy2NIO(bufferA, glObject);
+        PointerBuffer glObj = copy2NIO(pbA, glObject);
         
         int ret = xl.clEnqueueAcquireGLObjects(ID, 1, glObj,
                     conditions, conditionIDs,
@@ -1296,7 +1300,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = copy2NIO(bufferA, glObject);
+        PointerBuffer glObj = copy2NIO(pbA, glObject);
 
         int ret = xl.clEnqueueReleaseGLObjects(ID, 1, glObj,
                 conditions, conditionIDs,
@@ -1363,6 +1367,18 @@ public class CLCommandQueue extends CLObject implements CLResource {
     }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
+        return buffer.rewind().put(a).put(b).put(c).rewind();
+    }
+
+    private static Int64Buffer copy2NIO(Int64Buffer buffer, long a) {
+        return buffer.put(2, a).position(2);
+    }
+
+    private static Int64Buffer copy2NIO(Int64Buffer buffer, long a, long b) {
+        return buffer.position(1).put(a).put(b).position(1);
+    }
+
+    private static Int64Buffer copy2NIO(Int64Buffer buffer, long a, long b, long c) {
         return buffer.rewind().put(a).put(b).put(c).rewind();
     }
 

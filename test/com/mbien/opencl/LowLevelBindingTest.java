@@ -1,7 +1,6 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
-import com.jogamp.gluegen.runtime.CPU;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -5,7 +5,7 @@ import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
 import com.jogamp.gluegen.runtime.Buffers;
-import com.jogamp.gluegen.runtime.CPU;
+import com.jogamp.gluegen.runtime.Int64Buffer;
 import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import static com.mbien.opencl.CLException.*;
 import static com.jogamp.gluegen.runtime.Buffers.*;
+import static com.jogamp.gluegen.runtime.Platform.*;
 
 /**
  * CLContext is responsible for managing objects such as command-queues, memory,
@@ -60,8 +61,7 @@ public class CLContext extends CLObject implements CLResource {
         
         if (devices == null) {
 
-            int sizeofDeviceID = CPU.is32Bit() ? 4 : 8;
-            PointerBuffer deviceCount = PointerBuffer.allocateDirect(1);
+            Int64Buffer deviceCount = Int64Buffer.allocateDirect(1);
 
             int ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, deviceCount);
             checkForError(ret, "can not enumerate devices");
@@ -70,9 +70,9 @@ public class CLContext extends CLObject implements CLResource {
             ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null);
             checkForError(ret, "can not enumerate devices");
 
-            devices = new CLDevice[deviceIDs.capacity() / sizeofDeviceID];
+            devices = new CLDevice[deviceIDs.capacity() / (is32Bit() ? 4 : 8)];
             for (int i = 0; i < devices.length; i++) {
-                devices[i] = new CLDevice(this, CPU.is32Bit() ? deviceIDs.getInt() : deviceIDs.getLong());
+                devices[i] = new CLDevice(this, is32Bit() ? deviceIDs.getInt() : deviceIDs.getLong());
             }
         }
     }

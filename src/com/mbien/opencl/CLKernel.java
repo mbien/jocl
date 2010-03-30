@@ -2,8 +2,8 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.util.CLUtil;
 import com.jogamp.gluegen.runtime.Buffers;
-import com.jogamp.gluegen.runtime.CPU;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.Platform;
+import com.jogamp.gluegen.runtime.Int64Buffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -39,13 +39,13 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         this.program = program;
         this.buffer = Buffers.newDirectByteBuffer(8);
 
-        PointerBuffer pb = PointerBuffer.allocateDirect(1);
+        Int64Buffer size = Int64Buffer.allocateDirect(1);
 
         // get function name
-        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, pb);
+        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, size);
         checkForError(ret, "error while asking for kernel function name");
 
-        ByteBuffer bb = ByteBuffer.allocateDirect((int)pb.get(0)).order(ByteOrder.nativeOrder());
+        ByteBuffer bb = ByteBuffer.allocateDirect((int)size.get(0)).order(ByteOrder.nativeOrder());
 
         ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
         checkForError(ret, "error while asking for kernel function name");
@@ -112,7 +112,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
 //    }
 
     public CLKernel setArg(int argumentIndex, CLMemory<?> value) {
-        setArgument(argumentIndex, CPU.is32Bit()?4:8, wrap(value.ID));
+        setArgument(argumentIndex, Platform.is32Bit()?4:8, wrap(value.ID));
         return this;
     }
 

@@ -73,8 +73,8 @@
   @param event a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
   @param errcode_ret a direct {@link java.nio.IntBuffer}   */
   public java.nio.ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags,
-              com.jogamp.gluegen.runtime.PointerBuffer origin, com.jogamp.gluegen.runtime.PointerBuffer range,
-              com.jogamp.gluegen.runtime.PointerBuffer image_row_pitch, com.jogamp.gluegen.runtime.PointerBuffer image_slice_pitch,
+              com.jogamp.gluegen.runtime.Int64Buffer origin, com.jogamp.gluegen.runtime.Int64Buffer range,
+              com.jogamp.gluegen.runtime.Int64Buffer image_row_pitch, com.jogamp.gluegen.runtime.Int64Buffer image_slice_pitch,
               int num_events_in_wait_list,
               com.jogamp.gluegen.runtime.PointerBuffer event_wait_list, com.jogamp.gluegen.runtime.PointerBuffer event, java.nio.IntBuffer errcode_ret)  {
 

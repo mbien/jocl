@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.gluegen.runtime.Int64Buffer;
 import java.nio.Buffer;
 
 import static com.mbien.opencl.CL.*;
@@ -81,7 +81,7 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
             this.id = id;
         }
         @Override
-        public int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+        public int getInfo(int name, long valueSize, Buffer value, Int64Buffer valueSizeRet) {
             return cl.clGetImageInfo(id, name, valueSize, value, valueSizeRet);
         }
     }

@@ -1,10 +1,10 @@
 package com.mbien.opencl;
 
+import com.jogamp.gluegen.runtime.Buffers;
+import com.jogamp.gluegen.runtime.Int64Buffer;
 import com.mbien.opencl.util.CLUtil;
-import com.jogamp.gluegen.runtime.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import static com.mbien.opencl.CLException.*;
 
@@ -19,15 +19,15 @@ abstract class CLInfoAccessor {
 
         @Override
         protected ByteBuffer initialValue() {
-            return ByteBuffer.allocateDirect(512).order(ByteOrder.nativeOrder());
+            return Buffers.newDirectByteBuffer(512);
         }
 
     };
-    protected final static ThreadLocal<PointerBuffer> localPB = new ThreadLocal<PointerBuffer>() {
+    protected final static ThreadLocal<Int64Buffer> localPB = new ThreadLocal<Int64Buffer>() {
 
         @Override
-        protected PointerBuffer initialValue() {
-            return PointerBuffer.allocateDirect(1);
+        protected Int64Buffer initialValue() {
+            return Int64Buffer.allocateDirect(1);
         }
 
     };
@@ -44,11 +44,11 @@ abstract class CLInfoAccessor {
     public final String getString(int key) {
         
         ByteBuffer buffer = localBB.get();
-        PointerBuffer pbuffer = localPB.get();
-        int ret = getInfo(key, buffer.capacity(), buffer, pbuffer);
+        Int64Buffer sizeBuffer = localPB.get();
+        int ret = getInfo(key, buffer.capacity(), buffer, sizeBuffer);
         checkForError(ret, "error while asking for info string");
 
-        int clSize = (int)pbuffer.get(0);
+        int clSize = (int)sizeBuffer.get(0);
         byte[] array = new byte[clSize-1]; // last char is always null
         buffer.get(array).rewind();
 
@@ -56,7 +56,7 @@ abstract class CLInfoAccessor {
 
     }
 
-    protected abstract int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet);
+    protected abstract int getInfo(int name, long valueSize, Buffer value, Int64Buffer valueSizeRet);
 
 
 }

@@ -2,9 +2,9 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.util.CLProgramConfiguration;
 import com.mbien.opencl.util.CLUtil;
-import com.jogamp.gluegen.runtime.Int64Buffer;
-import com.jogamp.gluegen.runtime.Platform;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.common.nio.Int64Buffer;
+import com.jogamp.common.os.Platform;
+import com.jogamp.common.nio.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
-import static com.jogamp.gluegen.runtime.Buffers.*;
+import static com.jogamp.common.nio.Buffers.*;
 
 /**
  * Represents a OpenCL program executed on one or more {@link CLDevice}s.
@@ -46,7 +46,7 @@ public class CLProgram extends CLObject implements CLResource {
         IntBuffer status = newDirectByteBuffer(4).asIntBuffer();
         // Create the program
         long id = context.cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
-                               Int64Buffer.allocateDirect(1).put(src.length()), status);
+                               (Int64Buffer)Int64Buffer.allocateDirect(1).put(src.length()), status);
 
         checkForError(status.get(), "can not create program with source");
         

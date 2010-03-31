@@ -1,8 +1,8 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.gl.CLGLI;
-import com.jogamp.gluegen.runtime.Buffers;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.common.nio.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;

@@ -5,7 +5,7 @@ import com.mbien.opencl.CLDevice;
 import java.nio.Buffer;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLPlatform;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opengl.impl.GLContextImpl;
 import com.jogamp.opengl.impl.macosx.cgl.MacOSXCGLContext;
 import com.jogamp.opengl.impl.windows.wgl.WindowsWGLContext;
@@ -148,7 +148,7 @@ public final class CLGLContext extends CLContext {
             throw new RuntimeException("unsupported GLContext: "+glContext);
         }
 
-        return properties.put(0).rewind(); // 0 terminated array
+        return (PointerBuffer)properties.put(0).rewind(); // 0 terminated array
     }
 
     // Buffers

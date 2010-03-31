@@ -22,7 +22,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
-import static com.jogamp.gluegen.runtime.Buffers.*;
+import static com.jogamp.common.nio.Buffers.*;
 
 /**
  * Test testing the high level bindings.

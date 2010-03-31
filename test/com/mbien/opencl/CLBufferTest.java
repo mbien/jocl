@@ -2,14 +2,14 @@ package com.mbien.opencl;
 
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLMemory.Map;
-import com.jogamp.gluegen.runtime.Buffers;
+import com.jogamp.common.nio.Buffers;
 import java.nio.ByteBuffer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
-import static com.jogamp.gluegen.runtime.Buffers.*;
+import static com.jogamp.common.nio.Buffers.*;
 
 /**
  *

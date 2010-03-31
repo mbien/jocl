@@ -1,7 +1,7 @@
 package com.mbien.opencl;
 
 import com.mbien.opencl.impl.CLImpl;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.common.nio.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.mbien.opencl.TestUtils.*;
 import static com.mbien.opencl.util.CLUtil.*;
-import static com.jogamp.gluegen.runtime.Buffers.*;
+import static com.jogamp.common.nio.Buffers.*;
 
 /**
  * Test testing the low level bindings.

@@ -1,7 +1,7 @@
 package com.mbien.opencl;
 
-import com.jogamp.gluegen.runtime.Buffers;
-import com.jogamp.gluegen.runtime.Int64Buffer;
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.common.nio.Int64Buffer;
 import com.mbien.opencl.util.CLUtil;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;

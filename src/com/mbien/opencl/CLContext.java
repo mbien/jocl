@@ -4,8 +4,8 @@ import com.mbien.opencl.CLDevice.Type;
 import com.mbien.opencl.CLMemory.Mem;
 import com.mbien.opencl.CLSampler.AddressingMode;
 import com.mbien.opencl.CLSampler.FilteringMode;
-import com.jogamp.gluegen.runtime.Int64Buffer;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.common.nio.Int64Buffer;
+import com.jogamp.common.nio.PointerBuffer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static com.mbien.opencl.CLException.*;
-import static com.jogamp.gluegen.runtime.Buffers.*;
-import static com.jogamp.gluegen.runtime.Platform.*;
+import static com.jogamp.common.nio.Buffers.*;
+import static com.jogamp.common.os.Platform.*;
 
 /**
  * CLContext is responsible for managing objects such as command-queues, memory,
@@ -176,7 +176,7 @@ public class CLContext extends CLObject implements CLResource {
             throw new RuntimeException("no OpenCL installation found");
         }
 
-        return PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
+        return (PointerBuffer)PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
                                               .put(platform.ID).put(0) // 0 terminated array
                                               .rewind();
     }

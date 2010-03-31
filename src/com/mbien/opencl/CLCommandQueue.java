@@ -1,15 +1,15 @@
 package com.mbien.opencl;
 
-import com.jogamp.gluegen.runtime.Int64Buffer;
+import com.jogamp.common.nio.Int64Buffer;
 import com.mbien.opencl.gl.CLGLI;
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.common.nio.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import static com.jogamp.gluegen.runtime.Buffers.*;
+import static com.jogamp.common.nio.Buffers.*;
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
 import static com.mbien.opencl.util.CLUtil.*;
@@ -1360,27 +1360,27 @@ public class CLCommandQueue extends CLObject implements CLResource {
     }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
-        return buffer.put(2, a).position(2);
+        return (PointerBuffer) buffer.put(2, a).position(2);
     }
 
-    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
-        return buffer.position(1).put(a).put(b).position(1);
-    }
-
-    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
-        return buffer.rewind().put(a).put(b).put(c).rewind();
-    }
+//    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
+//        return buffer.position(1).put(a).put(b).position(1);
+//    }
+//
+//    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
+//        return buffer.rewind().put(a).put(b).put(c).rewind();
+//    }
 
     private static Int64Buffer copy2NIO(Int64Buffer buffer, long a) {
-        return buffer.put(2, a).position(2);
+        return (Int64Buffer) buffer.put(2, a).position(2);
     }
 
     private static Int64Buffer copy2NIO(Int64Buffer buffer, long a, long b) {
-        return buffer.position(1).put(a).put(b).position(1);
+        return (Int64Buffer) ((Int64Buffer)buffer.position(1)).put(a).put(b).position(1);
     }
 
     private static Int64Buffer copy2NIO(Int64Buffer buffer, long a, long b, long c) {
-        return buffer.rewind().put(a).put(b).put(c).rewind();
+        return (Int64Buffer) ((Int64Buffer)buffer.rewind()).put(a).put(b).put(c).rewind();
     }
 
     /**

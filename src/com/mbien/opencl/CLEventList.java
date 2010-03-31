@@ -1,6 +1,6 @@
 package com.mbien.opencl;
 
-import com.jogamp.gluegen.runtime.PointerBuffer;
+import com.jogamp.common.nio.PointerBuffer;
 import java.util.Iterator;
 
 /**

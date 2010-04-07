@@ -9,7 +9,10 @@
     </content>
     <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="junit_4" level="project" />
+    <orderEntry type="module" module-name="gluegen" />
+    <orderEntry type="module" module-name="jogl" />
+    <orderEntry type="module" module-name="nativewindow" />
+    <orderEntry type="module" module-name="newt" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -37,6 +40,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="junit" level="application" />
   </component>
 </module>
 

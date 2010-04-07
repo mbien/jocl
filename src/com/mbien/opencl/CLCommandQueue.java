@@ -1360,7 +1360,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
-        return (PointerBuffer) buffer.put(2, a).position(2);
+        return (PointerBuffer) buffer.put(0, a);
     }
 
 //    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {

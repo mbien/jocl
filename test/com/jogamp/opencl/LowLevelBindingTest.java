@@ -1,14 +1,21 @@
 package com.jogamp.opencl;
 
+import com.jogamp.common.nio.Int64Buffer;
+import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.impl.CLImpl;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static java.lang.System.*;
+import static org.junit.Assert.*;
 import static com.jogamp.common.nio.Buffers.*;
+import static com.jogamp.common.os.Platform.*;
+import static com.jogamp.opencl.util.CLUtil.*;
+import static com.jogamp.opencl.TestUtils.*;
 
 /**
  * Test testing the low level bindings.
@@ -19,7 +26,7 @@ public class LowLevelBindingTest {
     private final static String programSource =
               " // OpenCL Kernel Function for element by element vector addition                                  \n"
             + "kernel void VectorAdd(global const int* a, global const int* b, global int* c, int iNumElements) { \n"
-            + "    // get index into global data array                                                            \n"
+            + "    // get index in global data array                                                              \n"
             + "    int iGID = get_global_id(0);                                                                   \n"
             + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code             \n"
             + "    if (iGID >= iNumElements)  {                                                                   \n"
@@ -29,7 +36,7 @@ public class LowLevelBindingTest {
             + "    c[iGID] = a[iGID] + b[iGID];                                                                   \n"
             + "}                                                                                                  \n"
             + "kernel void Test(global const int* a, global const int* b, global int* c, int iNumElements) {      \n"
-            + "    // get index into global data array                                                            \n"
+            + "    // get index in global data array                                                              \n"
             + "    int iGID = get_global_id(0);                                                                   \n"
             + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code             \n"
             + "    if (iGID >= iNumElements)  {                                                                   \n"
@@ -47,69 +54,67 @@ public class LowLevelBindingTest {
 
     @Test
     public void contextlessTest() {
-        out.println("low level tests temporary disabled");
-        out.println(" - - - lowLevelTest; contextless binding - - - ");
 
+        out.println(" - - - lowLevelTest; contextless binding - - - ");
 
         CL cl = CLPlatform.getLowLevelCLInterface();
 
-        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clCreateFromGLBuffer").getLong());
-        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clEnqueueAcquireGLObjects").getLong());
-/*
+//        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clCreateFromGLBuffer").getLong());
+//        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clEnqueueAcquireGLObjects").getLong());
+
         int ret = CL.CL_SUCCESS;
 
-        int[] intBuffer = new int[1];
+        IntBuffer intBuffer = newDirectIntBuffer(1);
         // find all available OpenCL platforms
-        ret = cl.clGetPlatformIDs(0, null, 0, intBuffer, 0);
+        ret = cl.clGetPlatformIDs(0, null, intBuffer);
         checkForError(ret);
-        out.println("#platforms: "+intBuffer[0]);
+        out.println("#platforms: "+intBuffer.get(0));
 
-        long[] platformId = new long[intBuffer[0]];
-        ret = cl.clGetPlatformIDs(platformId.length, platformId, 0, null, 0);
+        PointerBuffer platformId = PointerBuffer.allocateDirect(intBuffer.get(0));
+        ret = cl.clGetPlatformIDs(platformId.capacity(), platformId, null);
         checkForError(ret);
 
         // print platform info
-        long[] longBuffer = new long[1];
-        ByteBuffer bb = ByteBuffer.allocate(128);
-        bb.order(ByteOrder.nativeOrder());
+        Int64Buffer longBuffer = Int64Buffer.allocateDirect(1);
+        ByteBuffer bb = newDirectByteBuffer(128);
 
-        for (int i = 0; i < platformId.length; i++)  {
+        for (int i = 0; i < platformId.capacity(); i++)  {
 
-            long platform = platformId[i];
+            long platform = platformId.get(i);
             out.println("platform id: "+platform);
 
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_PROFILE, bb.capacity(), bb, longBuffer, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_PROFILE, bb.capacity(), bb, longBuffer);
             checkForError(ret);
-            out.println("    profile: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
+            out.println("    profile: " + clString2JavaString(bb, (int)longBuffer.get(0)));
 
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VERSION, bb.capacity(), bb, longBuffer, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VERSION, bb.capacity(), bb, longBuffer);
             checkForError(ret);
-            out.println("    version: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
+            out.println("    version: " + clString2JavaString(bb, (int)longBuffer.get(0)));
 
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_NAME, bb.capacity(), bb, longBuffer, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_NAME, bb.capacity(), bb, longBuffer);
             checkForError(ret);
-            out.println("    name: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
+            out.println("    name: " + clString2JavaString(bb, (int)longBuffer.get(0)));
 
-            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VENDOR, bb.capacity(), bb, longBuffer, 0);
+            ret = cl.clGetPlatformInfo(platform, CL.CL_PLATFORM_VENDOR, bb.capacity(), bb, longBuffer);
             checkForError(ret);
-            out.println("    vendor: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
+            out.println("    vendor: " + clString2JavaString(bb, (int)longBuffer.get(0)));
 
             //find all devices
-            ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intBuffer, 0);
+            ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, intBuffer);
             checkForError(ret);
-            out.println("#devices: "+intBuffer[0]);
+            out.println("#devices: "+intBuffer.get(0));
 
-            long[] devices = new long[intBuffer[0]];
-            ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.length, devices, 0, null, 0);
+            PointerBuffer devices = PointerBuffer.allocateDirect(intBuffer.get(0));
+            ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.capacity(), devices, null);
 
             //print device info
-            for (int j = 0; j < devices.length; j++) {
-                long device = devices[j];
-                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, bb.capacity(), bb, longBuffer, 0);
+            for (int j = 0; j < devices.capacity(); j++) {
+                long device = devices.get(j);
+                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_NAME, bb.capacity(), bb, longBuffer);
                 checkForError(ret);
-                out.println("    device: " + clString2JavaString(bb.array(), (int)longBuffer[0]));
+                out.println("    device: " + clString2JavaString(bb, (int)longBuffer.get(0)));
 
-                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, bb.capacity(), bb, longBuffer, 0);
+                ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_TYPE, bb.capacity(), bb, longBuffer);
                 checkForError(ret);
                 out.println("    type: " + CLDevice.Type.valueOf(bb.get()));
                 bb.rewind();
@@ -117,54 +122,52 @@ public class LowLevelBindingTest {
             }
 
         }
-*/
     }
-/*
+
     @Test
     public void createContextTest() {
 
         out.println(" - - - createContextTest - - - ");
 
-        CL cl = CLPlatform.getLowLevelBinding();
+        CL cl = CLPlatform.getLowLevelCLInterface();
 
-        int[] intArray = new int[1];
+        IntBuffer intBuffer = newDirectIntBuffer(1);
         // find all available OpenCL platforms
-        int ret = cl.clGetPlatformIDs(0, null, 0, intArray, 0);
+        int ret = cl.clGetPlatformIDs(0, null, intBuffer);
         checkForError(ret);
-        out.println("#platforms: "+intArray[0]);
+        out.println("#platforms: "+intBuffer.get(0));
 
-        long[] longArray = new long[intArray[0]];
-        ret = cl.clGetPlatformIDs(longArray.length, longArray, 0, null, 0);
+        PointerBuffer pb = PointerBuffer.allocateDirect(intBuffer.get(0));
+        ret = cl.clGetPlatformIDs(pb.capacity(), pb, null);
         checkForError(ret);
 
-        long platform = longArray[0];
+        long platform = pb.get(0);
 
         //find all devices
-        ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, 0, intArray, 0);
+        ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, 0, null, intBuffer);
         checkForError(ret);
-        out.println("#devices: "+intArray[0]);
+        out.println("#devices: "+intBuffer.get(0));
 
-        long[] devices = new long[intArray[0]];
-        ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.length, devices, 0, null, 0);
+        PointerBuffer devices = PointerBuffer.allocateDirect(intBuffer.get(0));
+        ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.capacity(), devices, null);
 
-        IntBuffer intBuffer = IntBuffer.allocate(1);
         long context = cl.clCreateContext(null, devices, null, null, intBuffer);
         checkError("on clCreateContext", intBuffer.get());
 
         //get number of devices
-        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longArray, 0);
+        Int64Buffer longBuffer = Int64Buffer.allocateDirect(1);
+        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
         checkError("on clGetContextInfo", ret);
 
-        int sizeofLong = (CPU.is32Bit()?4:8);
-        out.println("context created with " + longArray[0]/sizeofLong + " devices");
+        long contextDevices = longBuffer.get(0)/(is32Bit()?4:8);
+        out.println("context created on " + contextDevices + " devices");
 
         //check if equal
-        assertEquals("context was not created on all devices specified", devices.length, longArray[0]/sizeofLong);
+        assertEquals("context was not created on all devices specified", devices.capacity(), contextDevices);
 
         ret = cl.clReleaseContext(context);
         checkError("on clReleaseContext", ret);
     }
-
 
     @Test
     public void lowLevelVectorAddTest() {
@@ -178,36 +181,48 @@ public class LowLevelBindingTest {
 //            }
 //        };
 
-        long[] longArray = new long[1];
-        ByteBuffer bb = ByteBuffer.allocate(4096).order(ByteOrder.nativeOrder());
+        Int64Buffer longBuffer = Int64Buffer.allocateDirect(1);
 
-        CL cl = CLPlatform.getLowLevelBinding();
+        CL cl = CLPlatform.getLowLevelCLInterface();
 
         int ret = CL.CL_SUCCESS;
-        int[] intArray = new int[1];
+        IntBuffer intBuffer = newDirectIntBuffer(1);
 
-        //TODO properties not allowed to be null
-        long context = cl.clCreateContextFromType(null, CL.CL_DEVICE_TYPE_ALL, null, null, null);
+        // find all available OpenCL platforms
+        ret = cl.clGetPlatformIDs(0, null, intBuffer);
+        checkForError(ret);
+        assertTrue(intBuffer.get(0) > 0);
+
+        PointerBuffer pb = PointerBuffer.allocateDirect(intBuffer.get(0));
+        ret = cl.clGetPlatformIDs(pb.capacity(), pb, null);
+        checkForError(ret);
+
+        long platform = pb.get(0);
+        PointerBuffer properties = (PointerBuffer)PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
+                                              .put(platform).put(0) // 0 terminated array
+                                              .rewind();
+        long context = cl.clCreateContextFromType(properties, CL.CL_DEVICE_TYPE_ALL, null, null, null);
         out.println("context handle: "+context);
 
-        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longArray, 0);
+        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
         checkError("on clGetContextInfo", ret);
 
-        int sizeofLong = (CPU.is32Bit()?4:8);
-        out.println("context created with " + longArray[0]/sizeofLong + " devices");
+        int sizeofLong = is32Bit()?4:8;
+        out.println("context created with " + longBuffer.get(0)/sizeofLong + " devices");
 
-        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, bb.capacity(), bb, null, 0);
+        ByteBuffer bb = newDirectByteBuffer(4096);
+        ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, bb.capacity(), bb, null);
         checkError("on clGetContextInfo", ret);
 
-        for (int i = 0; i < longArray[0]/sizeofLong; i++) {
+        for (int i = 0; i < longBuffer.get(0)/sizeofLong; i++) {
             out.println("device id: "+bb.getLong());
         }
 
         long firstDeviceID = bb.getLong(0);
 
         // Create a command-queue
-        long commandQueue = cl.clCreateCommandQueue(context, firstDeviceID, 0, intArray, 0);
-        checkError("on clCreateCommandQueue", intArray[0]);
+        long commandQueue = cl.clCreateCommandQueue(context, firstDeviceID, 0, intBuffer);
+        checkError("on clCreateCommandQueue", intBuffer.get(0));
 
         int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
         int localWorkSize = 256;      // set and log Global and Local work size dimensions
@@ -220,61 +235,57 @@ public class LowLevelBindingTest {
         ByteBuffer dest = newDirectByteBuffer(globalWorkSize*SIZEOF_INT);
 
         // Allocate the OpenCL buffer memory objects for source and result on the device GMEM
-        long devSrcA = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, srcA.capacity(), null, intArray, 0);
-        checkError("on clCreateBuffer", intArray[0]);
-        long devSrcB = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, srcB.capacity(), null, intArray, 0);
-        checkError("on clCreateBuffer", intArray[0]);
-        long devDst  = cl.clCreateBuffer(context, CL.CL_MEM_WRITE_ONLY, dest.capacity(), null, intArray, 0);
-        checkError("on clCreateBuffer", intArray[0]);
+        long devSrcA = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, srcA.capacity(), null, intBuffer);
+        checkError("on clCreateBuffer", intBuffer.get(0));
+        long devSrcB = cl.clCreateBuffer(context, CL.CL_MEM_READ_ONLY, srcB.capacity(), null, intBuffer);
+        checkError("on clCreateBuffer", intBuffer.get(0));
+        long devDst  = cl.clCreateBuffer(context, CL.CL_MEM_WRITE_ONLY, dest.capacity(), null, intBuffer);
+        checkError("on clCreateBuffer", intBuffer.get(0));
 
 
         // Create the program
-        long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, new long[]{programSource.length()}, 0, intArray, 0);
-        checkError("on clCreateProgramWithSource", intArray[0]);
+        Int64Buffer lengths = (Int64Buffer)Int64Buffer.allocateDirect(1).put(programSource.length());
+        long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
+        checkError("on clCreateProgramWithSource", intBuffer.get(0));
 
         // Build the program
-        ret = cl.clBuildProgram(program, null, null, null, null);
+        ret = cl.clBuildProgram(program, 0, null, null, null, null);
         checkError("on clBuildProgram", ret);
 
         // Read program infos
-        bb.rewind();
-        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_NUM_DEVICES, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_NUM_DEVICES, bb.capacity(), bb, null);
         checkError("on clGetProgramInfo1", ret);
         out.println("program associated with "+bb.getInt(0)+" device(s)");
 
-        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, null, longArray, 0);
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, 0, null, longBuffer);
         checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
-        out.println("program source length (cl): "+longArray[0]);
+        out.println("program source length (cl): "+longBuffer.get(0));
         out.println("program source length (java): "+programSource.length());
 
-        bb.rewind();
-        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_SOURCE, bb.capacity(), bb, null);
         checkError("on clGetProgramInfo CL_PROGRAM_SOURCE", ret);
-        out.println("program source:\n" + clString2JavaString(bb.array(), (int)longArray[0]));
+        out.println("program source:\n" + clString2JavaString(bb, (int)longBuffer.get(0)));
 
         // Check program status
-        Arrays.fill(longArray, 42);
-        bb.rewind();
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_STATUS, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_STATUS, bb.capacity(), bb, null);
         checkError("on clGetProgramBuildInfo1", ret);
 
         out.println("program build status: " + CLProgram.Status.valueOf(bb.getInt(0)));
         assertEquals("build status", CL.CL_BUILD_SUCCESS, bb.getInt(0));
 
         // Read build log
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, 0, null, longArray, 0);
+        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, 0, null, longBuffer);
         checkError("on clGetProgramBuildInfo2", ret);
-        out.println("program log length: " + longArray[0]);
+        out.println("program log length: " + longBuffer.get(0));
 
         bb.rewind();
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, bb.capacity(), bb, null, 0);
+        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, bb.capacity(), bb, null);
         checkError("on clGetProgramBuildInfo3", ret);
-        out.println("log:\n" + clString2JavaString(bb.array(), (int)longArray[0]));
+        out.println("log:\n" + clString2JavaString(bb, (int)longBuffer.get(0)));
 
         // Create the kernel
-        Arrays.fill(intArray, 42);
-        long kernel = cl.clCreateKernel(program, "VectorAdd", intArray, 0);
-        checkError("on clCreateKernel", intArray[0]);
+        long kernel = cl.clCreateKernel(program, "VectorAdd", intBuffer);
+        checkError("on clCreateKernel", intBuffer.get(0));
 
 //        srcA.limit(elementCount*SIZEOF_FLOAT);
 //        srcB.limit(elementCount*SIZEOF_FLOAT);
@@ -283,10 +294,10 @@ public class LowLevelBindingTest {
         fillBuffer(srcB, 46987);
 
         // Set the Argument values
-        ret = cl.clSetKernelArg(kernel, 0, CPU.is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcA));  checkError("on clSetKernelArg0", ret);
-        ret = cl.clSetKernelArg(kernel, 1, CPU.is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcB));  checkError("on clSetKernelArg1", ret);
-        ret = cl.clSetKernelArg(kernel, 2, CPU.is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devDst));   checkError("on clSetKernelArg2", ret);
-        ret = cl.clSetKernelArg(kernel, 3, SIZEOF_INT,  wrap(elementCount));  checkError("on clSetKernelArg3", ret);
+        ret = cl.clSetKernelArg(kernel, 0, is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcA));        checkError("on clSetKernelArg0", ret);
+        ret = cl.clSetKernelArg(kernel, 1, is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcB));        checkError("on clSetKernelArg1", ret);
+        ret = cl.clSetKernelArg(kernel, 2, is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devDst));         checkError("on clSetKernelArg2", ret);
+        ret = cl.clSetKernelArg(kernel, 3, SIZEOF_INT,                       wrap(elementCount));   checkError("on clSetKernelArg3", ret);
 
         out.println("used device memory: "+ (srcA.capacity()+srcB.capacity()+dest.capacity())/1000000 +"MB");
 
@@ -297,8 +308,8 @@ public class LowLevelBindingTest {
         checkError("on clEnqueueWriteBuffer", ret);
 
         // Launch kernel
-        PointerBuffer gWS = PointerBuffer.allocateDirect(1).put(globalWorkSize).rewind();
-        PointerBuffer lWS = PointerBuffer.allocateDirect(1).put(localWorkSize).rewind();
+        Int64Buffer gWS = (Int64Buffer) Int64Buffer.allocateDirect(1).put(globalWorkSize).rewind();
+        Int64Buffer lWS = (Int64Buffer) Int64Buffer.allocateDirect(1).put(localWorkSize).rewind();
         ret = cl.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, gWS, lWS, 0, null, null);
         checkError("on clEnqueueNDRangeKernel", ret);
 
@@ -336,7 +347,7 @@ public class LowLevelBindingTest {
         checkError("on clReleaseContext", ret);
 
     }
-
+/*
     @Test
     public void loadTest() {
         //for memory leak detection; e.g watch out for "out of host memory" errors

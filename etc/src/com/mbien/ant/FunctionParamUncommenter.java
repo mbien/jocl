@@ -1,4 +1,4 @@
-package com.mbien.ant;
+package com.jogamp.ant;
 
 import java.io.BufferedWriter;
 import java.io.File;

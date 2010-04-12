@@ -15,7 +15,7 @@ void createContextCallback(const char * c, const void * v, size_t s, void * o) {
 */
 
 /*   Java->C glue code:
- *   Java package: com.mbien.opencl.impl.CLImpl
+ *   Java package: com.jogamp.opencl.impl.CLImpl
  *    Java method: long clCreateContextFromType(java.nio.IntBuffer props, long device_type, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret)
  *     C function: cl_context clCreateContextFromType(  cl_context_properties *  properties ,
  *                                                      cl_uint                  num_devices ,
@@ -25,7 +25,7 @@ void createContextCallback(const char * c, const void * v, size_t s, void * o) {
  *                                                      cl_int *                 errcode_ret );
  */
 JNIEXPORT jlong JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject _unused,
+Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject _unused,
         jobject props, jint props_byte_offset, jobject device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
@@ -57,7 +57,7 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject 
  *                cl_int *                   errcode_ret   ) CL_API_SUFFIX__VERSION_1_0;
  */
 JNIEXPORT jlong JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
+Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
         jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
@@ -93,7 +93,7 @@ Java_com_mbien_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
  *               void *                  user_data   ) CL_API_SUFFIX__VERSION_1_0;
  */
 JNIEXPORT jint JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
+Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
         jlong program, jint deviceCount, jobject deviceList, jint device_type_offset, jstring options, jobject cb, jobject data) {
 
     const char* _strchars_options = NULL;
@@ -124,12 +124,12 @@ Java_com_mbien_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
 }
 
 /*   Java->C glue code:
- *   Java package: com.mbien.opencl.impl.CLImpl
+ *   Java package: com.jogamp.opencl.impl.CLImpl
  *    Java method: java.nio.ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags, com.jogamp.gluegen.runtime.PointerBuffer origin, com.jogamp.gluegen.runtime.PointerBuffer range, com.jogamp.gluegen.runtime.PointerBuffer image_row_pitch, com.jogamp.gluegen.runtime.PointerBuffer image_slice_pitch, int num_events_in_wait_list, com.jogamp.gluegen.runtime.PointerBuffer event_wait_list, com.jogamp.gluegen.runtime.PointerBuffer event, java.nio.IntBuffer errcode_ret)
  *     C function: void *  clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret);
  */
 JNIEXPORT jobject JNICALL
-Java_com_mbien_opencl_impl_CLImpl_clEnqueueMapImage0__JJIJLjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2IILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2I(JNIEnv *env, jobject _unused, jlong command_queue, jlong image, jint blocking_map, jlong map_flags, jobject origin, jint origin_byte_offset, jobject range, jint range_byte_offset, jobject image_row_pitch, jint image_row_pitch_byte_offset, jobject image_slice_pitch, jint image_slice_pitch_byte_offset, jint num_events_in_wait_list, jobject event_wait_list, jint event_wait_list_byte_offset, jobject event, jint event_byte_offset, jobject errcode_ret, jint errcode_ret_byte_offset) {
+Java_com_jogamp_opencl_impl_CLImpl_clEnqueueMapImage0__JJIJLjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2IILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2I(JNIEnv *env, jobject _unused, jlong command_queue, jlong image, jint blocking_map, jlong map_flags, jobject origin, jint origin_byte_offset, jobject range, jint range_byte_offset, jobject image_row_pitch, jint image_row_pitch_byte_offset, jobject image_slice_pitch, jint image_slice_pitch_byte_offset, jint num_events_in_wait_list, jobject event_wait_list, jint event_wait_list_byte_offset, jobject event, jint event_byte_offset, jobject errcode_ret, jint errcode_ret_byte_offset) {
 
   size_t * _origin_ptr = NULL;
   size_t * _range_ptr = NULL;

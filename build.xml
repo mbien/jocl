@@ -73,8 +73,8 @@
             <src path="${basedir}/etc/src"/>
         </javac>
 
-        <taskdef name="update-headers"            classname="com.mbien.ant.HeaderFileDownloader"     classpath="${etc.build.dir}"/>
-        <taskdef name="uncomment-function-params" classname="com.mbien.ant.FunctionParamUncommenter" classpath="${etc.build.dir}"/>
+        <taskdef name="update-headers"            classname="com.jogamp.ant.HeaderFileDownloader"     classpath="${etc.build.dir}"/>
+        <taskdef name="uncomment-function-params" classname="com.jogamp.ant.FunctionParamUncommenter" classpath="${etc.build.dir}"/>
 
     </target>
 
@@ -243,7 +243,7 @@
             windowtitle="${javadoc.windowtitle}">
 
             <arg line="${javadoc.additionalparam} -J-Dnativetaglet.mapping=${basedir}/resources/native-taglet.properties"/>
-            <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/build/gluegen.jar:/home/mbien/NetBeansProjects/JOGL/jocl/"/>
+            <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/build/gluegen.jar:/home/jogamp/NetBeansProjects/JOGL/jocl/"/>
 
             <classpath>
                 <pathelement path="${javac.classpath}"/>
@@ -259,7 +259,7 @@
                 <include name="**/*.java"/>
             </fileset>
 
-            <excludepackage name="com.mbien.opencl.impl"/>
+            <excludepackage name="com.jogamp.opencl.impl"/>
         </javadoc>
     </target>
 

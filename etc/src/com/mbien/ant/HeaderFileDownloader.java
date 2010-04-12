@@ -1,4 +1,4 @@
-package com.mbien.ant;
+package com.jogamp.ant;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

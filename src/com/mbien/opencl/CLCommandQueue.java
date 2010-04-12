@@ -1064,7 +1064,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * Calls {@native clEnqueueMarker}.
      */
     public CLCommandQueue putMarker(CLEventList events) {
-        int ret = cl.clEnqueueMarker(CL_INT_MIN, events.IDs);
+        int ret = cl.clEnqueueMarker(ID, events.IDs);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not enqueue marker " + events);
         }

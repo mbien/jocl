@@ -6,10 +6,10 @@ import com.jogamp.common.nio.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-import static com.jogamp.common.nio.Buffers.*;
 import static com.mbien.opencl.CLException.*;
 import static com.mbien.opencl.CL.*;
 import static com.mbien.opencl.util.CLUtil.*;
@@ -55,8 +55,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int[] status = new int[1];
         long id = context.cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
 
-        if(status[0] != CL_SUCCESS)
-            throw newException(status[0], "can not create command queue on "+device);
+        if(status[0] != CL_SUCCESS) {
+            throw newException(status[0], "can not create command queue on " + device +" with properties: " + Mode.valuesOf(properties));
+        }
 
         return new CLCommandQueue(context, id, device, properties);
     }
@@ -92,8 +93,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
                 0, writeBuffer.getSize(), writeBuffer.buffer,
                 conditions, conditionIDs, events==null ? null : events.IDs);
 
-        if(ret != CL_SUCCESS)
-            throw newException(ret, "can not enqueue WriteBuffer: " + writeBuffer);
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue WriteBuffer: " + writeBuffer + "with " + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -135,8 +137,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
                 0, readBuffer.getSize(), readBuffer.buffer,
                 conditions, conditionIDs, events==null ? null : events.IDs);
 
-        if(ret != CL_SUCCESS)
-            throw newException(ret, "can not enqueue ReadBuffer: " + readBuffer);
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue ReadBuffer: " + readBuffer + "with " + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -182,7 +185,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
                         ID, src.ID, dest.ID, srcOffset, destOffset, bytesToCopy,
                         conditions, conditionIDs, events==null ? null : events.IDs);
 
-        checkForError(ret, "can not copy Buffer");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not copy Buffer from " + src + " to " + dest + " with srcOffset: "+ srcOffset
+                    + " dstOffset: " + destOffset + " bytesToCopy: " + bytesToCopy + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -242,7 +248,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, clBoolean(blockingWrite),
                                          ibA, ibB, inputRowPitch, 0, writeImage.buffer,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not write Image");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue WriteImage " + writeImage + " with inputRowPitch: " + inputRowPitch
+                       + " origin: " + toStr(originX, originY)+ " range: " + toStr(rangeX, rangeY) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -299,7 +308,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueWriteImage(ID, writeImage.ID, clBoolean(blockingWrite),
                                          ibA, ibB, inputRowPitch, inputSlicePitch, writeImage.buffer,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not write Image");
+
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue WriteImage " + writeImage + " with inputRowPitch: " + inputRowPitch + " inputSlicePitch: " + inputSlicePitch
+                       + " origin: " + toStr(originX, originY, originZ)+ " range: " + toStr(rangeX, rangeY, rangeZ) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -358,7 +371,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueReadImage(ID, readImage.ID, clBoolean(blockingRead),
                                          ibA, ibB, inputRowPitch, 0, readImage.buffer,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not read Image");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue ReadImage " + readImage + " with inputRowPitch: " + inputRowPitch
+                       + " origin: " + toStr(originX, originY)+ " range: " + toStr(rangeX, rangeY) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -415,7 +431,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueReadImage(ID, readImage.ID, clBoolean(blockingRead),
                                         ibA, ibB, inputRowPitch, inputSlicePitch, readImage.buffer,
                                         conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not read Image");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue ReadImage " + readImage + " with inputRowPitch: " + inputRowPitch + " inputSlicePitch: " + inputSlicePitch
+                       + " origin: " + toStr(originX, originY, originZ)+ " range: " + toStr(rangeX, rangeY, rangeZ) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -478,7 +497,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, ibA, ibB, ibC,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not copy Image");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not CopyImage " + srcImage +" to "+ dstImage
+                    + " with srcOrigin: " + toStr(srcOriginX, srcOriginY) + " dstOrigin: " + toStr(dstOriginX, dstOriginY)
+                    + " range:  " + toStr(rangeX, rangeY) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -541,7 +564,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         int ret = cl.clEnqueueCopyImage(ID, srcImage.ID, dstImage.ID, ibA, ibB, ibC,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not copy Image");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not CopyImage " + srcImage +" to "+ dstImage
+                    + " with srcOrigin: " + toStr(srcOriginX, srcOriginY, srcOriginZ) + " dstOrigin: " + toStr(dstOriginX, dstOriginY, dstOriginZ)
+                    + " range:  " + toStr(rangeX, rangeY, rangeZ) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -603,7 +630,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueCopyBufferToImage(ID, srcBuffer.ID, dstImage.ID,
                                          srcOffset, ibA, ibB,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not copy buffer to image2d");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not copy " + srcBuffer +" to "+ dstImage
+                    + " with srcOffset: " + srcOffset + " dstOrigin: " + toStr(dstOriginX, dstOriginY)
+                    + " range:  " + toStr(rangeX, rangeY) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -664,7 +695,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueCopyBufferToImage(ID, srcBuffer.ID, dstImage.ID,
                                          srcOffset, ibA, ibB,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not copy buffer to image3d");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not copy " + srcBuffer +" to "+ dstImage
+                    + " with srcOffset: " + srcOffset + " dstOrigin: " + toStr(dstOriginX, dstOriginY, dstOriginZ)
+                    + " range:  " + toStr(rangeX, rangeY, dstOriginZ) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -726,7 +761,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
                                          ibA, ibB, dstOffset,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not copy buffer to image2d");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not copy " + srcImage +" to "+ dstBuffer
+                    + " with srcOrigin: " + toStr(srcOriginX, srcOriginY) + " range: " + toStr(rangeX, rangeY)
+                    + " dstOffset: " + dstOffset + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -787,7 +826,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
                                          ibA, ibB, dstOffset,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not copy buffer to image3d");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not copy " + srcImage +" to "+ dstBuffer
+                    + " with srcOrigin: " + toStr(srcOriginX, srcOriginY, srcOriginZ) + " range: " + toStr(rangeX, rangeY, rangeZ)
+                    + " dstOffset: " + dstOffset + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -839,7 +882,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
         ByteBuffer mappedBuffer = cl.clEnqueueMapBuffer(ID, buffer.ID, clBoolean(blockingMap),
                                          flag.FLAGS, offset, length,
                                          conditions, conditionIDs, events==null ? null : events.IDs, error);
-        checkForError(error.get(), "can not map buffer");
+        if(error.get(0) != CL_SUCCESS) {
+            throw newException(error.get(0), "can not map " + buffer + " with: " + flag
+                    + " offset: " + offset + " lenght: " + length + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -881,7 +927,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueMapImage}.
      */
-    public ByteBuffer putMapImage(CLImage2d<?> buffer, CLMemory.Map flag,
+    public ByteBuffer putMapImage(CLImage2d<?> image, CLMemory.Map flag,
                                     int offsetX, int offsetY,
                                     int rangeX, int rangeY, boolean blockingMap, CLEventList condition, CLEventList events) {
 
@@ -898,10 +944,13 @@ public class CLCommandQueue extends CLObject implements CLResource {
         copy2NIO(ibB, offsetX, offsetY, 0);
         copy2NIO(ibC, rangeX, rangeY, 1);
 
-        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, clBoolean(blockingMap),
+        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, image.ID, clBoolean(blockingMap),
                                          flag.FLAGS, ibB, ibC, null, null,
                                          conditions, conditionIDs, events==null ? null : events.IDs, error);
-        checkForError(error.get(), "can not map image2d");
+        if(error.get(0) != CL_SUCCESS) {
+            throw newException(error.get(0), "can not map " + image + " with: " + flag
+                    + " offset: " + toStr(offsetX, offsetY) + " range: " + toStr(rangeX, rangeY) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -944,7 +993,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueMapImage}.
      */
-    public ByteBuffer putMapImage(CLImage3d<?> buffer, CLMemory.Map flag,
+    public ByteBuffer putMapImage(CLImage3d<?> image, CLMemory.Map flag,
                                     int offsetX, int offsetY, int offsetZ,
                                     int rangeX, int rangeY, int rangeZ, boolean blockingMap, CLEventList condition, CLEventList events) {
 
@@ -958,10 +1007,13 @@ public class CLCommandQueue extends CLObject implements CLResource {
         IntBuffer error = pbA.position(0).getBuffer().asIntBuffer();
         copy2NIO(ibB, offsetX, offsetY, offsetZ);
         copy2NIO(ibC, rangeX, rangeY, rangeZ);
-        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, buffer.ID, clBoolean(blockingMap),
+        ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, image.ID, clBoolean(blockingMap),
                                          flag.FLAGS, ibB, ibC, null, null,
                                          conditions, conditionIDs, events==null ? null : events.IDs, error);
-        checkForError(error.get(), "can not map image3d");
+        if(error.get(0) != CL_SUCCESS) {
+            throw newException(error.get(0), "can not map " + image + " with: " + flag
+                    + " offset: " + toStr(offsetX, offsetY, offsetZ) + " range: " + toStr(rangeX, rangeY, rangeZ) + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -998,7 +1050,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         int ret = cl.clEnqueueUnmapMemObject(ID, memory.ID, memory.getBuffer(),
                                         conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not unmap memory");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not unmap " + memory + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -1011,7 +1065,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
      */
     public CLCommandQueue putMarker(CLEventList events) {
         int ret = cl.clEnqueueMarker(CL_INT_MIN, events.IDs);
-        checkForError(ret, "can not enqueue marker");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue marker " + events);
+        }
         return this;
     }
 
@@ -1024,7 +1080,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
         int ret = blockingWait ? cl.clWaitForEvents(1, list.IDs)
                                : cl.clEnqueueWaitForEvents(ID, 1, list.IDs);
         list.IDs.position(marker);
-        checkForError(ret, "error while waiting for events");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for event #" + index+ " in "+list);
+        }
         return this;
     }
 
@@ -1035,7 +1093,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
         list.IDs.rewind();
         int ret = blockingWait ? cl.clWaitForEvents(list.size, list.IDs)
                                : cl.clEnqueueWaitForEvents(ID, list.size, list.IDs);
-        checkForError(ret, "error while waiting for events");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for events " + list);
+        }
         return this;
     }
 
@@ -1055,8 +1115,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * <p>Calls {@native clEnqueueTask}.</p>
      */
     public CLCommandQueue putTask(CLKernel kernel) {
-        int ret = cl.clEnqueueTask(ID, kernel.ID, 0, null, null);
-        checkForError(ret, "can not enqueue Task");
+        putTask(kernel, null, null);
         return this;
     }
 
@@ -1083,7 +1142,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
         }
 
         int ret = cl.clEnqueueTask(ID, kernel.ID, conditions, conditionIDs, events==null ? null : events.IDs);
-        checkForError(ret, "can not enqueue Task");
+        if(ret != CL_SUCCESS) {
+            checkForError(ret, "can not enqueue Task: " + kernel + toStr(condition, events));
+        }
         if(events != null) {
             events.createEvent(context);
         }
@@ -1215,8 +1276,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
                 conditions, conditionIDs,
                 events==null ? null : events.IDs);
 
-        if(ret != CL_SUCCESS)
-            throw newException(ret, "can not enqueue NDRangeKernel: " + kernel);
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue NDRangeKernel: " + kernel + " with gWO: "+toStr(globalWorkOffset)
+                            + " gWS: "+toStr(globalWorkSize) + " lWS: " + toStr(localWorkSize) + toStr(condition, events));
+
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -1261,8 +1325,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
                     conditions, conditionIDs,
                     events==null ? null : events.IDs);
 
-        if(ret != CL_SUCCESS)
-            throw newException(ret, "can not aquire GLObject: " + glObject);
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not aquire GLObject: " + glObject + "with " + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -1307,8 +1372,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
                 conditions, conditionIDs,
                 events==null ? null : events.IDs);
 
-        if(ret != CL_SUCCESS)
-            throw newException(ret, "can not release GLObject: " + glObject);
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not release GLObject: " + glObject + "with " + toStr(condition, events));
+        }
 
         if(events != null) {
             events.createEvent(context);
@@ -1381,6 +1447,29 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
     private static Int64Buffer copy2NIO(Int64Buffer buffer, long a, long b, long c) {
         return (Int64Buffer) ((Int64Buffer)buffer.rewind()).put(a).put(b).put(c).rewind();
+    }
+
+    private static String toStr(Int64Buffer buffer) {
+        if(buffer == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        for (int i = buffer.position(); i < buffer.capacity(); i++) {
+            sb.append(buffer.get(i));
+            if(i != buffer.capacity()-1) {
+                sb.append(", ");
+            }
+        }
+        return sb.append('}').toString();
+    }
+
+    private static String toStr(CLEventList condition, CLEventList events) {
+        return " cond.: " + condition +" events: "+events;
+    }
+
+    private String toStr(int... values) {
+        return Arrays.asList(values).toString();
     }
 
     /**

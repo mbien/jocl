@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  ******************************************************************************/
 
-/* $Revision: 10424 $ on $Date: 2010-02-17 14:34:49 -0800 (Wed, 17 Feb 2010) $ */
+/* $Revision: 11041 $ on $Date: 2010-04-14 10:50:06 -0700 (Wed, 14 Apr 2010) $ */
 
 #ifndef __CL_EXT_H
 #define __CL_EXT_H
@@ -51,6 +51,11 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clIcdGetPlatformIDsKHR(cl_uint          /* num_entries */,
                        cl_platform_id * /* platforms */,
                        cl_uint *        /* num_platforms */);
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL *clIcdGetPlatformIDsKHR_fn)(
+    cl_uint          num_entries,
+    cl_platform_id * platforms,
+    cl_uint *        num_platforms);
 
 #ifdef __cplusplus
 }

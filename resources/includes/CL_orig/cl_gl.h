@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  **********************************************************************************/
 
-/* $Revision: 10424 $ on $Date: 2010-02-17 14:34:49 -0800 (Wed, 17 Feb 2010) $ */
+/* $Revision: 11041 $ on $Date: 2010-04-14 10:50:06 -0700 (Wed, 14 Apr 2010) $ */
 
 /*
  * cl_gl.h contains Khronos-approved (KHR) OpenCL extensions which have
@@ -36,7 +36,7 @@
 #include <OpenCL/cl.h>
 #else
 #include <CL/cl.h>
-#endif	
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,7 +88,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clGetGLObjectInfo(cl_mem                /* memobj */,
                   cl_gl_object_type *   /* gl_object_type */,
                   cl_GLuint *              /* gl_object_name */) CL_API_SUFFIX__VERSION_1_0;
-                  
+
 extern CL_API_ENTRY cl_int CL_API_CALL
 clGetGLTextureInfo(cl_mem               /* memobj */,
                    cl_gl_texture_info   /* param_name */,
@@ -138,6 +138,13 @@ clGetGLContextInfoKHR(const cl_context_properties * /* properties */,
                       size_t                        /* param_value_size */,
                       void *                        /* param_value */,
                       size_t *                      /* param_value_size_ret */) CL_API_SUFFIX__VERSION_1_0;
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL *clGetGLContextInfoKHR_fn)(
+    const cl_context_properties * properties,
+    cl_gl_context_info            param_name,
+    size_t                        param_value_size,
+    void *                        param_value,
+    size_t *                      param_value_size_ret);
 
 #ifdef __cplusplus
 }

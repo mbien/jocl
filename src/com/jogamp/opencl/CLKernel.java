@@ -2,7 +2,6 @@ package com.jogamp.opencl;
 
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.common.os.Platform;
 import com.jogamp.common.nio.Int64Buffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -10,6 +9,7 @@ import java.nio.ByteOrder;
 
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.opencl.CL.*;
+import static com.jogamp.common.os.Platform.*;
 
 /**
  * High level abstraction for an OpenCL Kernel.
@@ -37,7 +37,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     CLKernel(CLProgram program, long id) {
         super(program.getContext(), id);
         this.program = program;
-        this.buffer = Buffers.newDirectByteBuffer(8*3);
+        this.buffer = Buffers.newDirectByteBuffer((is32Bit()?4:8)*3);
 
         Int64Buffer size = Int64Buffer.allocateDirect(1);
 
@@ -112,7 +112,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
 //    }
 
     public CLKernel setArg(int argumentIndex, CLMemory<?> value) {
-        setArgument(argumentIndex, Platform.is32Bit()?4:8, wrap(value.ID));
+        setArgument(argumentIndex, is32Bit()?4:8, wrap(value.ID));
         return this;
     }
 
@@ -242,11 +242,16 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
      * The returned array has always three elements.
      */
     public long[] getCompileWorkGroupSize(CLDevice device) {
-        int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 8*3, buffer, null);
+        int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, (is32Bit()?4:8)*3, buffer, null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "error while asking for CL_KERNEL_COMPILE_WORK_GROUP_SIZE of "+this+" on "+device);
         }
-        return new long[] { buffer.getLong(0), buffer.getLong(1), buffer.getLong(2) };
+
+        if(is32Bit()) {
+            return new long[] { buffer.getInt(0), buffer.getInt(4), buffer.getInt(8) };
+        }else {
+            return new long[] { buffer.getLong(0), buffer.getLong(8), buffer.getLong(16) };
+        }
     }
 
     private long getWorkGroupInfo(CLDevice device, int flag) {

@@ -239,8 +239,12 @@ public class CLProgramTest {
 
             long[] wgs = kernel.getCompileWorkGroupSize(context.getDevices()[0]);
 
-            // TODO test on other hardware and compare results
             out.println("compile workgroup size: " + wgs[0]+" "+wgs[1]+" "+wgs[2]);
+
+            assertEquals(512, wgs[0]);
+            assertEquals(512, wgs[1]);
+            assertEquals(512, wgs[2]);
+
 
         }finally{
             context.release();

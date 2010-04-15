@@ -48,7 +48,9 @@ public class CLSampler extends CLObject implements CLResource {
     public void release() {
         int ret = cl.clReleaseSampler(ID);
         context.onSamplerReleased(this);
-        checkForError(ret, "can not release sampler");
+        if(ret != CL.CL_SUCCESS) {
+            throw newException(ret, "can not release "+this);
+        }
     }
 
     public void close() {

@@ -72,6 +72,8 @@ public class CLCommandQueueTest {
         CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
         CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
 
+        out.println(queue);
+
         final CLEventList events = new CLEventList(2);
 
         assertEquals(0, events.size());
@@ -128,6 +130,8 @@ public class CLCommandQueueTest {
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
         CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
         CLCommandQueue queue = context.getDevices()[0].createCommandQueue(Mode.PROFILING_MODE);
+
+        out.println(queue);
 
         queue.putWriteBuffer(clBufferA, true) // write A
              .putWriteBuffer(clBufferB, true);// write B
@@ -191,6 +195,9 @@ public class CLCommandQueueTest {
 
         final CLCommandQueue queue1 = devices[0           ].createCommandQueue();
         final CLCommandQueue queue2 = devices[secondDevice].createCommandQueue();
+
+        out.println(queue1);
+        out.println(queue2);
 
         fillBuffer(clBufferC.buffer, 12345);
 

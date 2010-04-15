@@ -474,9 +474,9 @@ public class CLContext extends CLObject implements CLResource {
 
     @Override
     public String toString() {
-        return "CLContext [id: " + ID
-                      + " #devices: " + getDevices().length
-                      + "]";
+        return getClass().getSimpleName()+" [id: " + ID
+                                          + " #devices: " + getDevices().length
+                                          + "]";
     }
 
     @Override

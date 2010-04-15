@@ -110,13 +110,10 @@ public final class CLGLContext extends CLContext {
 
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
 
-        DefaultGraphicsConfiguration config = (DefaultGraphicsConfiguration)ctxImpl.getDrawableImpl()
-             .getNativeWindow().getGraphicsConfiguration().getNativeGraphicsConfiguration();
-
         PointerBuffer properties;
         if(glContext instanceof X11GLXContext) {
             properties = PointerBuffer.allocateDirect(7);
-            long handle = config.getScreen().getDevice().getHandle();
+            long handle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
             glID[0] = ((X11GLXContext)glContext).getContext();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_GLX_DISPLAY_KHR).put(handle)
@@ -129,7 +126,7 @@ public final class CLGLContext extends CLContext {
             //         CL_WGL_HDC_KHR, (cl_context_properties)0,
             //         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
             properties = PointerBuffer.allocateDirect(7);
-            long handle = config.getScreen().getDevice().getHandle();
+            long handle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
             glID[0] = ((WindowsWGLContext)glContext).getHGLRC();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_WGL_HDC_KHR).put(handle)

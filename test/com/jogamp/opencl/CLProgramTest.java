@@ -153,6 +153,8 @@ public class CLProgramTest {
 
         assertTrue(program.isExecutable());
 
+        context.release();
+
     }
 
     @Test
@@ -217,8 +219,34 @@ public class CLProgramTest {
         // cloneing
         assertEquals(builder, builder.clone());
 
+        context.release();
     }
 
+
+    @Test
+    public void kernelTest() {
+
+        String source = "__attribute__((reqd_work_group_size(512, 512, 512))) kernel void foo(void) { }\n";
+
+        CLContext context = CLContext.create();
+
+        try{
+            CLProgram program = context.createProgram(source).build();
+            assertTrue(program.isExecutable());
+            
+            CLKernel kernel = program.createCLKernel("foo");
+            assertNotNull(kernel);
+
+            long[] wgs = kernel.getCompileWorkGroupSize(context.getDevices()[0]);
+
+            // TODO test on other hardware and compare results
+            out.println("compile workgroup size: " + wgs[0]+" "+wgs[1]+" "+wgs[2]);
+
+        }finally{
+            context.release();
+        }
+
+    }
 
 
 }

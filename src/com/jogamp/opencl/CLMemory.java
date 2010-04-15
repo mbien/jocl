@@ -147,7 +147,9 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     public void release() {
         int ret = cl.clReleaseMemObject(ID);
         context.onMemoryReleased(this);
-        checkForError(ret, "can not release mem object");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not release "+this);
+        }
     }
 
     public void close() {
@@ -203,7 +205,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     @Override
     public String toString() {
-        return "CLMemory [id: " + ID+"]";
+        return getClass().getSimpleName()+" [id: " + ID+"]";
     }
 
     /**

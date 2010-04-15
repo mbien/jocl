@@ -162,7 +162,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
 
     private void setArgument(int argumentIndex, int size, Buffer value) {
         if(argumentIndex >= numArgs || argumentIndex < 0) {
-            throw new IndexOutOfBoundsException("kernel "+ toString() +" has "+numArgs+
+            throw new IndexOutOfBoundsException("kernel "+ this +" has "+numArgs+
                     " arguments, can not set argument with index "+argumentIndex);
         }
         if(!program.isExecutable()) {
@@ -171,7 +171,9 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         }
 
         int ret = cl.clSetKernelArg(ID, argumentIndex, size, value);
-        checkForError(ret, "error on clSetKernelArg");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "error setting arg "+argumentIndex+" to value "+value+" of size "+size+" of "+this);
+        }
     }
 
     /**
@@ -235,18 +237,23 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     }
 
     /**
-     * Returns the work-group size specified by the <code>__attribute__((reqd_work_gr oup_size(X, Y, Z)))</code> qualifier in kernel sources.
+     * Returns the work-group size specified by the <code>__attribute__((reqd_work_group_size(X, Y, Z)))</code> qualifier in kernel sources.
      * If the work-group size is not specified using the above attribute qualifier <code>new long[]{(0, 0, 0)}</code> is returned.
+     * The returned array has always three elements.
      */
     public long[] getCompileWorkGroupSize(CLDevice device) {
         int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 8*3, buffer, null);
-        checkForError(ret, "error while asking for clGetKernelWorkGroupInfo");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "error while asking for CL_KERNEL_COMPILE_WORK_GROUP_SIZE of "+this+" on "+device);
+        }
         return new long[] { buffer.getLong(0), buffer.getLong(1), buffer.getLong(2) };
     }
 
     private long getWorkGroupInfo(CLDevice device, int flag) {
         int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, flag, 8, buffer, null);
-        checkForError(ret, "error while asking for clGetKernelWorkGroupInfo");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "error while asking for clGetKernelWorkGroupInfo of "+this+" on "+device);
+        }
         return buffer.getLong(0);
     }
 
@@ -256,7 +263,9 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     public void release() {
         int ret = cl.clReleaseKernel(ID);
         program.onKernelReleased(this);
-        checkForError(ret, "can not release kernel");
+        if(ret != CL.CL_SUCCESS) {
+            throw newException(ret, "can not release "+this);
+        }
     }
 
     public void close() {

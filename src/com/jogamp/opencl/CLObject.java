@@ -50,8 +50,8 @@ abstract class CLObject {
 
     @Override
     public String toString() {
-        return "CLObject [id: " + ID
-                      + " context: " + context+"]";
+        return getClass().getSimpleName() + " [id: " + ID
+                                          + " context: " + context+"]";
     }
 
 }

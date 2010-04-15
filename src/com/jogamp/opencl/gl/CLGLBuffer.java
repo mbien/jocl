@@ -71,7 +71,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
 
     @Override
     public String toString() {
-        return "CLGLBuffer [id: " + ID+" glID: "+GLID+"]";
+        return getClass().getSimpleName()+" [id: " + ID+" glID: "+GLID+"]";
     }
 
 }

@@ -1418,7 +1418,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
     public void release() {
         int ret = cl.clReleaseCommandQueue(ID);
         context.onCommandQueueReleased(device, this);
-        checkForError(ret, "can not release command queue");
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not release "+this);
+        }
     }
 
     public void close() {
@@ -1500,6 +1502,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
         }else{
             properties &= ~property.QUEUE_MODE;
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() +" "+getProperties()+" on "+ getDevice();
     }
 
     @Override

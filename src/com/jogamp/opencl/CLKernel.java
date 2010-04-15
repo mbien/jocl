@@ -37,7 +37,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     CLKernel(CLProgram program, long id) {
         super(program.getContext(), id);
         this.program = program;
-        this.buffer = Buffers.newDirectByteBuffer(8);
+        this.buffer = Buffers.newDirectByteBuffer(8*3);
 
         Int64Buffer size = Int64Buffer.allocateDirect(1);
 

@@ -2,13 +2,13 @@ package com.jogamp.opencl;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import com.jogamp.nativewindow.impl.NativeLibLoaderBase;
+import com.jogamp.common.jvm.JNILibLoaderBase;
 
 /**
  *
  * @author Michael Bien
  */
-class NativeLibLoader extends NativeLibLoaderBase {
+class NativeLibLoader extends JNILibLoaderBase {
 
     public static void loadJOCL() {
         AccessController.doPrivileged(new PrivilegedAction<Object>() {

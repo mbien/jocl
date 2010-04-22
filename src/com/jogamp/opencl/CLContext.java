@@ -160,7 +160,11 @@ public class CLContext extends CLObject implements CLResource {
         if(devices != null && devices.length != 0) {
             pb = PointerBuffer.allocateDirect(devices.length);
             for (int i = 0; i < devices.length; i++) {
-                pb.put(i, devices[i].ID);
+                CLDevice device = devices[i];
+                if(device == null) {
+                    throw new IllegalArgumentException("device at index"+i+" was null.");
+                }
+                pb.put(i, device.ID);
             }
         }
         long context = CLPlatform.getLowLevelCLInterface().clCreateContext(properties, pb, null, null, status);
@@ -463,13 +467,17 @@ public class CLContext extends CLObject implements CLResource {
     }
 
     protected static long toDeviceBitmap(Type[] deviceTypes) {
-        long type = 0;
+        long bitmap = 0;
         if (deviceTypes != null) {
             for (int i = 0; i < deviceTypes.length; i++) {
-                type |= deviceTypes[i].TYPE;
+                Type type = deviceTypes[i];
+                if(type == null) {
+                    throw new IllegalArgumentException("Device type at index "+i+" was null.");
+                }
+                bitmap |= type.TYPE;
             }
         }
-        return type;
+        return bitmap;
     }
 
     @Override

@@ -200,6 +200,33 @@ public class HighLevelBindingTest {
         assertEquals(deviceCount, c.getDevices().length);
         c.release();
 
+
+        //Exceptions
+        try{
+            CLContext.create((CLDevice)null);
+            fail("create with null device");
+        }catch(IllegalArgumentException ex) {
+            // expected
+        }
+        try{
+            CLContext.create((CLDevice.Type)null);
+            fail("create with null CLDevice.Type");
+        }catch(IllegalArgumentException ex) {
+            // expected
+        }
+        try{
+            CLContext.create((CLPlatform)null, (CLDevice)null);
+            fail("create with null device");
+        }catch(IllegalArgumentException ex) {
+            // expected
+        }
+        try{
+            CLContext.create((CLPlatform)null, (CLDevice.Type)null);
+            fail("create with null CLDevice.Type");
+        }catch(IllegalArgumentException ex) {
+            // expected
+        }
+
     }
 
     @Test

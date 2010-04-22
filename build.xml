@@ -5,6 +5,12 @@
 
     <description>Builds, tests, and runs the project JOCL.</description>
 
+    <condition property="rootrel.build" value="build">
+      <not>
+          <isset property="rootrel.build"/>
+      </not>
+    </condition>
+
     <import file="nbproject/build-impl.xml"/>
 
     <property name="gluegen.root" value="../gluegen" />
@@ -243,7 +249,7 @@
             windowtitle="${javadoc.windowtitle}">
 
             <arg line="${javadoc.additionalparam} -J-Dnativetaglet.mapping=${basedir}/resources/native-taglet.properties"/>
-            <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/build/gluegen.jar:/home/jogamp/NetBeansProjects/JOGL/jocl/"/>
+            <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/${rootrel.build}/gluegen.jar:/home/jogamp/NetBeansProjects/JOGL/jocl/"/>
 
             <classpath>
                 <pathelement path="${javac.classpath}"/>

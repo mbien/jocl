@@ -10,7 +10,6 @@ import com.jogamp.opengl.impl.GLContextImpl;
 import com.jogamp.opengl.impl.macosx.cgl.MacOSXCGLContext;
 import com.jogamp.opengl.impl.windows.wgl.WindowsWGLContext;
 import com.jogamp.opengl.impl.x11.glx.X11GLXContext;
-import javax.media.nativewindow.DefaultGraphicsConfiguration;
 import javax.media.opengl.GLContext;
 
 import static com.jogamp.opencl.gl.CLGLI.*;

@@ -1,9 +1,14 @@
 package com.jogamp.opencl;
 
+import com.jogamp.common.JogampRuntimeException;
 import com.jogamp.common.nio.Int64Buffer;
+import com.jogamp.common.os.NativeLibrary;
+import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.impl.CLImpl;
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.opencl.impl.CLProcAddressTable;
+import com.jogamp.gluegen.runtime.ProcAddressHelper;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -34,10 +39,16 @@ public final class CLPlatform {
     private Set<String> extensions;
 
     static{
-        NativeLibLoader.loadJOCL();
-//        System.loadLibrary("gluegen-rt");
-//        ProcAddressHelper.resetProcAddressTable(table, null);
-        cl = new CLImpl();
+        try {
+            NativeLibrary lib = NativeLibLoader.loadJOCL();
+
+            CLProcAddressTable table = new CLProcAddressTable();
+            ProcAddressHelper.resetProcAddressTable(table, lib);
+
+            cl = new CLImpl(table);
+        }catch(Exception ex) {
+            throw new JogampRuntimeException("JOCL initialization error.", ex);
+        }
     }
 
     private CLPlatform(long id) {

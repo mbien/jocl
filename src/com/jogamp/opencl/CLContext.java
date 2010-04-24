@@ -162,7 +162,7 @@ public class CLContext extends CLObject implements CLResource {
             for (int i = 0; i < devices.length; i++) {
                 CLDevice device = devices[i];
                 if(device == null) {
-                    throw new IllegalArgumentException("device at index"+i+" was null.");
+                    throw new IllegalArgumentException("device at index "+i+" was null.");
                 }
                 pb.put(i, device.ID);
             }

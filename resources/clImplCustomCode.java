@@ -1,9 +1,9 @@
 
-    final static CLProcAddressTable addressTable = new CLProcAddressTable();
+    private final CLProcAddressTable addressTable;
 
-//    static{
-//        ProcAddressHelper.resetProcAddressTable(addressTable, );
-//    }
+    public CLImpl(CLProcAddressTable addressTable) {
+        this.addressTable = addressTable;
+    }
 
     public long clCreateContext(PointerBuffer properties, PointerBuffer devices, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret) {
 

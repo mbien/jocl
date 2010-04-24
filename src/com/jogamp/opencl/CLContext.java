@@ -358,27 +358,31 @@ public class CLContext extends CLObject implements CLResource {
      */
     public void release() {
 
-        //release all resources
-        while(!programs.isEmpty())
-            programs.get(0).release();
+        try{
+            //release all resources
+            while(!programs.isEmpty())
+                programs.get(0).release();
 
-        while(!memoryObjects.isEmpty())
-            memoryObjects.get(0).release();
+            while(!memoryObjects.isEmpty())
+                memoryObjects.get(0).release();
 
-        while(!samplers.isEmpty())
-            samplers.get(0).release();
+            while(!samplers.isEmpty())
+                samplers.get(0).release();
 
-        for (CLDevice device : devices) {
-            List<CLCommandQueue> list = queuesMap.get(device);
-            if(list != null) {
-                while(!list.isEmpty()) {
-                    list.get(0).release();
+            for (CLDevice device : getDevices()) {
+                List<CLCommandQueue> list = queuesMap.get(device);
+                if(list != null) {
+                    while(!list.isEmpty()) {
+                        list.get(0).release();
+                    }
                 }
             }
+
+        }finally{
+            int ret = cl.clReleaseContext(ID);
+            checkForError(ret, "error releasing context");
         }
 
-        int ret = cl.clReleaseContext(ID);
-        checkForError(ret, "error releasing context");
     }
 
     public void close() {

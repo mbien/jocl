@@ -40,7 +40,7 @@ public final class CLPlatform {
 
     static{
         try {
-            NativeLibrary lib = NativeLibLoader.loadJOCL();
+            NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
 
             CLProcAddressTable table = new CLProcAddressTable();
             ProcAddressHelper.resetProcAddressTable(table, lib);

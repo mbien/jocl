@@ -7,7 +7,6 @@ import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.impl.CLImpl;
 import com.jogamp.opencl.impl.CLProcAddressTable;
-import com.jogamp.gluegen.runtime.ProcAddressHelper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -43,7 +42,7 @@ public final class CLPlatform {
             NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
 
             CLProcAddressTable table = new CLProcAddressTable();
-            ProcAddressHelper.resetProcAddressTable(table, lib);
+            table.reset(lib);
 
             cl = new CLImpl(table);
         }catch(Exception ex) {

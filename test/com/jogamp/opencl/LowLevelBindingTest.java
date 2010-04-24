@@ -59,8 +59,8 @@ public class LowLevelBindingTest {
 
         CL cl = CLPlatform.getLowLevelCLInterface();
 
-//        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clCreateFromGLBuffer").getLong());
-//        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clEnqueueAcquireGLObjects").getLong());
+//        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clCreateFromGLBuffer"));
+//        System.out.println(((CLImpl)cl).clGetExtensionFunctionAddress("clEnqueueAcquireGLObjects"));
 
         int ret = CL.CL_SUCCESS;
 

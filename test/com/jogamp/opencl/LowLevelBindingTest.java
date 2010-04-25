@@ -6,6 +6,7 @@ import com.jogamp.opencl.impl.CLImpl;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -151,7 +152,7 @@ public class LowLevelBindingTest {
         PointerBuffer devices = PointerBuffer.allocateDirect(intBuffer.get(0));
         ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.capacity(), devices, null);
 
-        long context = cl.clCreateContext(null, devices, null, null, intBuffer);
+        long context = cl.clCreateContext(null, devices, null, intBuffer);
         checkError("on clCreateContext", intBuffer.get());
 
         //get number of devices
@@ -170,7 +171,7 @@ public class LowLevelBindingTest {
     }
 
     @Test
-    public void lowLevelVectorAddTest() {
+    public void lowLevelVectorAddTest() throws InterruptedException {
 
         out.println(" - - - lowLevelTest2; VectorAdd kernel - - - ");
 
@@ -201,7 +202,7 @@ public class LowLevelBindingTest {
         PointerBuffer properties = (PointerBuffer)PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
                                               .put(platform).put(0) // 0 terminated array
                                               .rewind();
-        long context = cl.clCreateContextFromType(properties, CL.CL_DEVICE_TYPE_ALL, null, null, null);
+        long context = cl.clCreateContextFromType(properties, CL.CL_DEVICE_TYPE_ALL, null, null);
         out.println("context handle: "+context);
 
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
@@ -245,12 +246,28 @@ public class LowLevelBindingTest {
 
         // Create the program
         Int64Buffer lengths = (Int64Buffer)Int64Buffer.allocateDirect(1).put(programSource.length());
-        long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
+        final long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
         checkError("on clCreateProgramWithSource", intBuffer.get(0));
 
+        // tests if the callback is called
+        final CountDownLatch latch = new CountDownLatch(1);
+        BuildProgramCallback callback = new BuildProgramCallback() {
+            public void buildProgramCallback(long cl_program) {
+                try{
+                    assertEquals(program, cl_program);
+                }finally{
+                    latch.countDown();
+                }
+            }
+        };
+
         // Build the program
-        ret = cl.clBuildProgram(program, 0, null, null, null, null);
+        ret = cl.clBuildProgram(program, 0, null, null, callback);
         checkError("on clBuildProgram", ret);
+
+        out.println("waiting for program to build...");
+        latch.await();
+        out.println("done");
 
         // Read program infos
         ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_NUM_DEVICES, bb.capacity(), bb, null);

@@ -7,12 +7,49 @@ void checkStatus(const char* msg, int status) {
 }
 */
 
+JavaVM * jvm;
+jmethodID bcb_mid;
 
-/*
-void createContextCallback(const char * c, const void * v, size_t s, void * o) {
-    //TODO
+
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM * _jvm, void *reserved) {
+
+    JNIEnv *env;
+    jvm = _jvm;
+
+    if ((*jvm)->GetEnv(_jvm, (void **)&env, JNI_VERSION_1_2)) {
+        return JNI_ERR;
+    }
+
+    // throws ClassNotFoundException (or other reflection stuff)
+    jclass classID = (*env)->FindClass(env, "com/jogamp/opencl/BuildProgramCallback");
+
+    if (classID != NULL) {
+        // throws even more reflection Exceptions
+        // IDs are unique and do not change
+        bcb_mid = (*env)->GetMethodID(env, classID, "buildProgramCallback", "(J)V");
+    }
+
+    return JNI_VERSION_1_2;
 }
-*/
+
+
+void buildProgramCallback(cl_program id, void * object) {
+
+    JNIEnv *env;
+    jobject obj = (jobject)object;
+
+    (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
+
+    (*env)->CallVoidMethod(env, obj, bcb_mid, (jlong)id);
+    (*env)->DeleteGlobalRef(env, obj);
+    
+}
+
+void createContextCallback(const char * errinfo, const void * private_info, size_t cb, void * object) {
+    printf(" - - - - - - >error info:\n%s", errinfo);
+}
+
 
 /*   Java->C glue code:
  *   Java package: com.jogamp.opencl.impl.CLImpl
@@ -26,7 +63,7 @@ void createContextCallback(const char * c, const void * v, size_t s, void * o) {
  */
 JNIEXPORT jlong JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jobject device_type, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
+        jobject props, jint props_byte_offset, jobject device_type, jobject cb, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
@@ -58,7 +95,7 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject
  */
 JNIEXPORT jlong JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject data, jobject errcode, jint errcode_byte_offset) {
+        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
@@ -94,11 +131,13 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused
  */
 JNIEXPORT jint JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
-        jlong program, jint deviceCount, jobject deviceList, jint device_type_offset, jstring options, jobject cb, jobject data) {
+        jlong program, jint deviceCount, jobject deviceList, jint device_type_offset, jstring options, jobject cb) {
 
     const char* _strchars_options = NULL;
     cl_int _res;
     size_t * _deviceListPtr = NULL;
+    void (*pfn_notify)(cl_program, void *user_data) = NULL;
+    jobject globalCB = NULL;
 
     if (options != NULL) {
         _strchars_options = (*env)->GetStringUTFChars(env, options, (jboolean*)NULL);
@@ -113,8 +152,12 @@ Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
         _deviceListPtr = (void *) (((char*) (*env)->GetDirectBufferAddress(env, deviceList)) + device_type_offset);
     }
 
-    // TODO payload, callback...
-    _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, (cl_device_id *)_deviceListPtr, _strchars_options, NULL, NULL);
+    if (cb != NULL) {
+        pfn_notify = &buildProgramCallback;
+        globalCB = (*env)->NewGlobalRef(env, cb);
+    }
+
+    _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, (cl_device_id *)_deviceListPtr, _strchars_options, pfn_notify, globalCB);
 
     if (options != NULL) {
         (*env)->ReleaseStringUTFChars(env, options, _strchars_options);

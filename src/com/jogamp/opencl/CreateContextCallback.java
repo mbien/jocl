@@ -9,6 +9,6 @@ import java.nio.ByteBuffer;
 // TODO implement callbacks
 public interface CreateContextCallback {
 
-    public void createContextCallback(String errinfo, ByteBuffer private_info, long cb, Object user_data);
+    public void createContextCallback(String errinfo, ByteBuffer private_info, long cb);
 
 }

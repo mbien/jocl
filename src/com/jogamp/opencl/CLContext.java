@@ -146,7 +146,7 @@ public class CLContext extends CLObject implements CLResource {
     protected static long createContextFromType(PointerBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
-        long context = CLPlatform.getLowLevelCLInterface().clCreateContextFromType(properties, deviceType, null, null, status);
+        long context = CLPlatform.getLowLevelCLInterface().clCreateContextFromType(properties, deviceType, null, status);
 
         checkForError(status.get(), "can not create CL context");
 
@@ -167,7 +167,7 @@ public class CLContext extends CLObject implements CLResource {
                 pb.put(i, device.ID);
             }
         }
-        long context = CLPlatform.getLowLevelCLInterface().clCreateContext(properties, pb, null, null, status);
+        long context = CLPlatform.getLowLevelCLInterface().clCreateContext(properties, pb, null, status);
 
         checkForError(status.get(), "can not create CL context");
 

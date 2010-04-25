@@ -256,7 +256,7 @@ public class CLProgram extends CLObject implements CLResource {
         int ret = 0;
         // building programs is not threadsafe
 //        synchronized(buildLock) {
-            ret = cl.clBuildProgram(ID, count, deviceIDs, options, null, null);
+            ret = cl.clBuildProgram(ID, count, deviceIDs, options, null);
 //        }
 
         if(ret != CL_SUCCESS) {

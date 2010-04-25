@@ -128,6 +128,10 @@
 
         <echo message=" - - - JOCL natives compiled - - - "/>
 
+        <antcall target="gluegen.cpptasks.striplibs" inheritRefs="true">
+            <param name="libdir" value="${natives.jocl.dir}/${namespace}"/>
+        </antcall>
+
     </target>
 
     <target name="c.setup.build" depends="gluegen.cpptasks.configure.compiler, gluegen.cpptasks.declare.compiler, c.configure.default, jocl.configure.linker">
@@ -158,7 +162,8 @@
 
         <linker id="linker.cfg.win32.mingw.jocl" extends="linker.cfg.win32.mingw">
             <linkerarg value="-Wl,--kill-at" /> <!-- remove @ from function names -->
-            <syslibset dir="C:/NVIDIAComputingSDK/OpenCL/common/lib/Win32" libs="OpenCL"/>
+            <syslibset dir="C:/Program Files (x86)/ATI Stream/lib/x86" libs="OpenCL"/>
+       <!-- <syslibset dir="C:/NVIDIAComputingSDK/OpenCL/common/lib/Win32" libs="OpenCL"/> -->
         </linker>
 
         <linker id="linker.cfg.macosx.jocl" extends="linker.cfg.macosx">

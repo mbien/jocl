@@ -14,6 +14,6 @@ public interface BuildProgramCallback {
      * Called when the program executable
      * has been built (successfully or unsuccessfully).
      */
-    public void buildProgramCallback(long cl_program);
+    public void buildFinished(long cl_program);
     
 }

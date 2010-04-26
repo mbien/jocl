@@ -10,9 +10,6 @@
         if(properties!=null && !properties.isDirect())
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
 
-        if(pfn_notify != null)
-            throw new RuntimeException("asynchronous errorhandler are not supported yet, pass null through this method to block until complete.");
-
         return this.clCreateContext0(
                 properties!=null?properties.getBuffer():null, Buffers.getDirectBufferByteOffset(properties),
                 devices!=null?devices.remaining():0, devices!=null?devices.getBuffer():null, Buffers.getDirectBufferByteOffset(devices),
@@ -25,9 +22,6 @@
 
         if(properties!=null && !properties.isDirect())
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
-
-        if(pfn_notify != null)
-            throw new RuntimeException("asynchronous errorhandler are not supported yet, pass null through this method to block until complete.");
 
         return this.clCreateContextFromType0(
                 properties!=null?properties.getBuffer():null, Buffers.getDirectBufferByteOffset(properties),

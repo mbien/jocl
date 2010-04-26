@@ -252,7 +252,7 @@ public class LowLevelBindingTest {
         // tests if the callback is called
         final CountDownLatch latch = new CountDownLatch(1);
         BuildProgramCallback callback = new BuildProgramCallback() {
-            public void buildProgramCallback(long cl_program) {
+            public void buildFinished(long cl_program) {
                 try{
                     assertEquals(program, cl_program);
                 }finally{

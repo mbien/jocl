@@ -8,7 +8,9 @@ void checkStatus(const char* msg, int status) {
 */
 
 JavaVM * jvm;
+
 jmethodID bcb_mid;
+jmethodID cccb_mid;
 
 
 JNIEXPORT jint JNICALL
@@ -22,14 +24,18 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
     }
 
     // throws ClassNotFoundException (or other reflection stuff)
-    jclass classID = (*env)->FindClass(env, "com/jogamp/opencl/BuildProgramCallback");
+    jclass buildCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/BuildProgramCallback");
+    jclass errorHandlerClassID = (*env)->FindClass(env, "com/jogamp/opencl/CreateContextCallback");
 
-    if (classID != NULL) {
-        // throws even more reflection Exceptions
-        // IDs are unique and do not change
-        bcb_mid = (*env)->GetMethodID(env, classID, "buildProgramCallback", "(J)V");
+    // throws even more reflection Exceptions
+    // IDs are unique and do not change
+    if (buildCBClassID != NULL) {
+        bcb_mid  = (*env)->GetMethodID(env, buildCBClassID, "buildFinished", "(J)V");
     }
-
+    if (errorHandlerClassID != NULL) {
+        cccb_mid = (*env)->GetMethodID(env, errorHandlerClassID, "onError", "(Ljava/lang/String;Ljava/nio/ByteBuffer;J)V");
+    }
+    
     return JNI_VERSION_1_2;
 }
 
@@ -47,7 +53,18 @@ void buildProgramCallback(cl_program id, void * object) {
 }
 
 void createContextCallback(const char * errinfo, const void * private_info, size_t cb, void * object) {
-    printf(" - - - - - - >error info:\n%s", errinfo);
+
+    JNIEnv *env;
+    jobject obj = (jobject)object;
+
+    (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
+
+    jstring errorString = (*env)->NewStringUTF(env, errinfo);
+
+    //TODO private_info
+    (*env)->CallVoidMethod(env, obj, cccb_mid, errorString, NULL, 0);
+    //(*env)->DeleteGlobalRef(env, obj);
+
 }
 
 
@@ -67,7 +84,9 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject
 
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
-    cl_context _ctx;
+    cl_context _ctx = NULL;
+    void (*pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data) = NULL;
+    jobject globalCB = NULL;
 
     if (props != NULL) {
         _props_ptr = (cl_context_properties*) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
@@ -77,8 +96,17 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject
         _errcode_ptr = (void *) (((char*) (*env)->GetDirectBufferAddress(env, errcode)) + errcode_byte_offset);
     }
 
-    //TODO callback; payload
-    _ctx = clCreateContextFromType(_props_ptr, (uint64_t) device_type, NULL, NULL, (int32_t *) _errcode_ptr);
+    if (cb != NULL) {
+        pfn_notify = &createContextCallback;
+        globalCB = (*env)->NewGlobalRef(env, cb);
+    }
+
+    _ctx = clCreateContextFromType(_props_ptr, (uint64_t) device_type, pfn_notify, globalCB, (int32_t *) _errcode_ptr);
+
+    // if something went wrong
+    if (_ctx == NULL && globalCB != NULL) {
+        (*env)->DeleteGlobalRef(env, globalCB);
+    }
 
     return (jlong) (intptr_t)_ctx;
 }
@@ -100,8 +128,9 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
     size_t * _deviceListPtr = NULL;
-
-    cl_context _ctx;
+    cl_context _ctx = NULL;
+    void (*pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data) = NULL;
+    jobject globalCB = NULL;
 
     if (props != NULL) {
         _props_ptr = (cl_context_properties*) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
@@ -113,8 +142,17 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused
         _errcode_ptr = (void *) (((char*) (*env)->GetDirectBufferAddress(env, errcode)) + errcode_byte_offset);
     }
 
-    // TODO payload, callback...
-    _ctx = clCreateContext(_props_ptr, numDevices, (cl_device_id *)_deviceListPtr, NULL, NULL, (int32_t *) _errcode_ptr);
+    if (cb != NULL) {
+        pfn_notify = &createContextCallback;
+        globalCB = (*env)->NewGlobalRef(env, cb);
+    }
+
+    _ctx = clCreateContext(_props_ptr, numDevices, (cl_device_id *)_deviceListPtr, pfn_notify, globalCB, (int32_t *) _errcode_ptr);
+
+    // if something went wrong
+    if (_ctx == NULL && globalCB != NULL) {
+        (*env)->DeleteGlobalRef(env, globalCB);
+    }
 
     return (jlong) (intptr_t)_ctx;
 }
@@ -158,6 +196,11 @@ Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
     }
 
     _res = clBuildProgram((cl_program)program, (cl_uint)deviceCount, (cl_device_id *)_deviceListPtr, _strchars_options, pfn_notify, globalCB);
+
+    // if something went wrong
+    if(_res != CL_SUCCESS && globalCB != NULL) {
+        (*env)->DeleteGlobalRef(env, globalCB);
+    }
 
     if (options != NULL) {
         (*env)->ReleaseStringUTFChars(env, options, _strchars_options);

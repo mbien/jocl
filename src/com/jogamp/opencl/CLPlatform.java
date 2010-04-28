@@ -1,9 +1,11 @@
 package com.jogamp.opencl;
 
+import java.security.PrivilegedAction;
 import com.jogamp.common.JogampRuntimeException;
 import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.os.NativeLibrary;
 import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.os.UnixDynamicLinkerImpl;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.impl.CLImpl;
 import com.jogamp.opencl.impl.CLProcAddressTable;
@@ -19,12 +21,16 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import static java.security.AccessController.*;
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.opencl.CL.*;
 
 /**
- *
+ * CLPlatfrorm representing an OpenCL installation (e.g. graphics driver).
+ * 
  * @author Michael Bien
+ * @see #getDefault()
+ * @see #listCLPlatforms()
  */
 public final class CLPlatform {
 
@@ -39,10 +45,19 @@ public final class CLPlatform {
 
     static{
         try {
-            NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
+//            new UnixDynamicLinkerImpl().openLibraryGlobal("/usr/lib/jvm/java-6-sun/jre/lib/amd64/lbjsig.so", true);
 
-            CLProcAddressTable table = new CLProcAddressTable();
-            table.reset(lib);
+            // run the whole static initialization privileged to speed up,
+            // since this skips checking further access
+            CLProcAddressTable table = doPrivileged(new PrivilegedAction<CLProcAddressTable>() {
+                public CLProcAddressTable run() {
+                    NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
+
+                    CLProcAddressTable table = new CLProcAddressTable();
+                    table.reset(lib);
+                    return table;
+                }
+            });
 
             cl = new CLImpl(table);
         }catch(Exception ex) {

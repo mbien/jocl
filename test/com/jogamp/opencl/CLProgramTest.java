@@ -3,6 +3,7 @@ package com.jogamp.opencl;
 import com.jogamp.opencl.util.CLBuildConfiguration;
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import com.jogamp.opencl.CLProgram.Status;
+import com.jogamp.opencl.util.CLBuildListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -158,7 +160,7 @@ public class CLProgramTest {
     }
 
     @Test
-    public void builderTest() throws IOException, ClassNotFoundException {
+    public void builderTest() throws IOException, ClassNotFoundException, InterruptedException {
         out.println(" - - - CLProgramTest; program builder test - - - ");
 
         CLContext context = CLContext.create();
@@ -187,8 +189,23 @@ public class CLProgramTest {
                                      .withDefine("ENABLE_FOOBAR");
 
         out.println(builder);
-        
-        builder.setProgram(program).build();
+       
+        // async build test
+        {
+            final CountDownLatch countdown = new CountDownLatch(1);
+            final CLProgram outerProgram = program;
+
+            CLBuildListener buildCallback = new CLBuildListener() {
+                public void buildFinished(CLProgram program) {
+                    assertEquals(outerProgram, program);
+                    countdown.countDown();
+                }
+            };
+
+            builder.setProgram(program).build(buildCallback);
+            countdown.await();
+        }
+
         assertTrue(program.isExecutable());
 
         // serialization test

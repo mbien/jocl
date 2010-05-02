@@ -1,6 +1,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.opencl.util.CLBuildConfiguration;
+import com.jogamp.opencl.util.CLBuildListener;
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -178,11 +179,21 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
 
     @Override
     public CLProgram build() {
-        return build(program);
+        return build(program, null);
+    }
+
+    @Override
+    public CLProgram build(CLBuildListener listener) {
+        return build(program, listener);
     }
 
     @Override
     public CLProgram build(CLProgram program) {
+        return build(program, null);
+    }
+    
+    @Override
+    public CLProgram build(CLProgram program, CLBuildListener listener) {
         if(program == null) {
             throw new NullPointerException("no program has been set");
         }
@@ -191,7 +202,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         setup.addAll(defineSet);
         String options = CLProgram.optionsOf(setup.toArray(new String[setup.size()]));
         CLDevice[] devices = binariesMap.keySet().toArray(new CLDevice[binariesMap.size()]);
-        return program.build(options, devices);
+        return program.build(listener, options, devices);
     }
 
     @Override

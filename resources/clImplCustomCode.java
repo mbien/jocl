@@ -44,12 +44,12 @@
 
 
   /** Interface to C language function: <br> <code> void *  {@native clEnqueueMapImage}(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret); </code>
-  @param origin a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-  @param range a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-  @param image_row_pitch a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-  @param image_slice_pitch a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-  @param event_wait_list a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-  @param event a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
+  @param origin a direct {@link com.jogamp.common.nio.PointerBuffer}
+  @param range a direct {@link com.jogamp.common.nio.PointerBuffer}
+  @param image_row_pitch a direct {@link com.jogamp.common.nio.PointerBuffer}
+  @param image_slice_pitch a direct {@link com.jogamp.common.nio.PointerBuffer}
+  @param event_wait_list a direct {@link com.jogamp.common.nio.PointerBuffer}
+  @param event a direct {@link com.jogamp.common.nio.PointerBuffer}
   @param errcode_ret a direct {@link java.nio.IntBuffer}   */
   public java.nio.ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags,
               Int64Buffer origin, Int64Buffer range,

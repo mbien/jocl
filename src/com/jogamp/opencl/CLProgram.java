@@ -5,6 +5,8 @@ import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.os.Platform;
 import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.opencl.impl.BuildProgramCallback;
+import com.jogamp.opencl.util.CLBuildListener;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Collections;
@@ -179,17 +181,40 @@ public class CLProgram extends CLObject implements CLResource {
      * @return this
      */
     public CLProgram build() {
-        build(null, (CLDevice[])null);
+        build(null, (String)null, (CLDevice[]) null);
+        return this;
+    }
+
+    /**
+     * Builds this program for all devices associated with the context.
+     * @see CLBuildListener
+     * @param listener A listener who is notified when the program was built.
+     * @return this
+     */
+    public CLProgram build(CLBuildListener listener) {
+        build(listener, null, (CLDevice[])null);
         return this;
     }
     
     /**
      * Builds this program for the given devices.
-     * @return this
      * @param devices A list of devices this program should be build on or null for all devices of its context.
+     * @return this
      */
     public CLProgram build(CLDevice... devices) {
-        build(null, devices);
+        build(null, (String) null, devices);
+        return this;
+    }
+
+    /**
+     * Builds this program for the given devices.
+     * @see CLBuildListener
+     * @param listener A listener who is notified when the program was built.
+     * @param devices A list of devices this program should be build on or null for all devices of its context.
+     * @return this
+     */
+    public CLProgram build(CLBuildListener listener, CLDevice... devices) {
+        build(listener,null, devices);
         return this;
     }
 
@@ -199,17 +224,39 @@ public class CLProgram extends CLObject implements CLResource {
      * @return this
      */
     public CLProgram build(String options) {
-        build(options, (CLDevice[])null);
+        build(null, options, (CLDevice[])null);
         return this;
     }
 
     /**
      * Builds this program for all devices associated with the context using the specified build options.
      * @see CompilerOptions
+     * @see CLBuildListener
+     * @param listener A listener who is notified when the program was built.
      * @return this
      */
+    public CLProgram build(CLBuildListener listener, String options) {
+        build(listener, options, (CLDevice[])null);
+        return this;
+    }
+
+    /**
+     * Builds this program for all devices associated with the context using the specified build options.
+     * @see CompilerOptions
+     */
     public CLProgram build(String... options) {
-        build(optionsOf(options), (CLDevice[])null);
+        build(null, optionsOf(options), (CLDevice[])null);
+        return this;
+    }
+
+    /**
+     * Builds this program for all devices associated with the context using the specified build options.
+     * @see CompilerOptions
+     * @see CLBuildListener
+     * @param listener A listener who is notified when the program was built.
+     */
+    public CLProgram build(CLBuildListener listener, String... options) {
+        build(listener, optionsOf(options), (CLDevice[])null);
         return this;
     }
 
@@ -217,10 +264,24 @@ public class CLProgram extends CLObject implements CLResource {
      * Builds this program for the given devices and with the specified build options. In case this program was
      * already built and there are kernels associated with this program they will be released first before rebuild.
      * @see CompilerOptions
-     * @return this
      * @param devices A list of devices this program should be build on or null for all devices of its context.
+     * @return this
      */
     public CLProgram build(String options, CLDevice... devices) {
+        build(null, options, devices);
+        return this;
+    }
+
+    /**
+     * Builds this program for the given devices and with the specified build options. In case this program was
+     * already built and there are kernels associated with this program they will be released first before rebuild.
+     * @see CompilerOptions
+     * @see CLBuildListener
+     * @return this
+     * @param devices A list of devices this program should be build on or null for all devices of its context.
+     * @param listener A listener who is notified when the program was built.
+     */
+    public CLProgram build(final CLBuildListener listener, String options, CLDevice... devices) {
 
         if(released) {
             throw new CLException("can not build a released program");
@@ -252,11 +313,20 @@ public class CLProgram extends CLObject implements CLResource {
         buildStatusMap = null;
         executable = false;
 
+        BuildProgramCallback callback = null;
+        if(listener != null) {
+            callback = new BuildProgramCallback() {
+                public void buildFinished(long cl_program) {
+                    listener.buildFinished(CLProgram.this);
+                }
+            };
+        }
+
         // Build the program
         int ret = 0;
         // building programs is not threadsafe
 //        synchronized(buildLock) {
-            ret = cl.clBuildProgram(ID, count, deviceIDs, options, null);
+            ret = cl.clBuildProgram(ID, count, deviceIDs, options, callback);
 //        }
 
         if(ret != CL_SUCCESS) {

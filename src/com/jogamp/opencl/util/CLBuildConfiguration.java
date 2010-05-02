@@ -21,6 +21,13 @@ public interface CLBuildConfiguration extends Cloneable {
     public CLProgram build(CLProgram program);
 
     /**
+     * Builds or rebuilds the program.
+     * @param program The program which should be build.
+     * @param listener The callback who is notified when the program has built.
+     */
+    public CLProgram build(CLProgram program, CLBuildListener listener);
+
+    /**
      * Sets the program which should be build.
      */
     public CLProgramConfiguration setProgram(CLProgram program);

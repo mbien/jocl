@@ -21,6 +21,12 @@ public interface CLProgramConfiguration extends CLBuildConfiguration {
     public CLProgram build();
 
     /**
+     * Builds or rebuilds a program.
+     * @param listener The callback who will be notified when the program has built.
+     */
+    public CLProgram build(CLBuildListener listener);
+
+    /**
      * Returns the program.
      */
     public CLProgram getProgram();

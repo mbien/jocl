@@ -172,6 +172,7 @@ public class CLCommandQueueTest {
 
         CLDevice[] devices = context.getDevices();
 
+        // ignore this test if we can't test in parallel
         if (devices.length < 2) {
             out.println("aborting test... need at least 2 devices");
             context.release();
@@ -188,22 +189,18 @@ public class CLCommandQueueTest {
 
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
 
+        //two independent kernel instances
         final CLKernel vectorAddKernel1 = program.createCLKernel("VectorAddGM").setArg(3, elements);
         final CLKernel vectorAddKernel2 = program.createCLKernel("VectorAddGM").setArg(3, elements);
 
-        int secondDevice = devices.length > 1 ? 1 : 0;
-
-        final CLCommandQueue queue1 = devices[0           ].createCommandQueue();
-        final CLCommandQueue queue2 = devices[secondDevice].createCommandQueue();
+        final CLCommandQueue queue1 = devices[0].createCommandQueue();
+        final CLCommandQueue queue2 = devices[1].createCommandQueue();
 
         out.println(queue1);
         out.println(queue2);
 
         fillBuffer(clBufferC.buffer, 12345);
 
-        if (secondDevice > 0) {
-            System.out.println("using two devices");
-        }
 
         final MultiQueueBarrier barrier = new MultiQueueBarrier(2);
 

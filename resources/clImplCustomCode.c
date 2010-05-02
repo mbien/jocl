@@ -24,7 +24,7 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
     }
 
     // throws ClassNotFoundException (or other reflection stuff)
-    jclass buildCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/BuildProgramCallback");
+    jclass buildCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/impl/BuildProgramCallback");
     jclass errorHandlerClassID = (*env)->FindClass(env, "com/jogamp/opencl/CreateContextCallback");
 
     // throws even more reflection Exceptions

@@ -1,5 +1,6 @@
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.impl.BuildProgramCallback;
 import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.impl.CLImpl;

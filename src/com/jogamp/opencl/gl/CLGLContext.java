@@ -23,8 +23,8 @@ public final class CLGLContext extends CLContext {
     final long glID;
     private final GLContext glContext;
 
-    private CLGLContext(CLPlatform platform, GLContext glContext, long clContextID, long glContextID) {
-        super(platform, clContextID);
+    private CLGLContext(CLPlatform platform, GLContext glContext, long clContextID, long glContextID, ErrorDispatcher dispatcher) {
+        super(platform, clContextID, dispatcher);
         this.glID = glContextID;
         this.glContext = glContext;
     }
@@ -81,9 +81,10 @@ public final class CLGLContext extends CLContext {
 
         long[] glID = new long[1];
         PointerBuffer properties = setupContextProperties(platform, glContext, glID);
-        long clID = createContextFromType(properties, toDeviceBitmap(deviceTypes));
+        ErrorDispatcher dispatcher = createErrorHandler();
+        long clID = createContextFromType(dispatcher, properties, toDeviceBitmap(deviceTypes));
 
-        return new CLGLContext(platform, glContext, clID, glID[0]);
+        return new CLGLContext(platform, glContext, clID, glID[0], dispatcher);
 
     }
 
@@ -101,9 +102,10 @@ public final class CLGLContext extends CLContext {
 
         long[] glID = new long[1];
         PointerBuffer properties = setupContextProperties(platform, glContext, glID);
-        long clID = createContext(properties, devices);
+        ErrorDispatcher dispatcher = createErrorHandler();
+        long clID = createContext(dispatcher, properties, devices);
 
-        CLGLContext context = new CLGLContext(platform, glContext, clID, glID[0]);
+        CLGLContext context = new CLGLContext(platform, glContext, clID, glID[0], dispatcher);
         if(devices != null) {
             for (int i = 0; i < devices.length; i++) {
                 context.overrideContext(devices[i]);

@@ -1,33 +1,66 @@
 
     private final CLProcAddressTable addressTable;
 
+    //maps the context id to its error handler's global object pointer
+    private final com.jogamp.common.util.LongLongHashMap contextCallbackMap;
+
     public CLImpl(CLProcAddressTable addressTable) {
         this.addressTable = addressTable;
+        this.contextCallbackMap = new com.jogamp.common.util.LongLongHashMap();
+        this.contextCallbackMap.setKeyNotFoundValue(0);
     }
 
-    public long clCreateContext(PointerBuffer properties, PointerBuffer devices, CreateContextCallback pfn_notify, IntBuffer errcode_ret) {
+    public long clCreateContext(PointerBuffer properties, PointerBuffer devices, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
 
         if(properties!=null && !properties.isDirect())
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
 
-        return this.clCreateContext0(
+        long[] global = new long[1];
+        long ctx = this.clCreateContext0(
                 properties!=null?properties.getBuffer():null, Buffers.getDirectBufferByteOffset(properties),
                 devices!=null?devices.remaining():0, devices!=null?devices.getBuffer():null, Buffers.getDirectBufferByteOffset(devices),
-                null, errcode_ret, Buffers.getDirectBufferByteOffset(errcode_ret) );
+                pfn_notify, global, errcode_ret, Buffers.getDirectBufferByteOffset(errcode_ret) );
+
+        if(pfn_notify != null && global[0] != 0) {
+            synchronized(contextCallbackMap) {
+                contextCallbackMap.put(ctx, global[0]);
+            }
+        }
+        return ctx;
     }
-    private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, CreateContextCallback pfn_notify, Object errcode_ret, int err_offset);
+    private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, CLErrorHandler pfn_notify, long[] global, Object errcode_ret, int err_offset);
 
         
-    public long clCreateContextFromType(PointerBuffer properties, long device_type, CreateContextCallback pfn_notify, IntBuffer errcode_ret) {
+    public long clCreateContextFromType(PointerBuffer properties, long device_type, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
 
         if(properties!=null && !properties.isDirect())
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
 
-        return this.clCreateContextFromType0(
+        long[] global = new long[1];
+        long ctx = this.clCreateContextFromType0(
                 properties!=null?properties.getBuffer():null, Buffers.getDirectBufferByteOffset(properties),
-                device_type, pfn_notify, errcode_ret, Buffers.getDirectBufferByteOffset(errcode_ret) );
+                device_type, pfn_notify, global, errcode_ret, Buffers.getDirectBufferByteOffset(errcode_ret) );
+
+        if(pfn_notify != null && global[0] != 0) {
+            synchronized(contextCallbackMap) {
+                contextCallbackMap.put(ctx, global[0]);
+            }
+        }
+        return ctx;
     }
-    private native long clCreateContextFromType0(Object properties, int props_offset, long device_type, CreateContextCallback pfn_notify, Object errcode_ret, int err_offset);
+    private native long clCreateContextFromType0(Object properties, int props_offset, long device_type, CLErrorHandler pfn_notify, long[] global, Object errcode_ret, int err_offset);
+
+    
+    public int clReleaseContext(long context) {
+        long global = 0;
+        synchronized(contextCallbackMap) {
+            global = contextCallbackMap.remove(context);
+        }
+        return clReleaseContextImpl(context, global);
+    }
+
+    /** Interface to C language function: <br> <code> int32_t {@native clReleaseContext}(cl_context context); </code>    */
+    public native int clReleaseContextImpl(long context, long global);
 
 
     /** Interface to C language function: <br> <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */

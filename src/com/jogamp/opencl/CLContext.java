@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static java.lang.System.*;
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.common.nio.Buffers.*;
 import static com.jogamp.common.os.Platform.*;
@@ -45,15 +46,26 @@ public class CLContext extends CLObject implements CLResource {
     protected final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
     protected final CLPlatform platform;
+    
+    private final ErrorDispatcher errorHandler;
 
-
-    protected CLContext(CLPlatform platform, long contextID) {
+    protected CLContext(CLPlatform platform, long contextID, ErrorDispatcher dispatcher) {
         super(CLPlatform.getLowLevelCLInterface(), contextID);
         this.platform = platform;
         this.programs = new ArrayList<CLProgram>();
         this.samplers = new ArrayList<CLSampler>();
         this.memoryObjects = new ArrayList<CLMemory<? extends Buffer>>();
         this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
+        this.errorHandler = dispatcher;
+
+        /*
+        addCLErrorHandler(new CLErrorHandler() {
+            public void onError(String errinfo, ByteBuffer private_info, long cb) {
+                java.util.logging.Logger.getLogger(getClass().getName()).warning(errinfo);
+            }
+        });
+        */
+        
     }
 
     private void initDevices() {
@@ -88,7 +100,7 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a context on the specified device types.
      * The platform to be used is implementation dependent.
      */
-    public static CLContext create(CLDevice.Type... deviceTypes) {
+    public static CLContext create(Type... deviceTypes) {
         return create(null, deviceTypes);
     }
 
@@ -104,14 +116,14 @@ public class CLContext extends CLObject implements CLResource {
      * Creates a context on the specified platform on all available devices (CL_DEVICE_TYPE_ALL).
      */
     public static CLContext create(CLPlatform platform) {
-        return create(platform, CLDevice.Type.ALL);
+        return create(platform, Type.ALL);
     }
 
     /**
      * Creates a context on the specified platform and with the specified
      * device types.
      */
-    public static CLContext create(CLPlatform platform, CLDevice.Type... deviceTypes) {
+    public static CLContext create(CLPlatform platform, Type... deviceTypes) {
 
         if(platform == null) {
             platform = CLPlatform.getDefault();
@@ -120,7 +132,8 @@ public class CLContext extends CLObject implements CLResource {
         long type = toDeviceBitmap(deviceTypes);
 
         PointerBuffer properties = setupContextProperties(platform);
-        return new CLContext(platform, createContextFromType(properties, type));
+        ErrorDispatcher dispatcher = new ErrorDispatcher();
+        return new CLContext(platform, createContextFromType(dispatcher, properties, type), dispatcher);
     }
 
     /**
@@ -134,7 +147,8 @@ public class CLContext extends CLObject implements CLResource {
         }
 
         PointerBuffer properties = setupContextProperties(platform);
-        CLContext context = new CLContext(platform, createContext(properties, devices));
+        ErrorDispatcher dispatcher = new ErrorDispatcher();
+        CLContext context = new CLContext(platform, createContext(dispatcher, properties, devices), dispatcher);
         if(devices != null) {
             for (int i = 0; i < devices.length; i++) {
                 devices[i].setContext(context);
@@ -143,17 +157,17 @@ public class CLContext extends CLObject implements CLResource {
         return context;
     }
 
-    protected static long createContextFromType(PointerBuffer properties, long deviceType) {
+    protected static long createContextFromType(CLErrorHandler handler, PointerBuffer properties, long deviceType) {
 
         IntBuffer status = IntBuffer.allocate(1);
-        long context = CLPlatform.getLowLevelCLInterface().clCreateContextFromType(properties, deviceType, null, status);
+        long context = CLPlatform.getLowLevelCLInterface().clCreateContextFromType(properties, deviceType, handler, status);
 
         checkForError(status.get(), "can not create CL context");
 
         return context;
     }
 
-    protected static long createContext(PointerBuffer properties, CLDevice... devices) {
+    protected static long createContext(CLErrorHandler handler, PointerBuffer properties, CLDevice... devices) {
 
         IntBuffer status = newDirectIntBuffer(1);
         PointerBuffer pb = null;
@@ -167,7 +181,7 @@ public class CLContext extends CLObject implements CLResource {
                 pb.put(i, device.ID);
             }
         }
-        long context = CLPlatform.getLowLevelCLInterface().clCreateContext(properties, pb, null, status);
+        long context = CLPlatform.getLowLevelCLInterface().clCreateContext(properties, pb, handler, status);
 
         checkForError(status.get(), "can not create CL context");
 
@@ -353,6 +367,14 @@ public class CLContext extends CLObject implements CLResource {
         samplers.remove(sampler);
     }
 
+    public void addCLErrorHandler(CLErrorHandler handler) {
+        errorHandler.addHandler(handler);
+    }
+
+    public void removeCLErrorHandler(CLErrorHandler handler) {
+        errorHandler.removeHandler(handler);
+    }
+
     /**
      * Releases the context and all resources.
      */
@@ -512,5 +534,53 @@ public class CLContext extends CLObject implements CLResource {
         hash = 23 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
     }
+
+    protected static ErrorDispatcher createErrorHandler() {
+        return new ErrorDispatcher();
+    }
+
+    protected static class ErrorDispatcher implements CLErrorHandler {
+
+        private volatile CLErrorHandler[] clientHandlers = new CLErrorHandler[0];
+
+        public void onError(String errinfo, ByteBuffer private_info, long cb) {
+            CLErrorHandler[] handlers = this.clientHandlers;
+            for (int i = 0; i < handlers.length; i++) {
+                handlers[i].onError(errinfo, private_info, cb);
+            }
+        }
+
+        private void addHandler(CLErrorHandler handler) {
+
+            if(handler == null) {
+                throw new IllegalArgumentException("handler was null.");
+            }
+
+            CLErrorHandler[] handlers = new CLErrorHandler[clientHandlers.length+1];
+            arraycopy(clientHandlers, 0, handlers, 0, clientHandlers.length);
+            handlers[handlers.length-1] = handler;
+            clientHandlers = handlers;
+        }
+
+        private void removeHandler(CLErrorHandler handler) {
+            
+            if(handler == null) {
+                throw new IllegalArgumentException("handler was null.");
+            }
+
+            for (int i = 0; i < clientHandlers.length; i++) {
+                if(handler.equals(clientHandlers[i])) {
+                    CLErrorHandler[] handlers = new CLErrorHandler[clientHandlers.length-1];
+                    arraycopy(clientHandlers, 0, handlers, 0, i);
+                    arraycopy(clientHandlers, i, handlers, 0, handlers.length-i);
+                    clientHandlers = handlers;
+                    return;
+                }
+            }
+        }
+
+
+    }
+
 
 }

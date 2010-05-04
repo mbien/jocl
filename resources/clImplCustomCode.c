@@ -25,7 +25,7 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
 
     // throws ClassNotFoundException (or other reflection stuff)
     jclass buildCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/impl/BuildProgramCallback");
-    jclass errorHandlerClassID = (*env)->FindClass(env, "com/jogamp/opencl/CreateContextCallback");
+    jclass errorHandlerClassID = (*env)->FindClass(env, "com/jogamp/opencl/CLErrorHandler");
 
     // throws even more reflection Exceptions
     // IDs are unique and do not change
@@ -35,7 +35,7 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
     if (errorHandlerClassID != NULL) {
         cccb_mid = (*env)->GetMethodID(env, errorHandlerClassID, "onError", "(Ljava/lang/String;Ljava/nio/ByteBuffer;J)V");
     }
-    
+
     return JNI_VERSION_1_2;
 }
 
@@ -47,8 +47,10 @@ void buildProgramCallback(cl_program id, void * object) {
 
     (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
 
-    (*env)->CallVoidMethod(env, obj, bcb_mid, (jlong)id);
-    (*env)->DeleteGlobalRef(env, obj);
+        (*env)->CallVoidMethod(env, obj, bcb_mid, (jlong)id);
+        (*env)->DeleteGlobalRef(env, obj);
+
+    (*jvm)->DetachCurrentThread(jvm);
     
 }
 
@@ -59,11 +61,12 @@ void createContextCallback(const char * errinfo, const void * private_info, size
 
     (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
 
-    jstring errorString = (*env)->NewStringUTF(env, errinfo);
+        jstring errorString = (*env)->NewStringUTF(env, errinfo);
 
-    //TODO private_info
-    (*env)->CallVoidMethod(env, obj, cccb_mid, errorString, NULL, 0);
-    //(*env)->DeleteGlobalRef(env, obj);
+        //TODO private_info
+        (*env)->CallVoidMethod(env, obj, cccb_mid, errorString, NULL, 0);
+
+    (*jvm)->DetachCurrentThread(jvm);
 
 }
 
@@ -80,7 +83,7 @@ void createContextCallback(const char * errinfo, const void * private_info, size
  */
 JNIEXPORT jlong JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jobject device_type, jobject cb, jobject errcode, jint errcode_byte_offset) {
+        jobject props, jint props_byte_offset, jobject device_type, jobject cb, jobject global, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
@@ -103,9 +106,16 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject
 
     _ctx = clCreateContextFromType(_props_ptr, (uint64_t) device_type, pfn_notify, globalCB, (int32_t *) _errcode_ptr);
 
-    // if something went wrong
-    if (_ctx == NULL && globalCB != NULL) {
-        (*env)->DeleteGlobalRef(env, globalCB);
+    if(globalCB != NULL) {
+        jlong *g = (*env)->GetPrimitiveArrayCritical(env, global, NULL);
+        // if something went wrong
+        if(_ctx == NULL) {
+            g[0] = 0;
+            (*env)->DeleteGlobalRef(env, globalCB);
+        }else{
+            g[0] = (jlong)globalCB;
+        }
+        (*env)->ReleasePrimitiveArrayCritical(env, global, g, 0);
     }
 
     return (jlong) (intptr_t)_ctx;
@@ -123,7 +133,7 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject
  */
 JNIEXPORT jlong JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject errcode, jint errcode_byte_offset) {
+        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject global, jobject errcode, jint errcode_byte_offset) {
 
     cl_context_properties* _props_ptr  = NULL;
     int32_t * _errcode_ptr = NULL;
@@ -149,13 +159,37 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused
 
     _ctx = clCreateContext(_props_ptr, numDevices, (cl_device_id *)_deviceListPtr, pfn_notify, globalCB, (int32_t *) _errcode_ptr);
 
-    // if something went wrong
-    if (_ctx == NULL && globalCB != NULL) {
-        (*env)->DeleteGlobalRef(env, globalCB);
+    if(globalCB != NULL) {
+        jlong *g = (*env)->GetPrimitiveArrayCritical(env, global, NULL);
+        // if something went wrong
+        if(_ctx == NULL) {
+            g[0] = 0;
+            (*env)->DeleteGlobalRef(env, globalCB);
+        }else{
+            g[0] = (jlong)globalCB;
+        }
+        (*env)->ReleasePrimitiveArrayCritical(env, global, g, 0);
     }
 
     return (jlong) (intptr_t)_ctx;
 }
+
+/*   Java->C glue code:
+ *   Java package: com.jogamp.opencl.impl.CLImpl
+ *    Java method: int clReleaseContextImpl(long context)
+ *     C function: int32_t clReleaseContextImpl(cl_context context);
+ */
+JNIEXPORT jint JNICALL
+Java_com_jogamp_opencl_impl_CLImpl_clReleaseContextImpl(JNIEnv *env, jobject _unused, jlong context, jlong global) {
+    int32_t _res;
+    _res = clReleaseContext((cl_context) (intptr_t) context);
+    // TODO deal with retains
+    if (global != 0) {
+        (*env)->DeleteGlobalRef(env, (jobject) global);
+    }
+    return _res;
+}
+
 
 /**
  * Entry point to C language function:

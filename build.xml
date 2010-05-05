@@ -86,6 +86,23 @@
 
     <target name="-post-compile" depends="c.compile.default" />
 
+    <target name="-post-jar">
+
+        <!-- TODO temporary codebase -->
+        <property name="jnlp.codebase" value="http://people.fh-landshut.de/~mbien/jogamp/jocl/"/>
+
+        <copy file="jocl.jnlp" tofile="${dist.jar.dir}/jocl.jnlp">
+            <filterchain>
+                <replacestring from="CODEBASE_TAG" to="${jnlp.codebase}"/>
+            </filterchain>
+        </copy>
+
+        <jar basedir="${natives.jocl.dir}/${namespace}" excludes="*.xml"
+             destfile="${dist.jar.dir}/jocl-natives-${os.and.arch}.jar"
+             manifest="${basedir}/manifest.mf" />
+
+    </target>
+
     <target name="c.compile.default" depends="gluegen.cpptasks.detect.os, gluegen.cpptasks.detect.compiler, jocl.c.compile, c.rename.lib.mingw" />
 
     <target name="jocl.c.compile" depends="c.setup.build">

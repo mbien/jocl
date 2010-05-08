@@ -170,18 +170,18 @@
     <target name="jocl.configure.linker">
         
         <linker id="linker.cfg.linux.jocl" extends="linker.cfg.linux">
-            <syslibset dir="/usr/lib"        libs="OpenCL"  if="static.binding" unless="user.libpath"/>
-            <syslibset dir="${user.libpath}" libs="OpenCL"  if="user.libpath"/>
+            <syslibset dir="/usr/lib"        libs="OpenCL"  if="static.binding" unless="opencl.lib.dir"/>
+            <syslibset dir="${opencl.lib.dir}" libs="OpenCL"  if="opencl.lib.dir"/>
         </linker>
 
         <linker id="linker.cfg.linux.amd64.jocl" extends="linker.cfg.linux.amd64" >
-            <syslibset dir="/usr/lib"        libs="OpenCL"  if="static.binding" unless="user.libpath"/>
-            <syslibset dir="${user.libpath}" libs="OpenCL"  if="user.libpath"/>
+            <syslibset dir="/usr/lib"        libs="OpenCL"  if="static.binding" unless="opencl.lib.dir"/>
+            <syslibset dir="${opencl.lib.dir}" libs="OpenCL"  if="opencl.lib.dir"/>
         </linker>
 
         <linker id="linker.cfg.win32.mingw.jocl" extends="linker.cfg.win32.mingw">
             <linkerarg value="-Wl,--kill-at" /> <!-- remove @ from function names -->
-            <syslibset dir="${user.libpath}" libs="OpenCL" if="static.binding"/>
+            <syslibset dir="${opencl.lib.dir}" libs="OpenCL" if="static.binding"/>
         </linker>
 
         <linker id="linker.cfg.macosx.jocl" extends="linker.cfg.macosx">

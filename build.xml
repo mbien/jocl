@@ -5,6 +5,8 @@
 
     <description>Builds, tests, and runs the project JOCL.</description>
 
+    <property file="${user.home}/jocl.properties"/>
+    
     <condition property="rootrel.build" value="build">
       <not>
           <isset property="rootrel.build"/>

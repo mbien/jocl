@@ -113,7 +113,7 @@
 
         <mkdir dir="${obj.jocl.dir}/${namespace}" />
         <mkdir dir="${natives.jocl.dir}/${namespace}" />
-
+        
         <cc outtype="shared"
             objdir="${obj.jocl.dir}/${namespace}"
             outfile="${natives.jocl.dir}/${namespace}/${output.lib.name}"
@@ -170,17 +170,18 @@
     <target name="jocl.configure.linker">
         
         <linker id="linker.cfg.linux.jocl" extends="linker.cfg.linux">
-            <syslibset dir="/usr/lib" libs="OpenCL"/>
+            <syslibset dir="/usr/lib"        libs="OpenCL"  if="static.binding" unless="user.libpath"/>
+            <syslibset dir="${user.libpath}" libs="OpenCL"  if="user.libpath"/>
         </linker>
 
         <linker id="linker.cfg.linux.amd64.jocl" extends="linker.cfg.linux.amd64" >
-            <syslibset dir="/usr/lib" libs="OpenCL"/>
+            <syslibset dir="/usr/lib"        libs="OpenCL"  if="static.binding" unless="user.libpath"/>
+            <syslibset dir="${user.libpath}" libs="OpenCL"  if="user.libpath"/>
         </linker>
 
         <linker id="linker.cfg.win32.mingw.jocl" extends="linker.cfg.win32.mingw">
             <linkerarg value="-Wl,--kill-at" /> <!-- remove @ from function names -->
-            <syslibset dir="C:/Program Files (x86)/ATI Stream/lib/x86" libs="OpenCL"/>
-       <!-- <syslibset dir="C:/NVIDIAComputingSDK/OpenCL/common/lib/Win32" libs="OpenCL"/> -->
+            <syslibset dir="${user.libpath}" libs="OpenCL" if="static.binding"/>
         </linker>
 
         <linker id="linker.cfg.macosx.jocl" extends="linker.cfg.macosx">

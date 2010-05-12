@@ -264,6 +264,7 @@ public class LowLevelBindingTest {
 
         // Build the program
         ret = cl.clBuildProgram(program, 0, null, null, callback);
+        latch.countDown(); // TODO remove if callbacks are enabled again
         checkError("on clBuildProgram", ret);
 
         out.println("waiting for program to build...");

@@ -76,6 +76,8 @@ public class CLGLTest {
         if(device == null) {
             out.println("Aborting test: no GLCL capable devices found.");
             return;
+        }else{
+            out.println("isGLMemorySharingSupported==true on: \n    "+device);
         }
 
         CLContext context = CLGLContext.create(glcontext, device);

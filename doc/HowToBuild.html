@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBliC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../style.css" rel="stylesheet" type="text/css"/>
+        <title>How to build JOCL</title>
+    </head>
+    <body>
+        <div id="container">
+            <div id="header">
+                <div id="slogan">How to build JOCL</div>
+                <div id="logo"><a href="http://jogamp.org/">How to build JOCL</a></div>
+            </div>
+            <div id="menu">
+                <ul>
+                    <li><a href="http://jogamp.org/">Home</a></li>
+                    <li><a href="../../gluegen/www/">Gluegen</a></li>
+                    <li><a href="../../joal/www/">JOAL</a></li>
+                    <li><a href="../../jocl/www/">JOCL</a></li>
+                    <li><a href="../../jogl/www/">JOGL</a></li>
+                    <li><a href="../../demos/www/">Demos</a></li>
+                    <li><a href="../../wiki/">Wiki</a></li>
+                </ul>
+            </div>
+            <div id="main" class="fill">
+
+<h2>Prerequisites</h2>
+<hr>
+<P>
+<b>Follow all steps</b> described in <a href="../../jogl/doc/HowToBuild.html">How to build JOGL</a>.<br>
+If you could successfully pass the <code>junit.run</code> tests, you may continue here.<br>
+</P>
+
+<h2>Platform and Component Requirements</h2>
+<hr>
+<P>
+
+First you have to install an OpenCL SDK on your platform.
+<ul>
+<li> <b>GPU NVidia</b> Geforce >= 8<br>
+    Install the latest NVidia graphics driver available for your platform,<br>
+    and the GPU computing SDK (<i>gpucomputingsdk</i>).
+    <ul>
+    <li> NVidia <a href="http://developer.nvidia.com/object/cuda_3_0_downloads.html">GPU Computing SDK code samples</a></li>
+    </ul> </li>
+<li> <b>GPU AMD</b><br>
+    Install the latest AMD graphics driver available for your platform,<br>
+    and install the AMD Stream SDK, see below.
+<li> <b>CPU x86 x86_64 SSE3</b></li>
+    <ul>
+    <li> AMD <a href="http://developer.amd.com/gpu/ATIStreamSDK/Pages/default.aspx">ATI Stream SDK</a></li>
+    </ul>
+</ul>
+
+</P>
+
+<h2>Build Steps</h2>
+<hr>
+<P>
+Here are the steps that are required in order to build JOCL.
+</P>
+
+<P>
+
+<OL>
+  <LI><B>Optain the source code</B> using git:
+    <ul>
+        <li><a href="http://github.com/mbien/jocl">JOCL Dev GIT Repo</a></li>
+    </ul><br>
+    It is crucial that you checkout the source code under the common root directory:
+    <pre>
+        /home/dude/projects/jogamp> git clone git://github.com/mbien/jocl.git jocl
+    </pre>
+    Now you should have following directory structure:
+    <pre>
+        /home/dude/projects/jogamp
+        /home/dude/projects/jogamp/gluegen
+        /home/dude/projects/jogamp/jogl
+        /home/dude/projects/jogamp/jocl
+    </pre></li>
+
+  <LI> <B>Unset your CLASSPATH environment variable:</B> <br> The Ant build requires that the JOGL jars not be visible on the classpath. On Unix, type <code> unsetenv CLASSPATH </code> into a csh or tcsh shell, or <code> unset CLASSPATH </code> into a Bourne shell. On Windows, type <code> set CLASSPATH= </code> into a command prompt.</LI>
+
+  <LI> <B>Optional</B>  <I>Copy and edit <B>jocl.properties</B>:</I> <br>
+    To specify different basic options for the build,<br>
+    copy <b>jocl/make/jocl.properties</b> into your home directory (pointed to by the Java system property <b>user.home</b>). <br>
+    Edit the copy to change desired settings.</LI>
+
+  <LI> <B>Build the source tree:</B> <br> Open a command shell in the "jocl" directory of the source tree and type "ant jar"</code>.</LI>
+  <LI> <B>Test your build:</B> <br> Stay in your command shell in the "jocl" directory of the source tree and type "ant test"</code>.</LI>
+
+  <LI> <B>Build Javadoc:</B> <br> Stay in your command shell in the "jocl" directory of the source tree and type "ant javadoc". This will produce the end-user documentation for JOCL.</LI>
+</OL>
+ 
+<h2> Common build problems </h2>
+
+<OL>
+
+</OL>
+            </div>
+            <div id="footer">
+                <div id="footer_left">
+                    <span xmlns:dc="http://purl.org/dc/elements/1.1/" property="dc:title">JogAmp.org</span>
+                    by <a xmlns:cc="http://creativecommons.org/ns#" href="http://jogamp.org" property="cc:attributionName" rel="cc:attributionURL">http://jogamp.org</a>
+                    is licensed under a <br/>
+                    <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 License</a>.
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

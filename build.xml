@@ -206,13 +206,18 @@
     <!-- configure for current platform -->
     <target name="c.configure.default" depends="c.configure.os" />
     <target name="c.configure.os"      depends="c.configure.win, c.configure.linux, c.configure.macosx" />
-    <target name="c.configure.win"     depends="c.configure.win.mingw"                          if="isWindows" />
+    <target name="c.configure.win"     depends="c.configure.win.mingw32, c.configure.win.mingw64" if="isWindows" />
     <target name="c.configure.linux"   depends="c.configure.linux.x86, c.configure.linux.amd64" if="isLinux" />
 
-    <target name="c.configure.win.mingw" if="isMingW">
-        <echo message="Win.MingW" />
+    <target name="c.configure.win.mingw32" if="isMingW32">
+        <echo message="Win.Ming32W" />
         <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
         <property name="linker.cfg.id"    value="linker.cfg.win32.mingw.jocl" />
+    </target>
+    <target name="c.configure.win.mingw64" if="isMingW64">
+        <echo message="Win.Ming64W" />
+        <property name="compiler.cfg.id"  value="${compiler.cfg.id.base}" />
+        <property name="linker.cfg.id"    value="linker.cfg.win64.mingw.jocl" />
     </target>
     <target name="c.configure.linux.x86" if="isLinuxX86">
         <echo message="Linux.x86" />

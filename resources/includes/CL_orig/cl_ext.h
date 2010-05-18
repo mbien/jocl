@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008-2009 The Khronos Group Inc.
+ * Copyright (c) 2008-2010 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -21,7 +21,10 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  ******************************************************************************/
 
-/* $Revision: 11041 $ on $Date: 2010-04-14 10:50:06 -0700 (Wed, 14 Apr 2010) $ */
+/* $Revision: 11188 $ on $Date: 2010-04-27 14:59:20 -0700 (Tue, 27 Apr 2010) $ */
+
+/* cl_ext.h contains OpenCL extensions which don't have external */
+/* (OpenGL, D3D) dependencies.                                   */
 
 #ifndef __CL_EXT_H
 #define __CL_EXT_H
@@ -56,6 +59,9 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clIcdGetPlatformIDsKHR_fn)(
     cl_uint          num_entries,
     cl_platform_id * platforms,
     cl_uint *        num_platforms);
+
+/* cl_amd_device_attribute_query - no extension #define since it has no functions */
+#define CL_DEVICE_PROFILING_TIMER_OFFSET_AMD        0x4036
 
 #ifdef __cplusplus
 }

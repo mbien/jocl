@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBliC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link href="../../style.css" rel="stylesheet" type="text/css"/>
+        <title></title>
+    </head>
+    <body>
+        <div id="container">
+            <div id="header">
+                <div id="slogan">Java&#0153; Binding for the OpenCL&#0174; API</div>
+                <div id="logo"><a href="http://jogamp.org/">JOCL</a></div>
+            </div>
+            <div id="menu">
+                <ul>
+                    <li><a href="http://jogamp.org/">Home</a></li>
+                    <li><a href="../../gluegen/www">Gluegen</a></li>
+                    <li><a href="../../joal/www">JOAL</a></li>
+                    <li><a href="../../jogl/www">JOGL</a></li>
+                    <li><a href="../../wiki/">Wiki</a></li>
+                    <li><a href="http://jogamp.org/chuck/job/jocl_onmaster/label=linux64-null-centos54-jogamp-x64-chuck-001/javadoc/">JavaDoc</a></li>
+                </ul>
+            </div>
+            <div id="main">
+                <div id="sidebar">
+                    <h3>Useful Links</h3>
+                    <ul>
+                        <li><a href="http://jogamp.org/chuck/job/jocl_onmaster/label=linux64-null-centos54-jogamp-x64-chuck-001/javadoc/">JOCL JavaDoc</a></li>
+                        <li><a href="http://jogamp.org/wiki/index.php/JOCL_FAQ#Getting_Started">JOCL Hello World</a></li>
+                        <li><a href="http://www.khronos.org/opencl/sdk/1.0/docs/man/xhtml/">OpenCL Reference Pages</a></li>
+                        <li><a href="http://www.khronos.org/registry/cl/specs/opencl-1.0.48.pdf">OpenCL 1.0 Specification</a></li>
+                        <li><a href="http://www.khronos.org/files/opencl-quick-reference-card.pdf">OpenCL Quick Reference</a></li>
+                        <li><a href="http://developer.amd.com/documentation/videos/OpenCLTechnicalOverviewVideoSeries/Pages/default.aspx">ATI Stream OpenCL Technical Overview Video Series</a></li>
+                        <li><a href="http://www.macresearch.org/opencl">Mac Research OpenCL Tutorials</a></li>
+                    </ul>
+
+                </div>
+                <div id="text">
+                    <h3>Java OpenCL</h3>
+                    JOCL provides an easy to use Java binding for the OpenCL API.
+                    GlueGen is used to generate a low level binding directly from the official Khronos C header files.
+                    The hand written high level bindings on top of generated code provides a convenient interface and reduces verbosity to a minimum.
+
+                    <h3>Features / Project Goals</h3>
+                    <ul>
+                        <li>high performance, cross platform, high and low level OpenCL bindings</li>
+                        <li>intuitive API</li>
+                        <li>seamless interoperability with JOGL</li>
+                        <li>secure - automatic Exception handling, no resource management in native code etc</li>
+                        <li>GC friendly - no weak references, finalizers or other cheats</li>
+                        <li>utility API for Program management, CommandQueue synchronization and more</li>
+                    </ul>
+
+                    <h3>Screenshots (jocl-demos project)</h3>
+                    <p>
+                        Realtime-interactive rendering of 4D fractals (Julia Set left, Mandelbrot Set right).<br/>
+                        <a href="Julia3d.png">
+                            <img src="Julia3d_sm.png" width="400" height="300" alt="JOCL Julia Set"></img>
+                        </a>
+                        <a href="MandelbrotHub.png">
+                            <img src="MandelbrotHub_sm.png" width="400" height="300" alt="JOCL Mandel Hub Set"></img>
+                        </a>
+                    </p>
+                    <p>
+                        Switching precision of floatingpoint calculations made easy (32bit left, 64bit right - very high zoom level).<br/>
+                        <img src="mandelbrot32_sm.png" width="256" height="256" alt="low precision"></img>
+                        <img src="mandelbrot64_sm.png" width="256" height="256" alt="high precision"></img>
+                    </p>
+
+                    <p>
+                        Performance comparison between Quicksort on CPU and Radixsort on GPU.<br/>
+                        <img src="http://people.fh-landshut.de/~mbien/weblog/jocl/gpusort.png" width="834" height="235" alt="JOCL Radix Sort"></img>
+                    </p>
+                </div>
+            </div>
+            <div id="footer">
+                <div id="footer_left">
+                    <span>JogAmp.org</span>
+                    by <a href="http://jogamp.org">http://jogamp.org</a>
+                    is licensed under a <br/>
+                    <a href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 License</a>.
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -17,6 +17,7 @@ import javax.media.opengl.GLProfile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import javax.media.opengl.GLContext;
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -30,7 +31,7 @@ public class CLGLTest {
 
     private static GLContext glcontext;
 
-    @BeforeClass
+//    @BeforeClass
     public static void init() {
 
         Display display = NewtFactory.createDisplay(null); // local display
@@ -59,9 +60,9 @@ public class CLGLTest {
         }
     }
 
-    @Test
+//    @Test
     public void createContextTest() {
-     
+
         out.println(" - - - glcl; createContextTest - - - ");
 
         CLDevice[] devices = CLPlatform.getDefault().listCLDevices();

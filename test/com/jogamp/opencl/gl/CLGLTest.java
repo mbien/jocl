@@ -17,10 +17,10 @@ import javax.media.opengl.GLProfile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import javax.media.opengl.GLContext;
-import org.junit.Assume;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import static java.lang.System.*;
 
 /**
@@ -31,7 +31,7 @@ public class CLGLTest {
 
     private static GLContext glcontext;
 
-//    @BeforeClass
+    @BeforeClass
     public static void init() {
 
         Display display = NewtFactory.createDisplay(null); // local display
@@ -46,7 +46,8 @@ public class CLGLTest {
         window.setSize(640, 480);
 
         GLWindow glWindow = GLWindow.create(window);
-        assertNotNull(glWindow);
+        
+        assumeNotNull(glWindow);
         glWindow.setVisible(true);
 
         glcontext = glWindow.getContext();
@@ -60,7 +61,7 @@ public class CLGLTest {
         }
     }
 
-//    @Test
+    @Test
     public void createContextTest() {
 
         out.println(" - - - glcl; createContextTest - - - ");
@@ -81,6 +82,7 @@ public class CLGLTest {
             out.println("isGLMemorySharingSupported==true on: \n    "+device);
         }
 
+        assumeNotNull(glcontext);
         CLContext context = CLGLContext.create(glcontext, device);
         assertNotNull(context);
 //        assertTrue(glcontext.isCurrent());

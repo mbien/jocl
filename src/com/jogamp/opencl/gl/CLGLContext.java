@@ -7,6 +7,7 @@ import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opengl.impl.GLContextImpl;
+import com.jogamp.opengl.impl.egl.EGLContext;
 import com.jogamp.opengl.impl.macosx.cgl.MacOSXCGLContext;
 import com.jogamp.opengl.impl.windows.wgl.WindowsWGLContext;
 import com.jogamp.opengl.impl.x11.glx.X11GLXContext;
@@ -131,6 +132,11 @@ public final class CLGLContext extends CLContext {
 
         PointerBuffer properties;
         if(glContext instanceof X11GLXContext) {
+//          spec: "When the GLX binding API is supported, the attribute
+//          CL_GL_CONTEXT_KHR should be set to a GLXContext handle to an
+//          OpenGL context, and the attribute CL_GLX_DISPLAY_KHR should be
+//          set to the Display handle of the X Window System display used to
+//          create the OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
             long handle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
             glID[0] = ((X11GLXContext)glContext).getContext();
@@ -138,12 +144,10 @@ public final class CLGLContext extends CLContext {
                       .put(CL_GLX_DISPLAY_KHR).put(handle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof WindowsWGLContext) {
-            // TODO test on windows
-            //WIN32
-            //cl_context_properties props[] = {
-            //         CL_GL_CONTEXT_KHR, (cl_context_properties)0,
-            //         CL_WGL_HDC_KHR, (cl_context_properties)0,
-            //         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
+//          spec: "When the WGL binding API is supported, the attribute
+//          CL_GL_CONTEXT_KHR should be set to an HGLRC handle to an OpenGL
+//          context, and the attribute CL_WGL_HDC_KHR should be set to the
+//          HDC handle of the display used to create the OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
             long handle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
             glID[0] = ((WindowsWGLContext)glContext).getHGLRC();
@@ -151,14 +155,26 @@ public final class CLGLContext extends CLContext {
                       .put(CL_WGL_HDC_KHR).put(handle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof MacOSXCGLContext) {
-            // TODO test on mac
-            //MACOSX
-            //cl_context_properties props[] = {
-            //         CL_CGL_SHAREGROUP_KHR, (cl_context_properties)0,
-            //         CL_CONTEXT_PLATFORM, (cl_context_properties)cpPlatform, 0};
+//            TODO test on mac
+//          spec: "When the CGL binding API is supported, the attribute
+//          CL_CGL_SHAREGROUP_KHR should be set to a CGLShareGroup handle to
+//          a CGL share group object."
             properties = PointerBuffer.allocateDirect(5);
             glID[0] = ((MacOSXCGLContext)glContext).getCGLContext();
             properties.put(CL_CGL_SHAREGROUP_KHR).put(glID[0])
+                      .put(CL_CONTEXT_PLATFORM).put(platform.ID);
+        }else if(glContext instanceof EGLContext) {
+//            TODO test EGL
+//          spec: "When the EGL binding API is supported, the attribute
+//          CL_GL_CONTEXT_KHR should be set to an EGLContext handle to an
+//          OpenGL ES or OpenGL context, and the attribute
+//          CL_EGL_DISPLAY_KHR should be set to the EGLDisplay handle of the
+//          display used to create the OpenGL ES or OpenGL context."
+            properties = PointerBuffer.allocateDirect(7);
+            long handle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
+            glID[0] = ((MacOSXCGLContext)glContext).getCGLContext();
+            properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
+                      .put(CL_EGL_DISPLAY_KHR).put(handle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else{
             throw new RuntimeException("unsupported GLContext: "+glContext);

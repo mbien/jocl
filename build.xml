@@ -307,6 +307,8 @@
 
             <excludepackage name="com.jogamp.opencl.impl"/>
         </javadoc>
+
+        <zip destfile="${dist.javadoc.dir}/../jocl-javadoc.zip" basedir="${dist.javadoc.dir}"/>
     </target>
 
 </project>

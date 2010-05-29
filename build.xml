@@ -77,7 +77,7 @@
         <!--compile build utilities-->
         <mkdir dir="${etc.build.dir}"/>
 
-        <javac destdir="${etc.build.dir}" classpath="${ant.core.lib}" source="1.5" debug="true" debuglevel="lines,vars,source">
+        <javac destdir="${etc.build.dir}" classpath="${ant.core.lib}" source="1.5" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
             <src path="${basedir}/etc/src"/>
         </javac>
 
@@ -309,6 +309,12 @@
         </javadoc>
 
         <zip destfile="${dist.javadoc.dir}/../jocl-javadoc.zip" basedir="${dist.javadoc.dir}"/>
+    </target>
+
+    <target name="test-file">
+        <property name="javac.includes" value="${test.file}"/>
+        <property name="test.includes" value="${test.file}"/>
+        <antcall target="test-single" inheritall="true"/>
     </target>
 
 </project>

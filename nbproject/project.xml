@@ -4,7 +4,8 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>JOCL</name>
-            <minimum-ant-version>1.6.5</minimum-ant-version>
+            <minimum-ant-version>1.8</minimum-ant-version>
+            <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.dir"/>
                 <root id="src.java.dir"/>

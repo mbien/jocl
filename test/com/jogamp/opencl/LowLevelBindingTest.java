@@ -1,13 +1,21 @@
 package com.jogamp.opencl;
 
+import java.util.Random;
 import com.jogamp.opencl.impl.BuildProgramCallback;
 import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.nio.PointerBuffer;
-import com.jogamp.opencl.impl.CLImpl;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,6 +54,8 @@ public class LowLevelBindingTest {
             + "    }                                                                                              \n"
             + "    c[iGID] = iGID;                                                                                \n"
             + "}                                                                                                  \n";
+
+    private int ELEMENT_COUNT = 11444777;
 
 
     @BeforeClass
@@ -205,30 +215,34 @@ public class LowLevelBindingTest {
                                               .rewind();
         long context = cl.clCreateContextFromType(properties, CL.CL_DEVICE_TYPE_ALL, null, null);
         out.println("context handle: "+context);
+        checkError("on clCreateContextFromType", ret);
 
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
         checkError("on clGetContextInfo", ret);
 
-        int sizeofLong = is32Bit()?4:8;
-        out.println("context created with " + longBuffer.get(0)/sizeofLong + " devices");
+        int deviceCount = (int) (longBuffer.get(0) / (is32Bit() ? 4 : 8));
+        out.println("context created with " + deviceCount + " devices");
 
         ByteBuffer bb = newDirectByteBuffer(4096);
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, bb.capacity(), bb, null);
         checkError("on clGetContextInfo", ret);
 
-        for (int i = 0; i < longBuffer.get(0)/sizeofLong; i++) {
-            out.println("device id: "+bb.getLong());
+        for (int i = 0; i < deviceCount; i++) {
+            out.println("device id: " + (is32Bit()?bb.getInt():bb.getLong()));
         }
 
-        long firstDeviceID = bb.getLong(0);
+        // use a random device
+        int offset = new Random().nextInt(deviceCount);
+        out.println("using device# " + offset);
+        offset *= (is32Bit() ? 4 : 8);
+        long device = is32Bit()?bb.getInt(offset):bb.getLong(offset);
 
         // Create a command-queue
-        long commandQueue = cl.clCreateCommandQueue(context, firstDeviceID, 0, intBuffer);
+        long commandQueue = cl.clCreateCommandQueue(context, device, 0, intBuffer);
         checkError("on clCreateCommandQueue", intBuffer.get(0));
 
-        int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
         int localWorkSize = 256;      // set and log Global and Local work size dimensions
-        int globalWorkSize = roundUp(localWorkSize, elementCount);  // rounded up to the nearest multiple of the LocalWorkSize
+        int globalWorkSize = roundUp(localWorkSize, ELEMENT_COUNT);  // rounded up to the nearest multiple of the LocalWorkSize
 
         out.println("allocateing buffers of size: "+globalWorkSize);
 
@@ -248,6 +262,7 @@ public class LowLevelBindingTest {
         // Create the program
         Int64Buffer lengths = (Int64Buffer)Int64Buffer.allocateDirect(1).put(programSource.length());
         final long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
+        out.println("program id: "+program);
         checkError("on clCreateProgramWithSource", intBuffer.get(0));
 
         // tests if the callback is called
@@ -262,16 +277,20 @@ public class LowLevelBindingTest {
             }
         };
 
-        // Build the program
-        ret = cl.clBuildProgram(program, 0, null, null, callback);
-        latch.countDown(); // TODO remove if callbacks are enabled again
-        checkError("on clBuildProgram", ret);
+        // spec: building programs is not threadsafe (see loadtest)
+        synchronized(CLProgram.class) {
+            // Build the program
+            ret = cl.clBuildProgram(program, 0, null, null, callback);
+            latch.countDown(); // TODO remove if callbacks are enabled again
+            checkError("on clBuildProgram", ret);
 
-        out.println("waiting for program to build...");
-        latch.await();
+            out.println("waiting for program to build...");
+            latch.await();
+        }
         out.println("done");
 
         // Read program infos
+        bb.rewind();
         ret = cl.clGetProgramInfo(program, CL.CL_PROGRAM_NUM_DEVICES, bb.capacity(), bb, null);
         checkError("on clGetProgramInfo1", ret);
         out.println("program associated with "+bb.getInt(0)+" device(s)");
@@ -286,24 +305,25 @@ public class LowLevelBindingTest {
         out.println("program source:\n" + clString2JavaString(bb, (int)longBuffer.get(0)));
 
         // Check program status
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_STATUS, bb.capacity(), bb, null);
+        ret = cl.clGetProgramBuildInfo(program, device, CL.CL_PROGRAM_BUILD_STATUS, bb.capacity(), bb, null);
         checkError("on clGetProgramBuildInfo1", ret);
 
         out.println("program build status: " + CLProgram.Status.valueOf(bb.getInt(0)));
         assertEquals("build status", CL.CL_BUILD_SUCCESS, bb.getInt(0));
 
         // Read build log
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, 0, null, longBuffer);
+        ret = cl.clGetProgramBuildInfo(program, device, CL.CL_PROGRAM_BUILD_LOG, 0, null, longBuffer);
         checkError("on clGetProgramBuildInfo2", ret);
         out.println("program log length: " + longBuffer.get(0));
 
         bb.rewind();
-        ret = cl.clGetProgramBuildInfo(program, firstDeviceID, CL.CL_PROGRAM_BUILD_LOG, bb.capacity(), bb, null);
+        ret = cl.clGetProgramBuildInfo(program, device, CL.CL_PROGRAM_BUILD_LOG, bb.capacity(), bb, null);
         checkError("on clGetProgramBuildInfo3", ret);
         out.println("log:\n" + clString2JavaString(bb, (int)longBuffer.get(0)));
 
         // Create the kernel
         long kernel = cl.clCreateKernel(program, "VectorAdd", intBuffer);
+        out.println("kernel id: "+kernel);
         checkError("on clCreateKernel", intBuffer.get(0));
 
 //        srcA.limit(elementCount*SIZEOF_FLOAT);
@@ -316,7 +336,7 @@ public class LowLevelBindingTest {
         ret = cl.clSetKernelArg(kernel, 0, is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcA));        checkError("on clSetKernelArg0", ret);
         ret = cl.clSetKernelArg(kernel, 1, is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devSrcB));        checkError("on clSetKernelArg1", ret);
         ret = cl.clSetKernelArg(kernel, 2, is32Bit()?SIZEOF_INT:SIZEOF_LONG, wrap(devDst));         checkError("on clSetKernelArg2", ret);
-        ret = cl.clSetKernelArg(kernel, 3, SIZEOF_INT,                       wrap(elementCount));   checkError("on clSetKernelArg3", ret);
+        ret = cl.clSetKernelArg(kernel, 3, SIZEOF_INT,                     wrap(ELEMENT_COUNT));  checkError("on clSetKernelArg3", ret);
 
         out.println("used device memory: "+ (srcA.capacity()+srcB.capacity()+dest.capacity())/1000000 +"MB");
 
@@ -359,24 +379,53 @@ public class LowLevelBindingTest {
         ret = cl.clReleaseKernel(kernel);
         checkError("on clReleaseKernel", ret);
 
-        ret = cl.clUnloadCompiler();
-        checkError("on clUnloadCompiler", ret);
+//        ret = cl.clUnloadCompiler();
+//        checkError("on clUnloadCompiler", ret);
 
         ret = cl.clReleaseContext(context);
         checkError("on clReleaseContext", ret);
 
     }
-/*
-    @Test
-    public void loadTest() {
+
+//    @Test
+    public void loadTest() throws InterruptedException {
         //for memory leak detection; e.g watch out for "out of host memory" errors
         out.println(" - - - loadTest - - - ");
+
+        ExecutorService pool = Executors.newFixedThreadPool(8);
+        List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+
         for(int i = 0; i < 100; i++) {
-            out.println("###iteration "+i);
-            lowLevelVectorAddTest();
+            final int n = i;
+            tasks.add(new Callable<Object>() {
+                public Object call() {
+                    try {
+                        out.println("###start iteration " + n);
+                        LowLevelBindingTest test = new LowLevelBindingTest();
+                        test.ELEMENT_COUNT = 123456;
+                        test.lowLevelVectorAddTest();
+                        out.println("###end iteration " + n);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    return null;
+                }
+            });
         }
+        
+        for (Future<Object> future : pool.invokeAll(tasks)) {
+            try {
+                future.get();
+            } catch (ExecutionException ex) {
+                ex.printStackTrace();
+                pool.shutdown();
+                fail();
+            }
+        }
+        pool.shutdown();
+        pool.awaitTermination(300, TimeUnit.SECONDS);
     }
-*/
+
     private ByteBuffer wrap(long value) {
         return (ByteBuffer) newDirectByteBuffer(8).putLong(value).rewind();
     }

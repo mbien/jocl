@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.opencl.CL.*;
@@ -30,7 +31,7 @@ import static com.jogamp.common.nio.Buffers.*;
  */
 public class CLProgram extends CLObject implements CLResource {
 
-//    private final static Object buildLock = new Object();
+    private final static ReentrantLock buildLock = new ReentrantLock();
     
     private final Set<CLKernel> kernels;
     private Map<CLDevice, Status> buildStatusMap;
@@ -317,6 +318,7 @@ public class CLProgram extends CLObject implements CLResource {
         if(listener != null) {
             callback = new BuildProgramCallback() {
                 public void buildFinished(long cl_program) {
+                    buildLock.unlock();
                     listener.buildFinished(CLProgram.this);
                 }
             };
@@ -324,10 +326,21 @@ public class CLProgram extends CLObject implements CLResource {
 
         // Build the program
         int ret = 0;
-        // building programs is not threadsafe
-//        synchronized(buildLock) {
-            ret = cl.clBuildProgram(ID, count, deviceIDs, options, callback);
-//        }
+
+        // spec: building programs is not threadsafe, we are locking the API call to
+        // make sure only one thread calls it at a time until it completes (asynchronous or synchronously).
+        {
+            buildLock.lock();
+            boolean exception = true;
+            try{
+                ret = cl.clBuildProgram(ID, count, deviceIDs, options, callback);
+                exception = false;
+            }finally{
+                if(callback == null || exception) {
+                    buildLock.unlock();
+                }
+            }
+        }
 
         if(ret != CL_SUCCESS) {
             throw newException(ret, "\n"+getBuildLog());

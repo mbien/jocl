@@ -51,6 +51,8 @@ public class CLGLTest {
         glWindow.setVisible(true);
 
         glcontext = glWindow.getContext();
+        out.println("useing glcontext:");
+        out.println(glcontext);
     }
 
     @AfterClass

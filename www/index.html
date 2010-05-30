@@ -20,7 +20,7 @@
                     <li><a href="../../wiki/">Wiki</a></li>
                     <li><a href="../../blog/">Blogs</a></li>
                     <li><a href="../../forum.html">Forums</a></li>
-                    <li><a href="http://jogamp.org/chuck/job/jocl_onmaster/label=linux64-null-centos54-jogamp-x64-chuck-001/javadoc/">JavaDoc</a></li>
+                    <li><a href="../../chuck/job/jocl_onmaster/label=linux64-null-centos54-jogamp-x64-chuck-001/javadoc/">JavaDoc</a></li>
                 </ul>
             </div>
             <div id="main">
@@ -29,6 +29,7 @@
                     <ul>
                         <li><a href="http://jogamp.org/chuck/job/jocl_onmaster/label=linux64-null-centos54-jogamp-x64-chuck-001/javadoc/">JOCL JavaDoc</a></li>
                         <li><a href="http://jogamp.org/wiki/index.php/JOCL_FAQ#Getting_Started">JOCL Hello World</a></li>
+                        <li><a href="../doc/HowToBuild.html">Building JOCL</a></li>
                         <li><a href="http://www.khronos.org/opencl/sdk/1.0/docs/man/xhtml/">OpenCL Reference Pages</a></li>
                         <li><a href="http://www.khronos.org/registry/cl/specs/opencl-1.0.48.pdf">OpenCL 1.0 Specification</a></li>
                         <li><a href="http://www.khronos.org/files/opencl-quick-reference-card.pdf">OpenCL Quick Reference</a></li>
@@ -39,9 +40,10 @@
                 </div>
                 <div id="text">
                     <h3>Java OpenCL</h3>
-                    JOCL provides an easy to use Java binding for the OpenCL API.
-                    GlueGen is used to generate a low level binding directly from the official Khronos C header files.
-                    The hand written high level bindings on top of generated code provides a convenient interface and reduces verbosity to a minimum.
+                    Project JOCL provides an easy to use Java binding for the OpenCL API.
+                    JOCL exposes the OpenCL API in two levels: A automatically generated low level JNI based binding
+                    and a hand written high level binding on top of the generated interfaces.
+                    The high level bindings provide a convenient interface and reduce verbosity to a minimum.
 
                     <h3>Features / Project Goals</h3>
                     <ul>
@@ -71,7 +73,7 @@
 
                     <p>
                         Performance comparison between Quicksort on CPU and Radixsort on GPU.<br/>
-                        <img src="http://people.fh-landshut.de/~mbien/weblog/jocl/gpusort.png" width="834" height="235" alt="JOCL Radix Sort"></img>
+                        <img src="gpusort.png" width="834" height="235" alt="JOCL Radix Sort"></img>
                     </p>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.opencl.util.CLUtil;
-import com.jogamp.common.nio.Int64Buffer;
+import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.common.os.Platform;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -516,7 +516,7 @@ public final class CLDevice extends CLObject {
     private final class CLDeviceInfoAccessor extends CLInfoAccessor {
 
         @Override
-        protected int getInfo(int name, long valueSize, Buffer value, Int64Buffer valueSizeRet) {
+        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
             return cl.clGetDeviceInfo(ID, name, valueSize, value, valueSizeRet);
         }
 

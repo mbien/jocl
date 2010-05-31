@@ -18,8 +18,6 @@
     typedef          long     intptr_t;
     typedef unsigned long     uintptr_t;
 
-    typedef unsigned long     size_t;
-
     /* Greatest-width integer types */
     /* Modern GCCs provide __INTMAX_TYPE__ */
     #if defined(__INTMAX_TYPE__)

@@ -2,7 +2,6 @@ package com.jogamp.opencl;
 
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import com.jogamp.opencl.util.CLUtil;
-import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.os.Platform;
 import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.impl.BuildProgramCallback;
@@ -49,7 +48,7 @@ public class CLProgram extends CLObject implements CLResource {
         IntBuffer status = newDirectByteBuffer(4).asIntBuffer();
         // Create the program
         long id = context.cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
-                               (Int64Buffer)Int64Buffer.allocateDirect(1).put(src.length()), status);
+                               (PointerBuffer)PointerBuffer.allocateDirect(1).put(src.length()), status);
 
         int err = status.get();
         if(err != CL_SUCCESS) {
@@ -63,7 +62,7 @@ public class CLProgram extends CLObject implements CLResource {
 
         PointerBuffer devices = PointerBuffer.allocateDirect(binaries.size());
         PointerBuffer codeBuffers = PointerBuffer.allocateDirect(binaries.size());
-        Int64Buffer lengths = Int64Buffer.allocateDirect(binaries.size());
+        PointerBuffer lengths = PointerBuffer.allocateDirect(binaries.size());
 
         int i = 0;
         Set<CLDevice> keys = binaries.keySet();
@@ -120,7 +119,7 @@ public class CLProgram extends CLObject implements CLResource {
             return "";
         }
 
-        Int64Buffer size = Int64Buffer.allocateDirect(1);
+        PointerBuffer size = PointerBuffer.allocateDirect(1);
 
         int ret = cl.clGetProgramBuildInfo(ID, device.ID, flag, 0, null, size);
         if(ret != CL_SUCCESS) {
@@ -143,7 +142,7 @@ public class CLProgram extends CLObject implements CLResource {
             return "";
         }
 
-        Int64Buffer size = Int64Buffer.allocateDirect(1);
+        PointerBuffer size = PointerBuffer.allocateDirect(1);
 
         int ret = cl.clGetProgramInfo(ID, flag, 0, null, size);
         checkForError(ret, "on clGetProgramInfo");
@@ -462,7 +461,7 @@ public class CLProgram extends CLObject implements CLResource {
         if(released) {
             return new CLDevice[0];
         }
-        Int64Buffer size = Int64Buffer.allocateDirect(1);
+        PointerBuffer size = PointerBuffer.allocateDirect(1);
         int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, 0, null, size);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo of "+this);
@@ -567,15 +566,15 @@ public class CLProgram extends CLObject implements CLResource {
         
         CLDevice[] devices = getCLDevices();
 
-        ByteBuffer sizes = newDirectByteBuffer(8*devices.length);
-        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity(), sizes, null);
+        PointerBuffer sizes = PointerBuffer.allocateDirect(devices.length);
+        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity()*PointerBuffer.elementSize(), sizes.getBuffer(), null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo(CL_PROGRAM_BINARY_SIZES) of "+this);
         }
 
         int binariesSize = 0;
         while(sizes.remaining() != 0) {
-            int size = (int) sizes.getLong();
+            int size = (int) sizes.get();
             binariesSize += size;
         }
         ByteBuffer binaries = newDirectByteBuffer(binariesSize);
@@ -586,10 +585,10 @@ public class CLProgram extends CLObject implements CLResource {
         sizes.rewind();
         while(sizes.remaining() != 0) {
             addresses.put(address);
-            address += sizes.getLong();
+            address += sizes.get();
         }
         
-        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity(), addresses.getBuffer(), null);
+        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity()*PointerBuffer.elementSize(), addresses.getBuffer(), null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo(CL_PROGRAM_BINARIES) of "+this);
         }
@@ -597,7 +596,7 @@ public class CLProgram extends CLObject implements CLResource {
         Map<CLDevice, byte[]> map = new LinkedHashMap<CLDevice, byte[]>();
         sizes.rewind();
         for (int i = 0; i < devices.length; i++) {
-            byte[] bytes = new byte[(int)sizes.getLong()];
+            byte[] bytes = new byte[(int)sizes.get()];
             binaries.get(bytes);
             map.put(devices[i], bytes);
         }

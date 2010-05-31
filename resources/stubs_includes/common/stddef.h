@@ -1,3 +1,4 @@
+
 #if defined(_WIN64)
     typedef __int64 ptrdiff_t;
 #elif defined(__ia64__) || defined(__x86_64__)
@@ -7,4 +8,6 @@
 #endif
 
 #define NULL ((void *)0)
-    typedef int wchar_t;
+
+typedef int wchar_t;
+typedef unsigned long size_t;

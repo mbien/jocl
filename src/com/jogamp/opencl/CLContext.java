@@ -4,7 +4,6 @@ import com.jogamp.opencl.CLDevice.Type;
 import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLSampler.AddressingMode;
 import com.jogamp.opencl.CLSampler.FilteringMode;
-import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.nio.PointerBuffer;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -72,7 +71,7 @@ public class CLContext extends CLObject implements CLResource {
         
         if (devices == null) {
 
-            Int64Buffer deviceCount = Int64Buffer.allocateDirect(1);
+            PointerBuffer deviceCount = PointerBuffer.allocateDirect(1);
 
             int ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, deviceCount);
             checkForError(ret, "can not enumerate devices");

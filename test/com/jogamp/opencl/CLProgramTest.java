@@ -189,7 +189,7 @@ public class CLProgramTest {
                                      .withDefine("ENABLE_FOOBAR");
 
         out.println(builder);
-       
+
         // async build test
         {
             final CountDownLatch countdown = new CountDownLatch(1);
@@ -233,7 +233,7 @@ public class CLProgramTest {
         program = programConfig.build();
         assertTrue(program.isExecutable());
 
-        
+
         // cloneing
         assertEquals(builder, builder.clone());
 
@@ -277,5 +277,13 @@ public class CLProgramTest {
 
     }
 
+//    @Test
+    public void loadTest() throws IOException, ClassNotFoundException, InterruptedException {
+        for(int i = 0; i < 100; i++) {
+            rebuildProgramTest();
+            builderTest();
+            programBinariesTest();
+        }
+    }
 
 }

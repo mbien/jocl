@@ -1,6 +1,5 @@
 package com.jogamp.opencl;
 
-import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.opencl.gl.CLGLI;
 import com.jogamp.common.nio.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -33,9 +32,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * Those direct memory buffers are used to move data between the JVM and OpenCL.
      */
     private final PointerBuffer pbA;
-    private final Int64Buffer ibA;
-    private final Int64Buffer ibB;
-    private final Int64Buffer ibC;
+    private final PointerBuffer ibA;
+    private final PointerBuffer ibB;
+    private final PointerBuffer ibC;
 
     private CLCommandQueue(CLContext context, long id, CLDevice device, long properties) {
         super(context, id);
@@ -43,9 +42,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
         this.device = device;
         this.properties = properties;
 
-        this.ibA = Int64Buffer.allocateDirect(3);
-        this.ibB = Int64Buffer.allocateDirect(3);
-        this.ibC = Int64Buffer.allocateDirect(3);
+        this.ibA = PointerBuffer.allocateDirect(3);
+        this.ibB = PointerBuffer.allocateDirect(3);
+        this.ibC = PointerBuffer.allocateDirect(3);
 
         this.pbA = PointerBuffer.allocateDirect(1);
 
@@ -1171,9 +1170,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * Calls {@native clEnqueueNDRangeKernel}.
      */
     public CLCommandQueue put1DRangeKernel(CLKernel kernel, long globalWorkOffset, long globalWorkSize, long localWorkSize, CLEventList condition, CLEventList events) {
-        Int64Buffer globWO = null;
-        Int64Buffer globWS = null;
-        Int64Buffer locWS = null;
+        PointerBuffer globWO = null;
+        PointerBuffer globWS = null;
+        PointerBuffer locWS = null;
 
         if(globalWorkOffset != 0) {
             globWO = copy2NIO(ibA, globalWorkOffset);
@@ -1222,9 +1221,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
     public CLCommandQueue put2DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY,
                                                             long globalWorkSizeX, long globalWorkSizeY,
                                                             long localWorkSizeX, long localWorkSizeY, CLEventList condition, CLEventList events) {
-        Int64Buffer globalWorkOffset = null;
-        Int64Buffer globalWorkSize = null;
-        Int64Buffer localWorkSize = null;
+        PointerBuffer globalWorkOffset = null;
+        PointerBuffer globalWorkSize = null;
+        PointerBuffer localWorkSize = null;
 
         if(globalWorkOffsetX != 0 && globalWorkOffsetY != 0) {
             globalWorkOffset = copy2NIO(ibA, globalWorkOffsetX, globalWorkOffsetY);
@@ -1242,7 +1241,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueNDRangeKernel}.
      */
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, Int64Buffer globalWorkOffset, Int64Buffer globalWorkSize, Int64Buffer localWorkSize) {
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset, PointerBuffer globalWorkSize, PointerBuffer localWorkSize) {
         this.putNDRangeKernel(kernel, workDimension, globalWorkOffset, globalWorkSize, localWorkSize, null, null);
         return this;
     }
@@ -1250,7 +1249,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueNDRangeKernel}.
      */
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, Int64Buffer globalWorkOffset, Int64Buffer globalWorkSize, Int64Buffer localWorkSize, CLEventList events) {
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset, PointerBuffer globalWorkSize, PointerBuffer localWorkSize, CLEventList events) {
         this.putNDRangeKernel(kernel, workDimension, globalWorkOffset, globalWorkSize, localWorkSize, null, events);
         return this;
     }
@@ -1258,8 +1257,8 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueNDRangeKernel}.
      */
-    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, Int64Buffer globalWorkOffset,
-            Int64Buffer globalWorkSize, Int64Buffer localWorkSize, CLEventList condition, CLEventList events) {
+    public CLCommandQueue putNDRangeKernel(CLKernel kernel, int workDimension, PointerBuffer globalWorkOffset,
+            PointerBuffer globalWorkSize, PointerBuffer localWorkSize, CLEventList condition, CLEventList events) {
 
         PointerBuffer conditionIDs = null;
         int conditions = 0;
@@ -1439,19 +1438,15 @@ public class CLCommandQueue extends CLObject implements CLResource {
 //        return buffer.rewind().put(a).put(b).put(c).rewind();
 //    }
 
-    private static Int64Buffer copy2NIO(Int64Buffer buffer, long a) {
-        return (Int64Buffer) buffer.put(2, a).position(2);
+    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
+        return (PointerBuffer) ((PointerBuffer)buffer.position(1)).put(a).put(b).position(1);
     }
 
-    private static Int64Buffer copy2NIO(Int64Buffer buffer, long a, long b) {
-        return (Int64Buffer) ((Int64Buffer)buffer.position(1)).put(a).put(b).position(1);
+    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
+        return (PointerBuffer) ((PointerBuffer)buffer.rewind()).put(a).put(b).put(c).rewind();
     }
 
-    private static Int64Buffer copy2NIO(Int64Buffer buffer, long a, long b, long c) {
-        return (Int64Buffer) ((Int64Buffer)buffer.rewind()).put(a).put(b).put(c).rewind();
-    }
-
-    private static String toStr(Int64Buffer buffer) {
+    private static String toStr(PointerBuffer buffer) {
         if(buffer == null) {
             return null;
         }

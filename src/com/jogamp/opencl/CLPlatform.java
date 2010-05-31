@@ -45,7 +45,7 @@ public final class CLPlatform {
 
     static{
         try {
-//            new UnixDynamicLinkerImpl().openLibraryGlobal("/usr/lib/jvm/java-6-sun/jre/lib/amd64/lbjsig.so", true);
+//            new UnixDynamicLinkerImpl().openLibraryGlobal("/usr/lib/jvm/java-6-sun/jre/lib/amd64/libjsig.so", true);
 
             // run the whole static initialization privileged to speed up,
             // since this skips checking further access
@@ -283,7 +283,7 @@ public final class CLPlatform {
      * Returns a info string in exchange for a key (CL_PLATFORM_*).
      */
     public String getInfoString(int key) {
-        Int64Buffer size = Int64Buffer.allocateDirect(1);
+        PointerBuffer size = PointerBuffer.allocateDirect(1);
         // TODO use cache/query size
         ByteBuffer bb = ByteBuffer.allocateDirect(512);
 

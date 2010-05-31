@@ -1,7 +1,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.common.nio.Int64Buffer;
+import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.util.CLUtil;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -23,11 +23,11 @@ abstract class CLInfoAccessor {
         }
 
     };
-    protected final static ThreadLocal<Int64Buffer> localPB = new ThreadLocal<Int64Buffer>() {
+    protected final static ThreadLocal<PointerBuffer> localPB = new ThreadLocal<PointerBuffer>() {
 
         @Override
-        protected Int64Buffer initialValue() {
-            return Int64Buffer.allocateDirect(1);
+        protected PointerBuffer initialValue() {
+            return PointerBuffer.allocateDirect(1);
         }
 
     };
@@ -44,7 +44,7 @@ abstract class CLInfoAccessor {
     public final String getString(int key) {
         
         ByteBuffer buffer = localBB.get();
-        Int64Buffer sizeBuffer = localPB.get();
+        PointerBuffer sizeBuffer = localPB.get();
         int ret = getInfo(key, buffer.capacity(), buffer, sizeBuffer);
         checkForError(ret, "error while asking for info string");
 
@@ -56,7 +56,7 @@ abstract class CLInfoAccessor {
 
     }
 
-    protected abstract int getInfo(int name, long valueSize, Buffer value, Int64Buffer valueSizeRet);
+    protected abstract int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet);
 
 
 }

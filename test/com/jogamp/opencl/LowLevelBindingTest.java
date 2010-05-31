@@ -2,7 +2,6 @@ package com.jogamp.opencl;
 
 import java.util.Random;
 import com.jogamp.opencl.impl.BuildProgramCallback;
-import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.nio.PointerBuffer;
 
 import java.nio.ByteBuffer;
@@ -87,7 +86,7 @@ public class LowLevelBindingTest {
         checkForError(ret);
 
         // print platform info
-        Int64Buffer longBuffer = Int64Buffer.allocateDirect(1);
+        PointerBuffer longBuffer = PointerBuffer.allocateDirect(1);
         ByteBuffer bb = newDirectByteBuffer(128);
 
         for (int i = 0; i < platformId.capacity(); i++)  {
@@ -167,7 +166,7 @@ public class LowLevelBindingTest {
         checkError("on clCreateContext", intBuffer.get());
 
         //get number of devices
-        Int64Buffer longBuffer = Int64Buffer.allocateDirect(1);
+        PointerBuffer longBuffer = PointerBuffer.allocateDirect(1);
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
         checkError("on clGetContextInfo", ret);
 
@@ -185,15 +184,6 @@ public class LowLevelBindingTest {
     public void lowLevelVectorAddTest() throws InterruptedException {
 
         out.println(" - - - lowLevelTest2; VectorAdd kernel - - - ");
-
-//        CreateContextCallback cb = new CreateContextCallback() {
-//            @Override
-//            public void createContextCallback(String errinfo, ByteBuffer private_info, long cb, Object user_data) {
-//                throw new RuntimeException("not yet implemented...");
-//            }
-//        };
-
-        Int64Buffer longBuffer = Int64Buffer.allocateDirect(1);
 
         CL cl = CLPlatform.getLowLevelCLInterface();
 
@@ -217,6 +207,7 @@ public class LowLevelBindingTest {
         out.println("context handle: "+context);
         checkError("on clCreateContextFromType", ret);
 
+        PointerBuffer longBuffer = PointerBuffer.allocateDirect(1);
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
         checkError("on clGetContextInfo", ret);
 
@@ -260,7 +251,7 @@ public class LowLevelBindingTest {
 
 
         // Create the program
-        Int64Buffer lengths = (Int64Buffer)Int64Buffer.allocateDirect(1).put(programSource.length());
+        PointerBuffer lengths = (PointerBuffer)PointerBuffer.allocateDirect(1).put(programSource.length());
         final long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
         out.println("program id: "+program);
         checkError("on clCreateProgramWithSource", intBuffer.get(0));
@@ -347,8 +338,8 @@ public class LowLevelBindingTest {
         checkError("on clEnqueueWriteBuffer", ret);
 
         // Launch kernel
-        Int64Buffer gWS = (Int64Buffer) Int64Buffer.allocateDirect(1).put(globalWorkSize).rewind();
-        Int64Buffer lWS = (Int64Buffer) Int64Buffer.allocateDirect(1).put(localWorkSize).rewind();
+        PointerBuffer gWS = (PointerBuffer) PointerBuffer.allocateDirect(1).put(globalWorkSize).rewind();
+        PointerBuffer lWS = (PointerBuffer) PointerBuffer.allocateDirect(1).put(localWorkSize).rewind();
         ret = cl.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, gWS, lWS, 0, null, null);
         checkError("on clEnqueueNDRangeKernel", ret);
 

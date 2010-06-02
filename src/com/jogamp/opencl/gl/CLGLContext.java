@@ -129,6 +129,7 @@ public final class CLGLContext extends CLContext {
         glContext.makeCurrent();
 
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
+        glID[0] = glContext.getHandle();
 
         PointerBuffer properties;
         if(glContext instanceof X11GLXContext) {
@@ -138,10 +139,9 @@ public final class CLGLContext extends CLContext {
 //          set to the Display handle of the X Window System display used to
 //          create the OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
-            long handle = ctxImpl.getDrawableImpl().getNativeWindow().getDisplayHandle();
-            glID[0] = ((X11GLXContext)glContext).getContext();
+            long displayHandle = ctxImpl.getDrawableImpl().getNativeWindow().getDisplayHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
-                      .put(CL_GLX_DISPLAY_KHR).put(handle)
+                      .put(CL_GLX_DISPLAY_KHR).put(displayHandle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof WindowsWGLContext) {
 //          spec: "When the WGL binding API is supported, the attribute
@@ -149,10 +149,9 @@ public final class CLGLContext extends CLContext {
 //          context, and the attribute CL_WGL_HDC_KHR should be set to the
 //          HDC handle of the display used to create the OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
-            long handle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
-            glID[0] = ((WindowsWGLContext)glContext).getHGLRC();
+            long surfaceHandle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
-                      .put(CL_WGL_HDC_KHR).put(handle)
+                      .put(CL_WGL_HDC_KHR).put(surfaceHandle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof MacOSXCGLContext) {
 //            TODO test on mac
@@ -160,7 +159,6 @@ public final class CLGLContext extends CLContext {
 //          CL_CGL_SHAREGROUP_KHR should be set to a CGLShareGroup handle to
 //          a CGL share group object."
             properties = PointerBuffer.allocateDirect(5);
-            glID[0] = ((MacOSXCGLContext)glContext).getCGLContext();
             properties.put(CL_CGL_SHAREGROUP_KHR).put(glID[0])
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof EGLContext) {
@@ -171,10 +169,9 @@ public final class CLGLContext extends CLContext {
 //          CL_EGL_DISPLAY_KHR should be set to the EGLDisplay handle of the
 //          display used to create the OpenGL ES or OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
-            long handle = ctxImpl.getDrawableImpl().getNativeWindow().getDisplayHandle();
-            glID[0] = ((EGLContext)glContext).getContext();
+            long displayHandle = ctxImpl.getDrawableImpl().getNativeWindow().getDisplayHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
-                      .put(CL_EGL_DISPLAY_KHR).put(handle)
+                      .put(CL_EGL_DISPLAY_KHR).put(displayHandle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else{
             throw new RuntimeException("unsupported GLContext: "+glContext);

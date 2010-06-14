@@ -243,7 +243,7 @@
 
     <target name="update-headers" depends="prepare-build">
 
-        <property name="registry.url" value="http://www.khronos.org/registry/cl/api/1.0/"/>
+        <property name="registry.url" value="http://www.khronos.org/registry/cl/api/1.1/"/>
 
         <!-- download new headers from OpenCL registry if necessary -->
         <update-headers header="${headers.orig}/cl.h" url="${registry.url}cl.h"/>

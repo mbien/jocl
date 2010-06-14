@@ -1,5 +1,5 @@
 #download index
-root=http://www.khronos.org/opencl/sdk/1.0/docs/man/xhtml/
+root=http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/
 toc=Opencl_tofc.html
 wget ${root}/${toc};
 #find links to cl* function doc

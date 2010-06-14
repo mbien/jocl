@@ -1,5 +1,5 @@
 /**********************************************************************************
- * Copyright (c) 2008-2009 The Khronos Group Inc.
+ * Copyright (c) 2008-2010 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  **********************************************************************************/
 
-/* $Revision: 10424 $ on $Date: 2010-02-17 14:34:49 -0800 (Wed, 17 Feb 2010) $ */
+/* $Revision: 11708 $ on $Date: 2010-06-13 23:36:24 -0700 (Sun, 13 Jun 2010) $ */
 
 #ifndef __CL_PLATFORM_H
 #define __CL_PLATFORM_H
@@ -36,21 +36,29 @@ extern "C" {
 #endif
 
 #if defined(_WIN32)
-#define CL_API_ENTRY
-#define CL_API_CALL __stdcall
+    #define CL_API_ENTRY
+    #define CL_API_CALL     __stdcall
+    #define CL_CALLBACK     __stdcall
 #else
-#define CL_API_ENTRY
-#define CL_API_CALL
+    #define CL_API_ENTRY
+    #define CL_API_CALL
+    #define CL_CALLBACK
 #endif
 
 #ifdef __APPLE__
-#define CL_API_SUFFIX__VERSION_1_0   AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
-#define CL_API_SUFFIX__VERSION_1_1   
-#define CL_EXTENSION_WEAK_LINK       __attribute__((weak_import))       
+    #define CL_EXTENSION_WEAK_LINK                  __attribute__((weak_import))       
+    #define CL_API_SUFFIX__VERSION_1_0              AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
+    #define CL_EXT_SUFFIX__VERSION_1_0              CL_EXTENSION_WEAK_LINK AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
+    #define CL_API_SUFFIX__VERSION_1_1              CL_EXTENSION_WEAK_LINK
+    #define CL_EXT_SUFFIX__VERSION_1_1              CL_EXTENSION_WEAK_LINK
+    #define CL_EXT_SUFFIX__VERSION_1_0_DEPRECATED   CL_EXTENSION_WEAK_LINK AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
 #else
-#define CL_API_SUFFIX__VERSION_1_0
-#define CL_API_SUFFIX__VERSION_1_1
-#define CL_EXTENSION_WEAK_LINK                         
+    #define CL_EXTENSION_WEAK_LINK                         
+    #define CL_API_SUFFIX__VERSION_1_0
+    #define CL_EXT_SUFFIX__VERSION_1_0
+    #define CL_API_SUFFIX__VERSION_1_1
+    #define CL_EXT_SUFFIX__VERSION_1_1
+    #define CL_EXT_SUFFIX__VERSION_1_0_DEPRECATED
 #endif
 
 #if (defined (_WIN32) && defined(_MSC_VER))
@@ -107,6 +115,34 @@ typedef double                  cl_double;
 #define CL_DBL_MAX          179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0
 #define CL_DBL_MIN          2.225073858507201383090e-308
 #define CL_DBL_EPSILON      2.220446049250313080847e-16
+
+#define  CL_M_E             2.718281828459045090796
+#define  CL_M_LOG2E         1.442695040888963387005
+#define  CL_M_LOG10E        0.434294481903251816668
+#define  CL_M_LN2           0.693147180559945286227
+#define  CL_M_LN10          2.302585092994045901094
+#define  CL_M_PI            3.141592653589793115998
+#define  CL_M_PI_2          1.570796326794896557999
+#define  CL_M_PI_4          0.785398163397448278999
+#define  CL_M_1_PI          0.318309886183790691216
+#define  CL_M_2_PI          0.636619772367581382433
+#define  CL_M_2_SQRTPI      1.128379167095512558561
+#define  CL_M_SQRT2         1.414213562373095145475
+#define  CL_M_SQRT1_2       0.707106781186547572737
+
+#define  CL_M_E_F           2.71828174591064f
+#define  CL_M_LOG2E_F       1.44269502162933f
+#define  CL_M_LOG10E_F      0.43429449200630f
+#define  CL_M_LN2_F         0.69314718246460f
+#define  CL_M_LN10_F        2.30258512496948f
+#define  CL_M_PI_F          3.14159274101257f
+#define  CL_M_PI_2_F        1.57079637050629f
+#define  CL_M_PI_4_F        0.78539818525314f
+#define  CL_M_1_PI_F        0.31830987334251f
+#define  CL_M_2_PI_F        0.63661974668503f
+#define  CL_M_2_SQRTPI_F    1.12837922573090f
+#define  CL_M_SQRT2_F       1.41421353816986f
+#define  CL_M_SQRT1_2_F     0.70710676908493f
 
 #define CL_NAN              (CL_INFINITY - CL_INFINITY)
 #define CL_HUGE_VALF        ((cl_float) 1e50)
@@ -170,6 +206,34 @@ typedef double          cl_double   __attribute__((aligned(8)));
 #define CL_DBL_MAX          0x1.fffffffffffffp1023
 #define CL_DBL_MIN          0x1.0p-1022
 #define CL_DBL_EPSILON      0x1.0p-52
+
+#define  CL_M_E             2.718281828459045090796
+#define  CL_M_LOG2E         1.442695040888963387005
+#define  CL_M_LOG10E        0.434294481903251816668
+#define  CL_M_LN2           0.693147180559945286227
+#define  CL_M_LN10          2.302585092994045901094
+#define  CL_M_PI            3.141592653589793115998
+#define  CL_M_PI_2          1.570796326794896557999
+#define  CL_M_PI_4          0.785398163397448278999
+#define  CL_M_1_PI          0.318309886183790691216
+#define  CL_M_2_PI          0.636619772367581382433
+#define  CL_M_2_SQRTPI      1.128379167095512558561
+#define  CL_M_SQRT2         1.414213562373095145475
+#define  CL_M_SQRT1_2       0.707106781186547572737
+
+#define  CL_M_E_F           2.71828174591064f
+#define  CL_M_LOG2E_F       1.44269502162933f
+#define  CL_M_LOG10E_F      0.43429449200630f
+#define  CL_M_LN2_F         0.69314718246460f
+#define  CL_M_LN10_F        2.30258512496948f
+#define  CL_M_PI_F          3.14159274101257f
+#define  CL_M_PI_2_F        1.57079637050629f
+#define  CL_M_PI_4_F        0.78539818525314f
+#define  CL_M_1_PI_F        0.31830987334251f
+#define  CL_M_2_PI_F        0.63661974668503f
+#define  CL_M_2_SQRTPI_F    1.12837922573090f
+#define  CL_M_SQRT2_F       1.41421353816986f
+#define  CL_M_SQRT1_2_F     0.70710676908493f
 
 #if defined( __GNUC__ )
    #define CL_HUGE_VALF     __builtin_huge_valf()
@@ -385,6 +449,9 @@ typedef union
 #endif
 }cl_char4;
 
+/* cl_char3 is identical in size, alignment and behavior to cl_char4. See section 6.1.5. */
+typedef  cl_char4  cl_char3;
+
 typedef union
 {
     cl_char   CL_ALIGNED(8) s[8];
@@ -456,6 +523,9 @@ typedef union
     __cl_uchar4     v4;
 #endif
 }cl_uchar4;
+
+/* cl_uchar3 is identical in size, alignment and behavior to cl_uchar4. See section 6.1.5. */
+typedef  cl_uchar4  cl_uchar3;
 
 typedef union
 {
@@ -529,6 +599,9 @@ typedef union
 #endif
 }cl_short4;
 
+/* cl_short3 is identical in size, alignment and behavior to cl_short4. See section 6.1.5. */
+typedef  cl_short4  cl_short3;
+
 typedef union
 {
     cl_short   CL_ALIGNED(16) s[8];
@@ -601,6 +674,9 @@ typedef union
 #endif
 }cl_ushort4;
 
+/* cl_ushort3 is identical in size, alignment and behavior to cl_ushort4. See section 6.1.5. */
+typedef  cl_ushort4  cl_ushort3;
+
 typedef union
 {
     cl_ushort   CL_ALIGNED(16) s[8];
@@ -671,6 +747,9 @@ typedef union
     __cl_int4     v4;
 #endif
 }cl_int4;
+
+/* cl_int3 is identical in size, alignment and behavior to cl_int4. See section 6.1.5. */
+typedef  cl_int4  cl_int3;
 
 typedef union
 {
@@ -744,6 +823,9 @@ typedef union
 #endif
 }cl_uint4;
 
+/* cl_uint3 is identical in size, alignment and behavior to cl_uint4. See section 6.1.5. */
+typedef  cl_uint4  cl_uint3;
+
 typedef union
 {
     cl_uint   CL_ALIGNED(32) s[8];
@@ -814,6 +896,9 @@ typedef union
     __cl_long4     v4;
 #endif
 }cl_long4;
+
+/* cl_long3 is identical in size, alignment and behavior to cl_long4. See section 6.1.5. */
+typedef  cl_long4  cl_long3;
 
 typedef union
 {
@@ -886,6 +971,9 @@ typedef union
     __cl_ulong4     v4;
 #endif
 }cl_ulong4;
+
+/* cl_ulong3 is identical in size, alignment and behavior to cl_ulong4. See section 6.1.5. */
+typedef  cl_ulong4  cl_ulong3;
 
 typedef union
 {
@@ -960,6 +1048,9 @@ typedef union
 #endif
 }cl_float4;
 
+/* cl_float3 is identical in size, alignment and behavior to cl_float4. See section 6.1.5. */
+typedef  cl_float4  cl_float3;
+
 typedef union
 {
     cl_float   CL_ALIGNED(32) s[8];
@@ -1031,6 +1122,9 @@ typedef union
     __cl_double4     v4;
 #endif
 }cl_double4;
+
+/* cl_double3 is identical in size, alignment and behavior to cl_double4. See section 6.1.5. */
+typedef  cl_double4  cl_double3;
 
 typedef union
 {

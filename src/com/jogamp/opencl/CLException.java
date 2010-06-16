@@ -115,6 +115,8 @@ public class CLException extends RuntimeException {
             case CL_INVALID_GLOBAL_WORK_SIZE:               return "CL_INVALID_GLOBAL_WORK_SIZE";
             case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR:    return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
             case CL_PLATFORM_NOT_FOUND_KHR:                 return "CL_PLATFORM_NOT_FOUND_KHR";
+            case CL_MISALIGNED_SUB_BUFFER_OFFSET:             return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
+            case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:  return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
             default: return null;
         }
     }
@@ -169,6 +171,8 @@ public class CLException extends RuntimeException {
             case CL_INVALID_GLOBAL_WORK_SIZE:               return new CLInvalidGlobalWorkSizeException(message);
             case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR:    return new CLInvalidGLSharegroupReferenceKhrException(message);
             case CL_PLATFORM_NOT_FOUND_KHR:                 return new CLPlatformNotFoundKhrException(message);
+            case CL_MISALIGNED_SUB_BUFFER_OFFSET:             return new CLMisalignedSubBufferOffsetException(message);
+            case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:  return new CLExecStatusErrorForEventsInWaitListException(message);
             default: return null;
         }
     }
@@ -698,6 +702,28 @@ public class CLException extends RuntimeException {
         private static final long serialVersionUID = CLException.serialVersionUID+CL_PLATFORM_NOT_FOUND_KHR;
         public CLPlatformNotFoundKhrException(String message) {
             super(CL_PLATFORM_NOT_FOUND_KHR, "CL_PLATFORM_NOT_FOUND_KHR", message);
+        }
+    }
+
+    /**
+     * {@link CLException} thrown on CL.CL_MISALIGNED_SUB_BUFFER_OFFSET errors.
+     * @author Michael Bien
+     */
+    public final static class CLMisalignedSubBufferOffsetException extends CLException {
+        private static final long serialVersionUID = CLException.serialVersionUID+CL_MISALIGNED_SUB_BUFFER_OFFSET;
+        public CLMisalignedSubBufferOffsetException(String message) {
+            super(CL_MISALIGNED_SUB_BUFFER_OFFSET, "CL_MISALIGNED_SUB_BUFFER_OFFSET", message);
+        }
+    }
+
+    /**
+     * {@link CLException} thrown on CL.CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST errors.
+     * @author Michael Bien
+     */
+    public final static class CLExecStatusErrorForEventsInWaitListException extends CLException {
+        private static final long serialVersionUID = CLException.serialVersionUID+CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST;
+        public CLExecStatusErrorForEventsInWaitListException(String message) {
+            super(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST, "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST", message);
         }
     }
 

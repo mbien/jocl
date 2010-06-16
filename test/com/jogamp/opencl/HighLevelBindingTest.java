@@ -279,15 +279,7 @@ public class HighLevelBindingTest {
         CLBuffer<ByteBuffer> clBufferB = context.createBuffer(srcB, Mem.READ_ONLY);
         CLBuffer<ByteBuffer> clBufferC = context.createBuffer(dest, Mem.WRITE_ONLY);
 
-        Map<String, CLKernel> kernels = program.createCLKernels();
-        for (CLKernel kernel : kernels.values()) {
-            out.println("kernel: "+kernel.toString());
-        }
-
-        assertNotNull(kernels.get("VectorAddGM"));
-        assertNotNull(kernels.get("Test"));
-
-        CLKernel vectorAddKernel = kernels.get("VectorAddGM");
+        CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM");
 
         vectorAddKernel.setArg(0, clBufferA)
                        .setArg(1, clBufferB)

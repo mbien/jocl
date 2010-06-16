@@ -61,9 +61,8 @@ public class CLProgramTest {
 
         assertTrue(program.isExecutable());
 
-        Map<String, CLKernel> kernels = program.createCLKernels();
-        assertNotNull(kernels);
-        assertTrue("kernel map is empty", kernels.size() > 0);
+        CLKernel kernel = program.createCLKernel("VectorAddGM");
+        assertNotNull(kernel);
 
         // rebuild
         // 1. release kernels (internally)
@@ -73,10 +72,8 @@ public class CLProgramTest {
         out.println(program.getBuildStatus());
 
         // try again with rebuilt program
-        kernels = program.createCLKernels();
-        assertNotNull(kernels);
-        assertTrue("kernel map is empty", kernels.size() > 0);
-        assertTrue(kernels.size() > 0);
+        kernel = program.createCLKernel("VectorAddGM");
+        assertNotNull(kernel);
 
         context.release();
     }
@@ -269,6 +266,35 @@ public class CLProgramTest {
             assertEquals(256, wgs[0]);
             assertEquals(256, wgs[1]);
             assertEquals(256, wgs[2]);
+
+
+        }finally{
+            context.release();
+        }
+
+    }
+
+    @Test
+    public void createAllKernelsTest() {
+        
+        String source = "kernel void foo(int a) { }\n"+
+                        "kernel void bar(float b) { }\n";
+
+        CLContext context = CLContext.create();
+        try{
+            CLProgram program = context.createProgram(source).build();
+            assertTrue(program.isExecutable());
+
+            Map<String, CLKernel> kernels = program.createCLKernels();
+            for (CLKernel kernel : kernels.values()) {
+                out.println("kernel: "+kernel.toString());
+            }
+
+            assertNotNull(kernels.get("foo"));
+            assertNotNull(kernels.get("bar"));
+
+            kernels.get("foo").setArg(0, 42);
+            kernels.get("bar").setArg(0, 3.14f);
 
 
         }finally{

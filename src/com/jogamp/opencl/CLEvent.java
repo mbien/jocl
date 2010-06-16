@@ -40,6 +40,13 @@ public class CLEvent extends CLObject implements CLResource {
     public ExecutionStatus getStatus() {
         return ExecutionStatus.valueOf(getStatusCode());
     }
+
+    /**
+     * Returns true only if {@link #getStatus} returns {@link ExecutionStatus#COMPLETE}.
+     */
+    public boolean isComplete() {
+        return ExecutionStatus.COMPLETE.equals(getStatus());
+    }
     
     public int getStatusCode() {
         return (int)eventInfo.getLong(CL_EVENT_COMMAND_EXECUTION_STATUS);
@@ -57,7 +64,7 @@ public class CLEvent extends CLObject implements CLResource {
 
     @Override
     public String toString() {
-        return "CLEvent [id: " + ID
+        return getClass().getSimpleName()+" [id: " + ID
                       + " name: " + getType()
                       + " status: " + getStatus()+"]";
     }
@@ -237,8 +244,13 @@ public class CLEvent extends CLObject implements CLResource {
         MAP_IMAGE(CL_COMMAND_MAP_IMAGE),
         UNMAP_MEM_OBJECT(CL_COMMAND_UNMAP_MEM_OBJECT),
         MARKER(CL_COMMAND_MARKER),
+        READ_BUFFER_RECT(CL_COMMAND_READ_BUFFER_RECT),
+        WRITE_BUFFER_RECT(CL_COMMAND_WRITE_BUFFER_RECT),
+        COPY_BUFFER_RECT(CL_COMMAND_COPY_BUFFER_RECT),
+        USER(CL_COMMAND_USER),
         ACQUIRE_GL_OBJECTS(CL_COMMAND_ACQUIRE_GL_OBJECTS),
-        RELEASE_GL_OBJECTS(CL_COMMAND_RELEASE_GL_OBJECTS);
+        RELEASE_GL_OBJECTS(CL_COMMAND_RELEASE_GL_OBJECTS),
+        GL_FENCE_SYNC_OBJECT_KHR(CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR);
 
         /**
          * Value of wrapped OpenCL command type.

@@ -19,6 +19,16 @@ public final class CLEventList implements CLResource, Iterable<CLEvent> {
         this.IDs = PointerBuffer.allocateDirect(capacity);
     }
 
+    public CLEventList(CLEvent... events) {
+        this.events = events;
+        this.IDs = PointerBuffer.allocateDirect(events.length);
+        for (CLEvent event : events) {
+            IDs.put(event.ID);
+        }
+        IDs.rewind();
+        size = events.length;
+    }
+
     void createEvent(CLContext context) {
 
         if(events[size] != null)

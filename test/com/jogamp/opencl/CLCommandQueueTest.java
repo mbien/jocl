@@ -162,6 +162,65 @@ public class CLCommandQueueTest {
     }
 
     @Test
+    public void customEventsTest() throws IOException, InterruptedException {
+        out.println(" - - - user events test - - - ");
+
+        final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
+
+        final CLContext context = CLContext.create();
+
+        try{
+
+            CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            CLBuffer<ByteBuffer> clBufferC = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+
+            fillBuffer(clBufferA.buffer, 12345);
+            fillBuffer(clBufferB.buffer, 67890);
+
+            CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
+            CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
+            CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
+
+            queue.putWriteBuffer(clBufferA, true) // write A
+                 .putWriteBuffer(clBufferB, true);// write B
+
+            vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferC); // C = A+B
+
+            // the interesting part...
+
+            CLUserEvent condition = CLUserEvent.create(context);
+            assertEquals(CommandType.USER, condition.getType());
+            assertEquals(ExecutionStatus.SUBMITTED, condition.getStatus());
+            out.println(condition);
+
+            final CLEventList conditions = new CLEventList(condition);
+            final CLEventList events     = new CLEventList(1);
+            assertEquals(1, conditions.size());
+            assertEquals(1, conditions.capacity());
+            assertEquals(0, events.size());
+            assertEquals(1, events.capacity());
+
+            queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, conditions, events);
+            assertEquals(1, events.size());
+
+            Thread.sleep(1000);
+            final CLEvent status = events.getEvent(0);
+
+            assertEquals(ExecutionStatus.QUEUED, status.getStatus());
+            condition.setComplete();
+            assertTrue(condition.isComplete());
+
+            queue.finish();
+            assertTrue(status.isComplete());
+
+        }finally{
+            context.release();
+        }
+
+    }
+
+    @Test
     public void concurrencyTest() throws IOException, InterruptedException {
 
         out.println(" - - - QueueBarrier test - - - ");

@@ -14,7 +14,7 @@ import java.nio.IntBuffer;
 import static com.jogamp.common.nio.Buffers.*;
 
 /**
-  * Java bindings to OpenCL, the Open Computing Language.
+ * Java bindings to OpenCL, the Open Computing Language.
  * @author Michael Bien
  */
 public class CLImpl extends CLAbstractImpl {
@@ -38,11 +38,16 @@ public class CLImpl extends CLAbstractImpl {
             throw new RuntimeException("Argument \"errcode_ret\" was not a direct buffer");
         }
 
+        final long address = addressTable._addressof_clCreateContext;
+        if (address == 0) {
+            throw new UnsupportedOperationException("Method not available");
+        }
+
         long[] global = new long[1];
         long ctx = this.clCreateContext0(
                 properties != null ? properties.getBuffer() : null, getDirectBufferByteOffset(properties),
                 devices != null ? devices.remaining() : 0, devices != null ? devices.getBuffer() : null, getDirectBufferByteOffset(devices),
-                pfn_notify, global, errcode_ret, getDirectBufferByteOffset(errcode_ret));
+                pfn_notify, global, errcode_ret, getDirectBufferByteOffset(errcode_ret), address);
 
         if (pfn_notify != null && global[0] != 0) {
             synchronized (contextCallbackMap) {
@@ -52,7 +57,7 @@ public class CLImpl extends CLAbstractImpl {
         return ctx;
     }
 
-    private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, Object pfn_notify, long[] global, Object errcode_ret, int err_offset);
+    private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, Object pfn_notify, long[] global, Object errcode_ret, int err_offset, long address);
 
     public long clCreateContextFromType(PointerBuffer properties, long device_type, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
 
@@ -64,10 +69,15 @@ public class CLImpl extends CLAbstractImpl {
             throw new RuntimeException("Argument \"errcode_ret\" was not a direct buffer");
         }
 
+        final long address = addressTable._addressof_clCreateContextFromType;
+        if (address == 0) {
+            throw new UnsupportedOperationException("Method not available");
+        }
+
         long[] global = new long[1];
         long ctx = this.clCreateContextFromType0(
                 properties != null ? properties.getBuffer() : null, getDirectBufferByteOffset(properties),
-                device_type, pfn_notify, global, errcode_ret, getDirectBufferByteOffset(errcode_ret));
+                device_type, pfn_notify, global, errcode_ret, getDirectBufferByteOffset(errcode_ret), address);
 
         if (pfn_notify != null && global[0] != 0) {
             synchronized (contextCallbackMap) {
@@ -77,18 +87,23 @@ public class CLImpl extends CLAbstractImpl {
         return ctx;
     }
 
-    private native long clCreateContextFromType0(Object properties, int props_offset, long device_type, Object pfn_notify, long[] global, Object errcode_ret, int err_offset);
+    private native long clCreateContextFromType0(Object properties, int props_offset, long device_type, Object pfn_notify, long[] global, Object errcode_ret, int err_offset, long address);
 
     public int clReleaseContext(long context) {
         long global = 0;
         synchronized (contextCallbackMap) {
             global = contextCallbackMap.remove(context);
         }
-        return clReleaseContextImpl(context, global);
+
+        final long address = addressTable._addressof_clReleaseContext;
+        if (address == 0) {
+            throw new UnsupportedOperationException("Method not available");
+        }
+        return clReleaseContextImpl(context, global, address);
     }
 
     /** Interface to C language function: <br> <code> int32_t {@native clReleaseContext}(cl_context context); </code>    */
-    public native int clReleaseContextImpl(long context, long global);
+    public native int clReleaseContextImpl(long context, long global, long address);
 
     /** Interface to C language function: <br> <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
     public int clBuildProgram(long program, int deviceCount, PointerBuffer deviceList, String options, BuildProgramCallback cb) {
@@ -97,12 +112,16 @@ public class CLImpl extends CLAbstractImpl {
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
         }
 
+        final long address = addressTable._addressof_clBuildProgram;
+        if (address == 0) {
+            throw new UnsupportedOperationException("Method not available");
+        }
         return clBuildProgram0(program, deviceCount, deviceList != null ? deviceList.getBuffer() : null,
-                getDirectBufferByteOffset(deviceList), options, cb);
+                getDirectBufferByteOffset(deviceList), options, cb, address);
     }
 
     /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
-    private native int clBuildProgram0(long program, int deviceCount, Object deviceList, int deviceListOffset, String options, BuildProgramCallback cb);
+    private native int clBuildProgram0(long program, int deviceCount, Object deviceList, int deviceListOffset, String options, BuildProgramCallback cb, long address);
 
     /** Interface to C language function: <br> <code> void *  {@native clEnqueueMapImage}(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret); </code>
     @param origin a direct {@link com.jogamp.common.nio.PointerBuffer}
@@ -140,6 +159,14 @@ public class CLImpl extends CLAbstractImpl {
             throw new CLException("Argument \"errcode_ret\" was not a direct buffer");
         }
 
+        final long mapImageAddress = addressTable._addressof_clEnqueueMapImage;
+        if (mapImageAddress == 0) {
+            throw new UnsupportedOperationException("Method not available");
+        }
+        final long getImageInfoAddress = addressTable._addressof_clGetImageInfo;
+        if (getImageInfoAddress == 0) {
+            throw new UnsupportedOperationException("Method not available");
+        }
         java.nio.ByteBuffer _res;
         _res = clEnqueueMapImage0(command_queue, image, blocking_map, map_flags, origin != null ? origin.getBuffer() : null,
                 getDirectBufferByteOffset(origin), range != null ? range.getBuffer() : null,
@@ -164,30 +191,43 @@ public class CLImpl extends CLAbstractImpl {
     @param event_wait_list a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
     @param event a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
     @param errcode_ret a direct {@link java.nio.IntBuffer}   */
-    private native ByteBuffer clEnqueueMapImage0(long command_queue, long image, int blocking_map, long map_flags, Object origin, int origin_byte_offset, Object range, int range_byte_offset, Object image_row_pitch, int image_row_pitch_byte_offset, Object image_slice_pitch, int image_slice_pitch_byte_offset, int num_events_in_wait_list, Object event_wait_list, int event_wait_list_byte_offset, Object event, int event_byte_offset, Object errcode_ret, int errcode_ret_byte_offset);
+    private native ByteBuffer clEnqueueMapImage0(long command_queue, long image, int blocking_map, long map_flags,
+            Object origin, int origin_byte_offset, Object range, int range_byte_offset, Object image_row_pitch,
+            int image_row_pitch_byte_offset, Object image_slice_pitch, int image_slice_pitch_byte_offset,
+            int num_events_in_wait_list, Object event_wait_list, int event_wait_list_byte_offset, Object event,
+            int event_byte_offset, Object errcode_ret, int errcode_ret_byte_offset);
 
     /**
      * Returns the extension function address for the given function name.
      */
     public long clGetExtensionFunctionAddress(String name) {
         ByteBuffer res = super.clGetExtensionFunctionAddressImpl(name);
-        if (Platform.is32Bit()) {
+        if(res == null) {
+            return 0;
+        }else if (Platform.is32Bit()) {
             return res.getInt();
         } else {
             return res.getLong();
         }
     }
 
+    public CLProcAddressTable getAddressTable() {
+        return addressTable;
+    }
+
     /*
     private static void convert32To64(long[] values) {
-        if (values.length % 2 == 1) {
-            values[values.length - 1] = values[values.length / 2] >>> 32;
-        }
-        for (int i = values.length - 1 - values.length % 2; i >= 0; i -= 2) {
-            long temp = values[i / 2];
-            values[i - 1] = temp >>> 32;
-            values[i] = temp & 0x00000000FFFFFFFFL;
-        }
+    if (values.length % 2 == 1) {
+    values[values.length - 1] = values[values.length / 2] >>> 32;
+    }
+    for (int i = values.length - 1 - values.length % 2; i >= 0; i -= 2) {
+    long temp = values[i / 2];
+    values[i - 1] = temp >>> 32;
+    values[i] = temp & 0x00000000FFFFFFFFL;
+    }
     }
      */
+
+
+
 }

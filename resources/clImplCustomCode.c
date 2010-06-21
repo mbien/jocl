@@ -74,22 +74,24 @@ void createContextCallback(const char * errinfo, const void * private_info, size
 /*   Java->C glue code:
  *   Java package: com.jogamp.opencl.impl.CLImpl
  *    Java method: long clCreateContextFromType(java.nio.IntBuffer props, long device_type, CreateContextCallback pfn_notify, Object userData, IntBuffer errcode_ret)
- *     C function: cl_context clCreateContextFromType(  cl_context_properties *  properties ,
- *                                                      cl_uint                  num_devices ,
- *                                                      const cl_device_id *     devices ,
- *                                                      void (*pfn_notify)(const char *, const void *, size_t, void *)  pfn_notify/,
- *                                                      void *                   user_data ,
- *                                                      cl_int *                 errcode_ret );
+ *     C function: cl_context clCreateContextFromType(  const cl_context_properties *  properties ,
+ *                                                      cl_device_type                 device_type ,
+ *                                                      void (CL_CALLBACK *      pfn_notify )(const char *, const void *, size_t, void *),
+ *                                                      void *                         user_data ,
+ *                                                      cl_int *                       errcode_ret);
  */
 JNIEXPORT jlong JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jlong device_type, jobject cb, jobject global, jobject errcode, jint errcode_byte_offset) {
+        jobject props, jint props_byte_offset, jlong device_type, jobject cb, jobject global, jobject errcode, jint errcode_byte_offset, jlong procAddress) {
 
     cl_context_properties* _props_ptr  = NULL;
     cl_int * _errcode_ptr = NULL;
     cl_context _ctx = NULL;
     void (*_pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data) = NULL;
     jobject globalCB = NULL;
+
+    typedef cl_context (*function)(const cl_context_properties *, cl_device_type, void (*pfn_notify)(const char *, const void *, size_t, void *), void *, cl_int *);
+    function clCreateContextFromType = (function)(intptr_t) procAddress;
 
     if (props != NULL) {
         _props_ptr = (cl_context_properties*) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
@@ -106,7 +108,7 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject
     }
 */
 
-    _ctx = clCreateContextFromType(_props_ptr, (uint64_t) device_type, _pfn_notify, globalCB, _errcode_ptr);
+    _ctx = (*clCreateContextFromType)(_props_ptr, (uint64_t) device_type, _pfn_notify, globalCB, _errcode_ptr);
 
 /*
     if(globalCB != NULL) {
@@ -137,7 +139,7 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContextFromType0(JNIEnv *env, jobject
  */
 JNIEXPORT jlong JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused,
-        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject global, jobject errcode, jint errcode_byte_offset) {
+        jobject props, jint props_byte_offset, jint numDevices, jobject deviceList, jint device_type_offset, jobject cb, jobject global, jobject errcode, jint errcode_byte_offset, jlong procAddress) {
 
     cl_context_properties* _props_ptr  = NULL;
     cl_int * _errcode_ptr = NULL;
@@ -145,6 +147,9 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused
     cl_context _ctx = NULL;
     void (*_pfn_notify)(const char *errinfo, const void *private_info, size_t cb, void *user_data) = NULL;
     jobject globalCB = NULL;
+
+    typedef cl_context (*function)(cl_context_properties *, cl_uint, const cl_device_id *, void (*pfn_notify)(const char *, const void *, size_t, void *), void *, cl_int *);
+    function clCreateContext = (function)(intptr_t) procAddress;
 
     if (props != NULL) {
         _props_ptr = (cl_context_properties*) (((char*) (*env)->GetDirectBufferAddress(env, props)) + props_byte_offset);
@@ -163,7 +168,7 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused
     }
 */
 
-    _ctx = clCreateContext(_props_ptr, numDevices, _deviceListPtr, _pfn_notify, globalCB, _errcode_ptr);
+    _ctx = (*clCreateContext)(_props_ptr, numDevices, _deviceListPtr, _pfn_notify, globalCB, _errcode_ptr);
 
 /*
     if(globalCB != NULL) {
@@ -188,9 +193,13 @@ Java_com_jogamp_opencl_impl_CLImpl_clCreateContext0(JNIEnv *env, jobject _unused
  *     C function: int32_t clReleaseContextImpl(cl_context context);
  */
 JNIEXPORT jint JNICALL
-Java_com_jogamp_opencl_impl_CLImpl_clReleaseContextImpl(JNIEnv *env, jobject _unused, jlong context, jlong global) {
+Java_com_jogamp_opencl_impl_CLImpl_clReleaseContextImpl(JNIEnv *env, jobject _unused, jlong context, jlong global, jlong procAddress) {
+    
     int32_t _res;
-    _res = clReleaseContext((cl_context) (intptr_t) context);
+    typedef int32_t (*function)(cl_context);
+    function clReleaseContext = (function)(intptr_t) procAddress;
+
+    _res = (*clReleaseContext)((cl_context) (intptr_t) context);
 /*
     // TODO deal with retains
     if (global != 0) {
@@ -213,13 +222,16 @@ Java_com_jogamp_opencl_impl_CLImpl_clReleaseContextImpl(JNIEnv *env, jobject _un
  */
 JNIEXPORT jint JNICALL
 Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
-        jlong program, jint deviceCount, jobject deviceList, jint device_type_offset, jstring options, jobject cb) {
+        jlong program, jint deviceCount, jobject deviceList, jint device_type_offset, jstring options, jobject cb, jlong procAddress) {
 
     const char* _strchars_options = NULL;
     cl_int _res;
     cl_device_id * _deviceListPtr = NULL;
     void (*_pfn_notify)(cl_program, void *) = NULL;
     jobject globalCB = NULL;
+
+    typedef cl_int (*function)(cl_program, cl_uint, const cl_device_id *, const char *, void (CL_CALLBACK *)(cl_program, void *), void *);
+    function clBuildProgram = (function)(intptr_t)procAddress;
 
     if (options != NULL) {
         _strchars_options = (*env)->GetStringUTFChars(env, options, (jboolean*)NULL);
@@ -241,7 +253,7 @@ Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
     }
 */
 
-    _res = clBuildProgram((cl_program)(intptr_t)program, (cl_uint)deviceCount, (cl_device_id *)_deviceListPtr, _strchars_options, _pfn_notify, globalCB);
+    _res = (*clBuildProgram)((cl_program)(intptr_t)program, (cl_uint)deviceCount, (cl_device_id *)_deviceListPtr, _strchars_options, _pfn_notify, globalCB);
 
 /*
     // if something went wrong
@@ -263,21 +275,34 @@ Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
  *     C function: void *  clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret);
  */
 JNIEXPORT jobject JNICALL
-Java_com_jogamp_opencl_impl_CLImpl_clEnqueueMapImage0__JJIJLjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2IILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2I(JNIEnv *env, jobject _unused, jlong command_queue, jlong image, jint blocking_map, jlong map_flags, jobject origin, jint origin_byte_offset, jobject range, jint range_byte_offset, jobject image_row_pitch, jint image_row_pitch_byte_offset, jobject image_slice_pitch, jint image_slice_pitch_byte_offset, jint num_events_in_wait_list, jobject event_wait_list, jint event_wait_list_byte_offset, jobject event, jint event_byte_offset, jobject errcode_ret, jint errcode_ret_byte_offset) {
+Java_com_jogamp_opencl_impl_CLImpl_clEnqueueMapImage0__JJIJLjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2IILjava_lang_Object_2ILjava_lang_Object_2ILjava_lang_Object_2I(JNIEnv *env, jobject _unused,
+        jlong command_queue, jlong image, jint blocking_map, jlong map_flags,
+        jobject origin, jint origin_byte_offset, jobject range, jint range_byte_offset,
+        jobject image_row_pitch, jint image_row_pitch_byte_offset, jobject image_slice_pitch,
+        jint image_slice_pitch_byte_offset, jint num_events_in_wait_list, jobject event_wait_list,
+        jint event_wait_list_byte_offset, jobject event, jint event_byte_offset, jobject errcode_ret, jint errcode_ret_byte_offset,
+        jlong imageInfoAddress, jlong mapImageAddress) {
 
-  size_t * _origin_ptr = NULL;
-  size_t * _range_ptr = NULL;
-  size_t * _image_row_pitch_ptr = NULL;
-  size_t * _image_slice_pitch_ptr = NULL;
-  cl_event * _event_wait_list_ptr = NULL;
-  cl_event * _event_ptr = NULL;
-  int32_t * _errcode_ret_ptr = NULL;
-  size_t * elements = NULL;
-  size_t * depth = NULL;
-  size_t pixels;
-  cl_int status;
+    size_t * _origin_ptr = NULL;
+    size_t * _range_ptr = NULL;
+    size_t * _image_row_pitch_ptr = NULL;
+    size_t * _image_slice_pitch_ptr = NULL;
+    cl_event * _event_wait_list_ptr = NULL;
+    cl_event * _event_ptr = NULL;
+    int32_t * _errcode_ret_ptr = NULL;
+    size_t * elements = NULL;
+    size_t * depth = NULL;
+    size_t pixels;
+    cl_int status;
 
-  void *  _res;
+    typedef int32_t (*imageInfoFunctionType)(cl_mem, uint32_t, size_t, void *, size_t *);
+    imageInfoFunctionType clGetImageInfo;
+
+    typedef void* (*mapInfoFunctionType)(cl_command_queue, cl_mem, uint32_t, uint64_t, const size_t *,
+                const size_t *, size_t *, size_t *, uint32_t, cl_event *, cl_event *, int32_t *);
+    mapInfoFunctionType clEnqueueMapImage;
+
+    void * _res;
 
     if (origin != NULL) {
         _origin_ptr = (size_t *) (((char*) (*env)->GetDirectBufferAddress(env, origin)) + origin_byte_offset);
@@ -301,21 +326,26 @@ Java_com_jogamp_opencl_impl_CLImpl_clEnqueueMapImage0__JJIJLjava_lang_Object_2IL
         _errcode_ret_ptr = (int32_t *) (((char*) (*env)->GetDirectBufferAddress(env, errcode_ret)) + errcode_ret_byte_offset);
     }
 
-  _res = clEnqueueMapImage((cl_command_queue) (intptr_t) command_queue, (cl_mem) (intptr_t) image, (uint32_t) blocking_map, (uint64_t) map_flags, (size_t *) _origin_ptr, (size_t *) _range_ptr, (size_t *) _image_row_pitch_ptr, (size_t *) _image_slice_pitch_ptr, (uint32_t) num_events_in_wait_list, (cl_event *) _event_wait_list_ptr, (cl_event *) _event_ptr, (int32_t *) _errcode_ret_ptr);
-  if (_res == NULL) return NULL;
+    _res = (*clEnqueueMapImage)((cl_command_queue) (intptr_t) command_queue, (cl_mem) (intptr_t) image,
+               (uint32_t) blocking_map, (uint64_t) map_flags, (size_t *) _origin_ptr, (size_t *) _range_ptr,
+               (size_t *) _image_row_pitch_ptr, (size_t *) _image_slice_pitch_ptr, (uint32_t) num_events_in_wait_list,
+               (cl_event *) _event_wait_list_ptr, (cl_event *) _event_ptr, (int32_t *) _errcode_ret_ptr);
+    if (_res == NULL) return NULL;
 
-  // calculate buffer size
-  status  = clGetImageInfo((cl_mem) (intptr_t) image, CL_IMAGE_ELEMENT_SIZE, sizeof(size_t), (void *) elements, NULL);
-  status |= clGetImageInfo((cl_mem) (intptr_t) image, CL_IMAGE_DEPTH, sizeof(size_t), (void *) depth, NULL);
+    // calculate buffer size
+    status  = (*clGetImageInfo)((cl_mem) (intptr_t) image, CL_IMAGE_ELEMENT_SIZE, sizeof(size_t), (void *) elements, NULL);
+    status |= (*clGetImageInfo)((cl_mem) (intptr_t) image, CL_IMAGE_DEPTH, sizeof(size_t), (void *) depth, NULL);
 
-  if(status != CL_SUCCESS) return NULL;
+    if(status != CL_SUCCESS) {
+        return NULL;
+    }
 
-  if(*depth == 0) { // 2D
-      pixels = (*_image_row_pitch_ptr)   * _range_ptr[1] + _range_ptr[0];
-  }else{            // 3D
-      pixels = (*_image_slice_pitch_ptr) * _range_ptr[2]
-             + (*_image_row_pitch_ptr)   * _range_ptr[1] + _range_ptr[0];
-  }
+    if(*depth == 0) { // 2D
+        pixels = (*_image_row_pitch_ptr)   * _range_ptr[1] + _range_ptr[0];
+    }else{            // 3D
+        pixels = (*_image_slice_pitch_ptr) * _range_ptr[2]
+               + (*_image_row_pitch_ptr)   * _range_ptr[1] + _range_ptr[0];
+    }
 
   return (*env)->NewDirectByteBuffer(env, _res, pixels * (*elements));
 }

@@ -1,11 +1,11 @@
 package com.jogamp.opencl;
 
+import com.jogamp.common.os.DynamicLookupHelper;
 import java.security.PrivilegedAction;
 import com.jogamp.common.JogampRuntimeException;
-import com.jogamp.common.nio.Int64Buffer;
 import com.jogamp.common.os.NativeLibrary;
 import com.jogamp.common.nio.PointerBuffer;
-import com.jogamp.common.os.UnixDynamicLinkerImpl;
+import com.jogamp.gluegen.runtime.FunctionAddressResolver;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.impl.CLImpl;
 import com.jogamp.opencl.impl.CLProcAddressTable;
@@ -45,21 +45,44 @@ public final class CLPlatform {
 
     static{
         try {
-//            new UnixDynamicLinkerImpl().openLibraryGlobal("/usr/lib/jvm/java-6-sun/jre/lib/amd64/libjsig.so", true);
 
-            // run the whole static initialization privileged to speed up,
-            // since this skips checking further access
-            CLProcAddressTable table = doPrivileged(new PrivilegedAction<CLProcAddressTable>() {
-                public CLProcAddressTable run() {
-                    NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
+            final CLProcAddressTable table = new CLProcAddressTable(new FunctionAddressResolver() {
+                public long resolve(String name, DynamicLookupHelper lookup) {
+                    
+                    //FIXME workaround to fix a gluegen issue
+                    if(name.endsWith("Impl")) {
+                        name = name.substring(0, name.length() - "Impl".length());
+                    }
 
-                    CLProcAddressTable table = new CLProcAddressTable();
-                    table.reset(lib);
-                    return table;
+                    if(name.endsWith("KHR") || name.endsWith("EXT")) {
+                        long address = ((CLImpl) cl).clGetExtensionFunctionAddress(name);
+                        if(address != 0) {
+                            return address;
+                        }
+                    }
+
+                    return lookup.dynamicLookupFunction(name);
                 }
             });
 
             cl = new CLImpl(table);
+            
+            //load JOCL and init table
+            doPrivileged(new PrivilegedAction<CLProcAddressTable>() {
+                public CLProcAddressTable run() {
+
+                    NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
+
+                    //eagerly init funciton to query extension addresses (used in reset())
+                    table.initEntry("clGetExtensionFunctionAddressImpl", lib);
+                    table.reset(lib);
+                    return null;
+                }
+            });
+
+//            System.out.println("\n"+table);
+            System.out.println("unavailable functions: "+table.getNullPointerFunctions());
+
         }catch(Exception ex) {
             throw new JogampRuntimeException("JOCL initialization error.", ex);
         }

@@ -42,7 +42,7 @@ public class CLGLTexture2d<B extends Buffer> extends CLGLImage2d<B> implements C
         int width = (int)accessor.getLong(CL_IMAGE_WIDTH);
         int height = (int)accessor.getLong(CL_IMAGE_HEIGHT);
 
-        return new CLGLTexture2d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, id, width, flags);
+        return new CLGLTexture2d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, id, texture, flags);
 
     }
 

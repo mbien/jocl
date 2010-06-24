@@ -1,10 +1,10 @@
 package com.jogamp.opencl;
 
 import com.jogamp.opencl.CLDevice.Type;
-import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLSampler.AddressingMode;
 import com.jogamp.opencl.CLSampler.FilteringMode;
 import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.opencl.impl.CLImageFormatImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +27,8 @@ import static java.lang.System.*;
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.common.nio.Buffers.*;
 import static com.jogamp.common.os.Platform.*;
+import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.CLBuffer.*;
 
 /**
  * CLContext is responsible for managing objects such as command-queues, memory,
@@ -412,6 +414,50 @@ public class CLContext extends CLObject implements CLResource {
 
     protected void overrideContext(CLDevice device) {
         device.setContext(this);
+    }
+
+    private CLImageFormat[] getSupportedImageFormats(int flags, int type) {
+
+        int[] entries = new int[1];
+        int ret = cl.clGetSupportedImageFormats(ID, flags, type, 0, null, entries, 0);
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "error calling clGetSupportedImageFormats");
+        }
+
+        int count = entries[0];
+        if(count == 0) {
+            return new CLImageFormat[0];
+        }
+
+        CLImageFormat[] formats = new CLImageFormat[count];
+        CLImageFormatImpl impl = CLImageFormatImpl.create(newDirectByteBuffer(count * CLImageFormatImpl.size()));
+        ret = cl.clGetSupportedImageFormats(ID, flags, type, count, impl, null, 0);
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "error calling clGetSupportedImageFormats");
+        }
+
+        ByteBuffer buffer = impl.getBuffer();
+        for (int i = 0; i < formats.length; i++) {
+            formats[i] = new CLImageFormat(CLImageFormatImpl.create(buffer.slice()));
+            buffer.position(i*CLImageFormatImpl.size());
+        }
+
+        return formats;
+
+    }
+
+    /**
+     * Returns all supported 2d image formats with the (optional) memory allocation flags.
+     */
+    public CLImageFormat[] getSupportedImage2dFormats(Mem... flags) {
+        return getSupportedImageFormats(flags==null?0:Mem.flagsToInt(flags), CL_MEM_OBJECT_IMAGE2D);
+    }
+
+    /**
+     * Returns all supported 3d image formats with the (optional) memory allocation flags.
+     */
+    public CLImageFormat[] getSupportedImage3dFormats(Mem... flags) {
+        return getSupportedImageFormats(flags==null?0:Mem.flagsToInt(flags), CL_MEM_OBJECT_IMAGE3D);
     }
 
     /**

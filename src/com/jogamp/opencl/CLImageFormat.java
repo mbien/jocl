@@ -5,17 +5,23 @@ import com.jogamp.opencl.impl.CLImageFormatImpl;
 import static com.jogamp.opencl.CL.*;
 
 /**
- *
+ * Represents the OpenCL image format with its channeltype and order.
  * @author Michael Bien
  */
 public final class CLImageFormat {
 
-    private final CLImageFormatImpl format = CLImageFormatImpl.create();
+    private final CLImageFormatImpl format;
 
     CLImageFormat() {
+        format = CLImageFormatImpl.create();
+    }
+
+    CLImageFormat(CLImageFormatImpl format) {
+        this.format = format;
     }
 
     public CLImageFormat(ChannelOrder order, ChannelType type) {
+        format = CLImageFormatImpl.create();
         setImageChannelOrder(order);
         setImageChannelDataType(type);
     }
@@ -43,6 +49,11 @@ public final class CLImageFormat {
      */
     public CLImageFormatImpl getFormatImpl() {
         return format;
+    }
+
+    @Override
+    public String toString() {
+        return "CLImageFormat["+getImageChannelOrder()+" "+getImageChannelDataType()+"]";
     }
 
     /**

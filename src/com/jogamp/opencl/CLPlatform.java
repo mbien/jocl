@@ -39,6 +39,11 @@ public final class CLPlatform {
      */
     public final long ID;
 
+    /**
+     * Version of this OpenCL platform.
+     */
+    public final CLVersion version;
+
     private static final CL cl;
 
     private Set<String> extensions;
@@ -90,6 +95,7 @@ public final class CLPlatform {
 
     private CLPlatform(long id) {
         this.ID = id;
+        this.version = new CLVersion(getInfoString(CL_PLATFORM_VERSION));
     }
 
     /**
@@ -248,10 +254,31 @@ public final class CLPlatform {
     }
 
     /**
-     * Returns the platform version.
+     * Returns the OpenCL version supported by this platform.
      */
-    public String getVersion() {
-        return getInfoString(CL_PLATFORM_VERSION);
+    public CLVersion getVersion() {
+        return version;
+    }
+
+    /**
+     * Returns the OpenCL Specification version supported by this platform.
+     */
+    public String getSpecVersion() {
+        return version.getSpecVersion();
+    }
+
+    /**
+     * @see CLVersion#isAtLeast(com.jogamp.opencl.CLVersion)
+     */
+    public boolean isAtLeast(CLVersion other) {
+        return version.isAtLeast(other);
+    }
+
+    /**
+     * @see CLVersion#isAtLeast(int, int) 
+     */
+    public boolean isAtLeast(int major, int minor) {
+        return version.isAtLeast(major, minor);
     }
 
     /**
@@ -266,6 +293,13 @@ public final class CLPlatform {
      */
     public String getVendor() {
         return getInfoString(CL_PLATFORM_VENDOR);
+    }
+
+    /**
+     * Returns the ICD suffix.
+     */
+    public String getICDSuffix() {
+        return getInfoString(CL_PLATFORM_ICD_SUFFIX_KHR);
     }
 
     /**

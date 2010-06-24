@@ -108,7 +108,8 @@ public class HighLevelBindingTest {
             out.println("    name: "+platform.getName());
             out.println("    id: "+platform.ID);
             out.println("    profile: "+platform.getProfile());
-            out.println("    version: "+platform.getVersion());
+            out.println("    spec version: "+platform.getSpecVersion());
+            out.println("    impl version: "+platform.getVersion().getImplVersion());
             out.println("    vendor: "+platform.getVendor());
             out.println("    max FLOPS device: "+platform.getMaxFlopsDevice());
             out.println("    extensions: "+platform.getExtensions());

@@ -47,8 +47,9 @@ public class CLUtil {
         Map<String, String> map = new LinkedHashMap<String, String>();
         map.put("CL_PLATFORM_NAME",     platform.getName());
         map.put("CL_PLATFORM_PROFILE",  platform.getProfile());
-        map.put("CL_PLATFORM_VERSION",  platform.getVersion());
+        map.put("CL_PLATFORM_VERSION",  platform.getVersion().toString());
         map.put("CL_PLATFORM_VENDOR",   platform.getVendor());
+        map.put("CL_PLATFORM_ICD_SUFFIX",   platform.getICDSuffix());
         map.put("CL_PLATFORM_EXTENSIONS",   platform.getExtensions().toString());
 //        map.put("fastest device (estimated)", platform.getMaxFlopsDevice().toString());
 

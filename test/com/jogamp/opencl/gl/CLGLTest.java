@@ -34,6 +34,8 @@ public class CLGLTest {
     @BeforeClass
     public static void init() {
 
+        GLProfile.initSingleton();
+
         Display display = NewtFactory.createDisplay(null); // local display
         assertNotNull(display);
 

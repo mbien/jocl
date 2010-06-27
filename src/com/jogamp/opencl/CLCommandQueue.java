@@ -198,6 +198,246 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
     //2D
     /**
+     * Calls {@native clEnqueueWriteBufferRect}.
+     */
+    public CLCommandQueue putWriteBufferRect(CLBuffer<?> WriteBuffer,
+            int originX, int originY, int hostX, int hostY, int rangeX, int rangeY,
+            boolean blockingWrite, CLEventList condition, CLEventList events) {
+        putWriteBufferRect(WriteBuffer, originX, originY, hostX, hostY, rangeX, rangeY, 0, 0, 0, 0, blockingWrite, condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueWriteBufferRect}.
+     */
+    public CLCommandQueue putWriteBufferRect(CLBuffer<?>  writeBuffer,
+            int originX, int originY, int hostX, int hostY, int rangeX, int rangeY,
+            long rowPitch, long slicePitch, long hostRowPitch, long hostSlicePitch,
+            boolean blockingWrite, CLEventList condition, CLEventList events) {
+        // spec: if 2d: origin/hostpos=0, ragne=1
+        putWriteBufferRect( writeBuffer, originX, originY, 0,
+                                         hostX, hostY, 0,
+                                         rangeX, rangeY, 1,
+                                         0, 0, 0, 0, blockingWrite, condition, events);
+        return this;
+    }
+
+    //3D
+    /**
+     * Calls {@native clEnqueueWriteBufferRect}.
+     */
+    public CLCommandQueue putWriteBufferRect(CLBuffer<?> writeBuffer,
+            int originX, int originY, int originZ, int hostX, int hostY, int hostZ, int rangeX, int rangeY, int rangeZ,
+            boolean blockingWrite, CLEventList condition, CLEventList events) {
+        putWriteBufferRect(writeBuffer, originX, originY, originZ,
+                                        hostX, hostY, hostZ,
+                                        rangeX, rangeY, rangeZ, 0, 0, 0, 0, blockingWrite, condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueWriteBufferRect}.
+     */
+    public CLCommandQueue putWriteBufferRect(CLBuffer<?> writeBuffer,
+            int originX, int originY, int originZ, int hostX, int hostY, int hostZ, int rangeX, int rangeY, int rangeZ,
+            long rowPitch, long slicePitch, long hostRowPitch, long hostSlicePitch,
+            boolean blockingWrite, CLEventList condition, CLEventList events) {
+
+        PointerBuffer conditionIDs = null;
+        int conditions = 0;
+        if(condition != null) {
+            conditionIDs = condition.IDs;
+            conditions   = condition.size;
+        }
+
+        copy2NIO(ibA, originX, originY, originZ);
+        copy2NIO(ibB, hostX, hostY, hostZ);
+        copy2NIO(ibC, rangeX, rangeY, rangeZ);
+
+        int ret = cl.clEnqueueWriteBufferRect(
+                ID, writeBuffer.ID, clBoolean(blockingWrite), ibA, ibB, ibC,
+                rowPitch, slicePitch, hostRowPitch, hostSlicePitch, writeBuffer.getBuffer(),
+                conditions, conditionIDs, events==null ? null : events.IDs);
+
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue writeBufferRect: " + writeBuffer
+                       + " with rowPitch: " + rowPitch + " slicePitch: " + slicePitch
+                       + " hostRowPitch: " + hostRowPitch + " hostSlicePitch: " + hostSlicePitch
+                       + " origin: " + toStr(originX, originY, originZ)+ " hostPos: " + toStr(hostX, hostY, hostZ)
+                       + " range: " + toStr(rangeX, rangeY, rangeZ) + toStr(condition, events));
+        }
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+
+        return this;
+    }
+
+    //2D
+    /**
+     * Calls {@native clEnqueueReadBufferRect}.
+     */
+    public CLCommandQueue putReadBufferRect(CLBuffer<?> readBuffer,
+            int originX, int originY, int hostX, int hostY, int rangeX, int rangeY,
+            boolean blockingRead, CLEventList condition, CLEventList events) {
+        putReadBufferRect(readBuffer, originX, originY, hostX, hostY, rangeX, rangeY, 0, 0, 0, 0, blockingRead, condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueReadBufferRect}.
+     */
+    public CLCommandQueue putReadBufferRect(CLBuffer<?> readBuffer,
+            int originX, int originY, int hostX, int hostY, int rangeX, int rangeY,
+            long rowPitch, long slicePitch, long hostRowPitch, long hostSlicePitch,
+            boolean blockingRead, CLEventList condition, CLEventList events) {
+        // spec: if 2d: origin/hostpos=0, ragne=1
+        putReadBufferRect(  readBuffer, originX, originY, 0,
+                            hostX, hostY, 0,
+                            rangeX, rangeY, 1,
+                            0, 0, 0, 0, blockingRead, condition, events);
+        return this;
+    }
+
+    //3D
+    /**
+     * Calls {@native clEnqueueReadBufferRect}.
+     */
+    public CLCommandQueue putReadBufferRect(CLBuffer<?> readBuffer,
+            int originX, int originY, int originZ, int hostX, int hostY, int hostZ, int rangeX, int rangeY, int rangeZ,
+            boolean blockingRead, CLEventList condition, CLEventList events) {
+        putReadBufferRect(  readBuffer, originX, originY, originZ,
+                            hostX, hostY, hostZ,
+                            rangeX, rangeY, rangeZ,
+                            0, 0, 0, 0, blockingRead, condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueReadBufferRect}.
+     */
+    public CLCommandQueue putReadBufferRect(CLBuffer<?> readBuffer,
+            int originX, int originY, int originZ, int hostX, int hostY, int hostZ, int rangeX, int rangeY, int rangeZ,
+            long rowPitch, long slicePitch, long hostRowPitch, long hostSlicePitch,
+            boolean blockingRead, CLEventList condition, CLEventList events) {
+
+        PointerBuffer conditionIDs = null;
+        int conditions = 0;
+        if(condition != null) {
+            conditionIDs = condition.IDs;
+            conditions   = condition.size;
+        }
+
+        copy2NIO(ibA, originX, originY, originZ);
+        copy2NIO(ibB, hostX, hostY, hostZ);
+        copy2NIO(ibC, rangeX, rangeY, rangeZ);
+
+        int ret = cl.clEnqueueReadBufferRect(
+                ID, readBuffer.ID, clBoolean(blockingRead), ibA, ibB, ibC,
+                rowPitch, slicePitch, hostRowPitch, hostSlicePitch, readBuffer.getBuffer(),
+                conditions, conditionIDs, events==null ? null : events.IDs);
+
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not enqueue ReadBufferRect: " + readBuffer
+                       + " with rowPitch: " + rowPitch + " slicePitch: " + slicePitch
+                       + " hostRowPitch: " + hostRowPitch + " hostSlicePitch: " + hostSlicePitch
+                       + " origin: " + toStr(originX, originY, originZ)+ " hostPos: " + toStr(hostX, hostY, hostZ)
+                       + " range: " + toStr(rangeX, rangeY, rangeZ) + toStr(condition, events));
+        }
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+
+        return this;
+    }
+
+    //2D
+    /**
+     * Calls {@native clEnqueueCopyBufferRect}.
+     */
+    public CLCommandQueue putCopyBufferRect(CLBuffer<?> src, CLBuffer<?> dest,
+            int srcOriginX, int srcOriginY, int destOriginX, int destOriginY, int rangeX, int rangeY,
+            CLEventList condition, CLEventList events) {
+        // spec: if 2d: origin/destpos=0, ragne=1
+        putCopyBufferRect(  src, dest, srcOriginX, srcOriginY, 0,
+                            destOriginX, destOriginY, 0,
+                            rangeX, rangeY, 1,
+                            0, 0, 0, 0, condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueCopyBufferRect}.
+     */
+    public CLCommandQueue putCopyBufferRect(CLBuffer<?> src, CLBuffer<?> dest,
+            int srcOriginX, int srcOriginY, int destOriginX, int destOriginY, int rangeX, int rangeY,
+            long srcRowPitch, long srcSlicePitch, long destRowPitch, long destSlicePitch,
+            CLEventList condition, CLEventList events) {
+        putCopyBufferRect(  src, dest, srcOriginX, srcOriginY, 0,
+                            destOriginX, destOriginY, 0,
+                            rangeX, rangeY, 1,
+                            srcRowPitch, srcSlicePitch, destSlicePitch, destRowPitch, condition, events);
+        return this;
+    }
+
+
+    //3D
+    /**
+     * Calls {@native clEnqueueCopyBufferRect}.
+     */
+    public CLCommandQueue putCopyBufferRect(CLBuffer<?> src, CLBuffer<?> dest,
+            int srcOriginX, int srcOriginY, int srcOriginZ, int destOriginX, int destOriginY, int destOriginZ, int rangeX, int rangeY, int rangeZ,
+            CLEventList condition, CLEventList events) {
+        putCopyBufferRect(  src, dest, srcOriginX, srcOriginY, srcOriginZ,
+                            destOriginX, destOriginY, destOriginZ,
+                            rangeX, rangeY, rangeZ,
+                            0, 0, 0, 0, condition, events);
+        return this;
+    }
+    /**
+     * Calls {@native clEnqueueCopyBufferRect}.
+     */
+    public CLCommandQueue putCopyBufferRect(CLBuffer<?> src, CLBuffer<?> dest,
+            int srcOriginX, int srcOriginY, int srcOriginZ, int destOriginX, int destOriginY, int destOriginZ, int rangeX, int rangeY, int rangeZ,
+            long srcRowPitch, long srcSlicePitch, long destRowPitch, long destSlicePitch,
+            CLEventList condition, CLEventList events) {
+
+        PointerBuffer conditionIDs = null;
+        int conditions = 0;
+        if(condition != null) {
+            conditionIDs = condition.IDs;
+            conditions   = condition.size;
+        }
+
+        copy2NIO(ibA, srcOriginX, srcOriginY, srcOriginZ);
+        copy2NIO(ibB, destOriginX, destOriginY, destOriginZ);
+        copy2NIO(ibC, rangeX, rangeY, rangeZ);
+
+        int ret = cl.clEnqueueCopyBufferRect(
+                        ID, src.ID, dest.ID, ibA, ibB, ibC,
+                        srcRowPitch, srcSlicePitch, destRowPitch, destSlicePitch,
+                        conditions, conditionIDs, events==null ? null : events.IDs);
+
+        if(ret != CL_SUCCESS) {
+            throw newException(ret, "can not copy buffer rect from " + src + " to " + dest
+                       + " with srcRowPitch: " + srcRowPitch + " srcSlicePitch: " + srcSlicePitch
+                       + " destRowPitch: " + destRowPitch + " destSlicePitch: " + destSlicePitch
+                       + " srcOrigin: " + toStr(srcOriginX, srcOriginY, srcOriginZ)+ " destOrigin: " + toStr(destOriginX, destOriginY, destOriginZ)
+                       + " range: " + toStr(rangeX, rangeY, rangeZ) + toStr(condition, events));
+        }
+
+        if(events != null) {
+            events.createEvent(context);
+        }
+
+        return this;
+    }
+
+
+    //2D
+    /**
      * Calls {@native clEnqueueWriteImage}.
      */
     public CLCommandQueue putWriteImage(CLImage2d<?> writeImage, boolean blockingWrite) {

@@ -1,5 +1,6 @@
 package com.jogamp.opencl;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.CLDevice.Type;
 import com.jogamp.opencl.CLSampler.AddressingMode;
 import com.jogamp.opencl.CLSampler.FilteringMode;
@@ -11,7 +12,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -78,7 +78,7 @@ public class CLContext extends CLObject implements CLResource {
             int ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, deviceCount);
             checkForError(ret, "can not enumerate devices");
 
-            ByteBuffer deviceIDs = ByteBuffer.allocateDirect((int)deviceCount.get()).order(ByteOrder.nativeOrder());
+            ByteBuffer deviceIDs = Buffers.newDirectByteBuffer((int)deviceCount.get());
             ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null);
             checkForError(ret, "can not enumerate devices");
 

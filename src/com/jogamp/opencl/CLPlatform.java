@@ -1,5 +1,6 @@
 package com.jogamp.opencl;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.os.DynamicLookupHelper;
 import java.security.PrivilegedAction;
 import com.jogamp.common.JogampRuntimeException;
@@ -11,7 +12,6 @@ import com.jogamp.opencl.impl.CLImpl;
 import com.jogamp.opencl.impl.CLProcAddressTable;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,8 +73,8 @@ public final class CLPlatform {
             cl = new CLImpl(table);
             
             //load JOCL and init table
-            doPrivileged(new PrivilegedAction<CLProcAddressTable>() {
-                public CLProcAddressTable run() {
+            doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
 
                     NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
 
@@ -114,7 +114,7 @@ public final class CLPlatform {
      */
     public static CLPlatform[] listCLPlatforms() {
 
-        IntBuffer ib = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer ib = Buffers.newDirectIntBuffer(1);
         // find all available OpenCL platforms
         int ret = cl.clGetPlatformIDs(0, null, ib);
         checkForError(ret, "can not enumerate platforms");
@@ -161,7 +161,7 @@ public final class CLPlatform {
      */
     public CLDevice[] listCLDevices(CLDevice.Type... types) {
 
-        IntBuffer ib = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        IntBuffer ib = Buffers.newDirectIntBuffer(1);
 
         List<CLDevice> list = new ArrayList<CLDevice>();
         for(int t = 0; t < types.length; t++) {

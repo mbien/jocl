@@ -5,7 +5,6 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.nio.PointerBuffer;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.opencl.CL.*;
@@ -45,7 +44,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, size);
         checkForError(ret, "error while asking for kernel function name");
 
-        ByteBuffer bb = ByteBuffer.allocateDirect((int)size.get(0)).order(ByteOrder.nativeOrder());
+        ByteBuffer bb = Buffers.newDirectByteBuffer((int)size.get(0));
 
         ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
         checkForError(ret, "error while asking for kernel function name");

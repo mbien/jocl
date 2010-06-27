@@ -155,16 +155,6 @@ public class CLProgram extends CLObject implements CLResource {
         return CLUtil.clString2JavaString(buffer, (int)size.get(0));
     }
 
-//    private int getProgramInfoInt(int flag) {
-//
-//        ByteBuffer bb = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder());
-//
-//        int ret = cl.clGetProgramInfo(programID, flag, bb.capacity(), bb, null, 0);
-//        checkForError(ret, "");
-//
-//        return bb.getInt();
-//    }
-
     private int getBuildInfoInt(CLDevice device, int flag) {
 
         ByteBuffer buffer = newDirectByteBuffer(4);

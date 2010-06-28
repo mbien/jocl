@@ -7,6 +7,8 @@ import static com.jogamp.opencl.CL.*;
 /**
  * Represents the OpenCL image format with its channeltype and order.
  * @author Michael Bien
+ * @see CLContext#getSupportedImage2dFormats(com.jogamp.opencl.CLMemory.Mem[])
+ * @see CLContext#getSupportedImage3dFormats(com.jogamp.opencl.CLMemory.Mem[])
  */
 public final class CLImageFormat {
 
@@ -54,6 +56,32 @@ public final class CLImageFormat {
     @Override
     public String toString() {
         return "CLImageFormat["+getImageChannelOrder()+" "+getImageChannelDataType()+"]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CLImageFormat other = (CLImageFormat) obj;
+        if (this.getImageChannelDataType() != other.getImageChannelDataType()) {
+            return false;
+        }
+        if (this.getImageChannelOrder() != other.getImageChannelOrder()) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + (this.getImageChannelDataType() != null ? this.getImageChannelDataType().hashCode() : 0);
+        hash = 47 * hash + (this.getImageChannelOrder() != null ? this.getImageChannelOrder().hashCode() : 0);
+        return hash;
     }
 
     /**

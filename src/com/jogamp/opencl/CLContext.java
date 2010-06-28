@@ -328,6 +328,66 @@ public class CLContext extends CLObject implements CLResource {
         return buffer;
     }
 
+    /**
+     * Creates a CLImage2d with the specified format, dimension and flags.
+     */
+    public final CLImage2d<?> createImage2d(int width, int height, CLImageFormat format, Mem... flags) {
+        return createImage2d(null, width, height, 0, format, flags);
+    }
+
+    /**
+     * Creates a CLImage2d with the specified format, dimension and flags.
+     */
+    public final CLImage2d<?> createImage2d(int width, int height, int rowPitch, CLImageFormat format, Mem... flags) {
+        return createImage2d(null, width, height, rowPitch, format, flags);
+    }
+
+    /**
+     * Creates a CLImage2d with the specified format, dimension and flags.
+     */
+    public final <B extends Buffer> CLImage2d<B> createImage2d(B directBuffer, int width, int height, CLImageFormat format, Mem... flags) {
+        return createImage2d(directBuffer, width, height, 0, format, flags);
+    }
+
+    /**
+     * Creates a CLImage2d with the specified format, dimension and flags.
+     */
+    public final <B extends Buffer> CLImage2d<B> createImage2d(B directBuffer, int width, int height, int rowPitch, CLImageFormat format, Mem... flags) {
+        CLImage2d<B> image = CLImage2d.createImage(this, directBuffer, width, height, rowPitch, format, Mem.flagsToInt(flags));
+        memoryObjects.add(image);
+        return image;
+    }
+
+    /**
+     * Creates a CLImage3d with the specified format, dimension and flags.
+     */
+    public final CLImage3d<?> createImage3d(int width, int height, CLImageFormat format, Mem... flags) {
+        return createImage3d(null, width, height, 0, format, flags);
+    }
+
+    /**
+     * Creates a CLImage3d with the specified format, dimension and flags.
+     */
+    public final CLImage3d<?> createImage3d(int width, int height, int depth, int rowPitch, CLImageFormat format, Mem... flags) {
+        return createImage3d(null, width, height, rowPitch, format, flags);
+    }
+
+    /**
+     * Creates a CLImage3d with the specified format, dimension and flags.
+     */
+    public final <B extends Buffer> CLImage3d<B> createImage3d(B directBuffer, int width, int height, int depth, CLImageFormat format, Mem... flags) {
+        return createImage3d(directBuffer, width, height, depth, 0, 0, format, flags);
+    }
+
+    /**
+     * Creates a CLImage3d with the specified format, dimension and flags.
+     */
+    public final <B extends Buffer> CLImage3d<B> createImage3d(B directBuffer, int width, int height, int depth, int rowPitch, int slicePitch, CLImageFormat format, Mem... flags) {
+        CLImage3d<B> image = CLImage3d.createImage(this, directBuffer, width, height, depth, rowPitch, slicePitch, format, Mem.flagsToInt(flags));
+        memoryObjects.add(image);
+        return image;
+    }
+
     CLCommandQueue createCommandQueue(CLDevice device, long properties) {
 
         CLCommandQueue queue = CLCommandQueue.create(this, device, properties);

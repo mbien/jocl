@@ -4,7 +4,7 @@ package com.jogamp.opencl;
  * Common superclass for all OpenCL objects.
  * @author Michael Bien
  */
-abstract class CLObject {
+abstract class CLObject implements AutoCloseable {
 
     /**
      * The OpenCL object handle.
@@ -25,6 +25,19 @@ abstract class CLObject {
         this.cl = context.cl;
         this.context = context;
         this.ID = ID;
+    }
+
+    /**
+     * Implementation detail.
+     * TODO remove as soon we have extension methods.
+     * @deprecated This method is not intended to be called from client code.
+     * @see java.lang.AutoCloseable
+     */
+    @Deprecated
+    public final void close() {
+        if(this instanceof CLResource) {
+            ((CLResource)this).release();
+        }
     }
 
     /**

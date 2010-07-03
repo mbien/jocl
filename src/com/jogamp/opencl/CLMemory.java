@@ -152,14 +152,11 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         }
     }
 
-    public void close() {
-        release();
-    }
-
-    // kept only for debugging purposes
+    // TODO kept only temporary for debugging purposes
     /**
      * Returns the OpenGL buffer type of this shared buffer.
      */
+    @Deprecated
     /*public*/ final GLObjectType _getGLObjectType() {
         int[] array = new int[1];
         int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, array, 0, null, 0);

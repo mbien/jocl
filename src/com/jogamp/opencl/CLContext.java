@@ -468,10 +468,6 @@ public class CLContext extends CLObject implements CLResource {
 
     }
 
-    public void close() {
-        release();
-    }
-
     protected void overrideContext(CLDevice device) {
         device.setContext(this);
     }

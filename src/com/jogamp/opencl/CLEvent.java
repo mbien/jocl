@@ -30,10 +30,6 @@ public class CLEvent extends CLObject implements CLResource {
         checkForError(ret, "can not release event");
     }
 
-    public void close() {
-        release();
-    }
-
     /**
      * Returns the execution status of the command which triggers this event.
      */

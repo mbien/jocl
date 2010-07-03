@@ -7,7 +7,7 @@ import java.util.Iterator;
  * Fixed size list for storing CLEvents.
  * @author Michael Bien
  */
-public final class CLEventList implements CLResource, Iterable<CLEvent> {
+public final class CLEventList implements CLResource, AutoCloseable, Iterable<CLEvent> {
 
     private final CLEvent[] events;
 
@@ -50,7 +50,7 @@ public final class CLEventList implements CLResource, Iterable<CLEvent> {
         IDs.rewind();
     }
 
-    public void close() {
+    public final void close() throws Exception {
         release();
     }
 

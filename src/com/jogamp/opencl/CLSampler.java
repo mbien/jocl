@@ -53,10 +53,6 @@ public class CLSampler extends CLObject implements CLResource {
         }
     }
 
-    public void close() {
-        release();
-    }
-
     private class CLSamplerInfoAccessor extends CLInfoAccessor {
 
         @Override

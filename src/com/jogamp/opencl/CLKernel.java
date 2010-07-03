@@ -272,10 +272,6 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         }
     }
 
-    public void close() {
-        release();
-    }
-
     @Override
     public String toString() {
         return "CLKernel [id: " + ID

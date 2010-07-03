@@ -27,7 +27,7 @@ import static com.jogamp.opencl.CL.*;
 public final class CLDevice extends CLObject {
 
     private Set<String> extensions;
-    
+
     private final CLDeviceInfoAccessor deviceInfo;
 
     CLDevice(CL cl, long id) {
@@ -57,13 +57,13 @@ public final class CLDevice extends CLObject {
         }
         return createCommandQueue(flags);
     }
-    
+
     public CLCommandQueue createCommandQueue(long properties) {
         if(context == null)
             throw new IllegalStateException("this device is not associated with a context");
         return context.createCommandQueue(this, properties);
     }
-    
+
     /*keep this package private*/
     void setContext(CLContext context) {
         this.context = context;
@@ -535,7 +535,7 @@ public final class CLDevice extends CLObject {
                 }
             }
             buffer.rewind();
-            
+
             return array;
         }
 
@@ -759,7 +759,7 @@ public final class CLDevice extends CLObject {
          * Read-write cache.
          */
         READ_WRITE(CL_READ_WRITE_CACHE);
-        
+
 
         /**
          * Value of wrapped OpenCL value.

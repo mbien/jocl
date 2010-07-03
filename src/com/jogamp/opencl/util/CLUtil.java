@@ -63,7 +63,7 @@ public class CLUtil {
         map.put("CL_DEVICE_PROFILE",    dev.getProfile());
         map.put("CL_DEVICE_VENDOR",     dev.getVendor());
         map.put("CL_DEVICE_VENDOR_ID",  dev.getVendorID()+"");
-        map.put("CL_DEVICE_VERSION",    dev.getVersion());
+        map.put("CL_DEVICE_VERSION",    dev.getVersion().toString());
         map.put("CL_DRIVER_VERSION",    dev.getDriverVersion());
         map.put("CL_DEVICE_TYPE",       dev.getType().toString());
 
@@ -74,10 +74,11 @@ public class CLUtil {
         map.put("CL_DEVICE_LOCAL_MEM_TYPE",     dev.getLocalMemType()+"");
         map.put("CL_DEVICE_GLOBAL_MEM_CACHE_SIZE", dev.getGlobalMemCacheSize()+"");
         map.put("CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE", dev.getGlobalMemCachelineSize()+"");
-        map.put("CL_DEVICE_GLOBAL_MEM_CACHE_TYPE", dev.getGlobalMemCacheType()+"");
+        map.put("CL_DEVICE_GLOBAL_MEM_CACHE_TYPE",     dev.getGlobalMemCacheType()+"");
         map.put("CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE", dev.getMaxConstantBufferSize()+"");
         map.put("CL_DEVICE_MAX_CONSTANT_ARGS",        dev.getMaxConstantArgs()+"");
         map.put("CL_DEVICE_ERROR_CORRECTION_SUPPORT", dev.isErrorCorrectionSupported()+"");
+        map.put("CL_DEVICE_HOST_UNIFIED_MEMORY",      dev.isMemoryUnified()+"");
 
         map.put("CL_DEVICE_MAX_CLOCK_FREQUENCY",        dev.getMaxClockFrequency()+" MHz");
         map.put("CL_DEVICE_PROFILING_TIMER_RESOLUTION", dev.getProfilingTimerResolution()+" ns");

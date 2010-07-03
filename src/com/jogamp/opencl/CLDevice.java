@@ -98,12 +98,17 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns OpenCL version string. Returns the OpenCL version supported by the device.
-     * This version string has the following format:<br>
-     * OpenCL[space][major_version.minor_version][space][vendor-specific information]
+     * Returns the OpenCL version supported by the device.
      */
-    public String getVersion() {
-        return deviceInfo.getString(CL_DEVICE_VERSION);
+    public CLVersion getVersion() {
+        return new CLVersion(deviceInfo.getString(CL_DEVICE_VERSION));
+    }
+
+    /**
+     * Returns the OpenCL-C version supported by the device.
+     */
+    public CLVersion getCVersion() {
+        return new CLVersion(deviceInfo.getString(CL_DEVICE_OPENCL_C_VERSION));
     }
 
     /**
@@ -177,6 +182,62 @@ public final class CLDevice extends CLObject {
     }
 
     /**
+     * Native vector width size for built-in char vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getNativeCharVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_CHAR);
+    }
+
+    /**
+     * Native vector width size for built-in short vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getNativeShortVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_SHORT);
+    }
+
+    /**
+     * Native vector width size for built-in int vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getNativeIntVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_INT);
+    }
+
+    /**
+     * Native vector width size for built-in long vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getNativeLongVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_LONG);
+    }
+
+    /**
+     * Native vector width size for built-in half vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getNativeHalfVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF);
+    }
+
+    /**
+     * Native vector width size for built-in float vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getNativeFloatVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_FLOAT);
+    }
+
+    /**
+     * Native vector width size for built-in double vectors.
+     * The vector width is defined as the number of scalar elements that can be stored in the vector.
+     */
+    public int getNativeDoubleVectorWidth() {
+        return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE);
+    }
+
+    /**
      * Returns the number of parallel compute cores on the OpenCL device.
      * The minimum value is 1.
      */
@@ -220,8 +281,9 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns the max size in bytes of the arguments that can be passed to a kernel.
-     * The minimum value is 256.
+     * Returns the max size in bytes of the arguments that can be passed to a kernel.<br/>
+     * The minimum OpenCL 1.0 value is 256.<br/>
+     * The minimum OpenCL 1.1 value is 1024.<br/>
      */
     public long getMaxParameterSize() {
         return deviceInfo.getLong(CL_DEVICE_MAX_PARAMETER_SIZE);
@@ -242,10 +304,19 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns the local memory size in bytes.
+     * Returns the local memory size in bytes.<br/>
+     * The minimum OpenCL 1.0 value is 16 KB.<br/>
+     * The minimum OpenCL 1.1 value is 32 KB.<br/>
      */
     public long getLocalMemSize() {
         return deviceInfo.getLong(CL_DEVICE_LOCAL_MEM_SIZE);
+    }
+
+    /**
+     * Returns true if the device and the host have a unified memory subsystem.
+     */
+    public boolean isMemoryUnified() {
+        return deviceInfo.getLong(CL_DEVICE_HOST_UNIFIED_MEMORY) == CL_TRUE;
     }
 
     /**

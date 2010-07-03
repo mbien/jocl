@@ -124,6 +124,17 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     }
 
     /**
+     * Returns the number of buffer mappings. The map count returned should be considered immediately stale.
+     * It is unsuitable for general use in applications. This feature is provided for debugging.
+     */
+    public int getMapCount() {
+        IntBuffer value = Buffers.newDirectIntBuffer(1);
+        int ret = cl.clGetMemObjectInfo(ID, CL_MEM_MAP_COUNT, 4, value, null);
+        checkForError(ret, "can not obtain buffer map count.");
+        return value.get();
+    }
+
+    /**
      * Returns true if this memory object was created with the {@link Mem#READ_ONLY} flag.
      */
     public boolean isReadOnly() {
@@ -167,6 +178,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     /**
      * Returns the OpenGL object id of this shared buffer.
      */
+    @Deprecated
     /*public*/ final int _getGLObjectID() {
         int[] array = new int[1];
         int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, null, 0, array, 0);

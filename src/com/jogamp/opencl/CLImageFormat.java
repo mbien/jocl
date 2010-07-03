@@ -98,12 +98,22 @@ public final class CLImageFormat {
         /**
          *
          */
+        Rx(CL_Rx),
+
+        /**
+         *
+         */
         A(CL_A),
 
         /**
          *
          */
         RG(CL_RG),
+
+        /**
+         *
+         */
+        RGx(CL_RGx),
 
         /**
          *
@@ -116,6 +126,11 @@ public final class CLImageFormat {
          * or {@link ChannelType#UNORM_INT_101010}.
          */
         RGB(CL_RGB),
+
+        /**
+         *
+         */
+        RGBx(CL_RGBx),
 
         /**
          *

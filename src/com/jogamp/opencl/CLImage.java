@@ -23,7 +23,7 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
     }
 
     protected CLImage(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id, int flags) {
-        super(context, directBuffer, id, flags);
+        super(context, directBuffer, getSizeImpl(context.cl, id), id, flags);
         this.imageInfo = accessor;
         this.format = format;
         this.width = width;

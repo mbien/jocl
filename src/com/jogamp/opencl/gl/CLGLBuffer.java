@@ -21,7 +21,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
     public final int GLID;
 
     private CLGLBuffer(CLContext context, B directBuffer, long id, int glObject, int flags) {
-        super(context, directBuffer, id, flags);
+        super(context, directBuffer, getSizeImpl(context.getCL(), id), id, flags);
         this.GLID = glObject;
     }
 

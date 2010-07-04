@@ -6,23 +6,24 @@ import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.CLMemory.Mem;
 import java.nio.Buffer;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static com.jogamp.opencl.CLException.*;
 
 /**
- * OpenCL buffer object.
+ * OpenCL buffer object wrapping an optional NIO buffer.
  * @author Michael Bien
  */
 public class CLBuffer<B extends Buffer> extends CLMemory<B> {
 
-    private List<CLBuffer<B>> childs;
+    private List<CLSubBuffer<B>> childs;
 
-    protected CLBuffer(CLContext context, long id, int flags) {
-        super(context, id, flags);
+    protected CLBuffer(CLContext context, long size, long id, int flags) {
+        this(context, null, size, id, flags);
     }
 
-    protected CLBuffer(CLContext context, B directBuffer, long id, int flags) {
-        super(context, directBuffer, id, flags);
+    protected CLBuffer(CLContext context, B directBuffer, long size, long id, int flags) {
+        super(context, directBuffer, size, id, flags);
     }
 
     @SuppressWarnings("unchecked")
@@ -38,7 +39,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
         long id = cl.clCreateBuffer(context.ID, flags, size, null, result, 0);
         checkForError(result[0], "can not create cl buffer");
 
-        return new CLBuffer(context, id, flags);
+        return new CLBuffer(context, size, id, flags);
     }
 
     static <B extends Buffer> CLBuffer<B> create(CLContext context, B directBuffer, int flags) {
@@ -53,32 +54,43 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
         if(isHostPointerFlag(flags)) {
             host_ptr = directBuffer;
         }
-        long id = cl.clCreateBuffer(context.ID, flags, sizeOfBufferElem(directBuffer)*directBuffer.capacity(), host_ptr, result, 0);
+        int size = sizeOfBufferElem(directBuffer) * directBuffer.capacity();
+        long id = cl.clCreateBuffer(context.ID, flags, size, host_ptr, result, 0);
         checkForError(result[0], "can not create cl buffer");
         
-        return new CLBuffer<B>(context, directBuffer, id, flags);
+        return new CLBuffer<B>(context, directBuffer, size, id, flags);
     }
 
     /**
      * Creates a sub buffer with the specified region from this buffer.
+     * If this buffer contains a NIO buffer, the sub buffer will also contain a slice
+     * matching the specified region of the parent buffer. The region is specified
+     * by the offset and size in buffer elements or bytes if this buffer does not
+     * contain any NIO buffer.
+     * @param offset The offset in buffer elements.
+     * @param size The size in buffer elements.
      */
-    public CLBuffer<B> createSubBuffer(int origin, int size, Mem... flags) {
+    public CLSubBuffer<B> createSubBuffer(int offset, int size, Mem... flags) {
+
+        B slice = null;
+        if(buffer != null) {
+            slice = (B)Buffers.slice(buffer, offset, size);
+            int elemSize = Buffers.sizeOfBufferElem(buffer);
+            offset *= elemSize;
+            size *= elemSize;
+        }
+
         PointerBuffer info = PointerBuffer.allocateDirect(2);
-        info.put(origin).put(size).rewind();
+        info.put(offset).put(size).rewind();
         int bitset = Mem.flagsToInt(flags);
         
         int[] err = new int[1];
         long subID = cl.clCreateSubBuffer(ID, bitset, CL.CL_BUFFER_CREATE_TYPE_REGION, info.getBuffer(), err, 0);
         checkForError(err[0], "can not create sub buffer");
 
-        B slice = null;
-        if(buffer != null) {
-            slice = (B)Buffers.slice(buffer, origin, size);
-        }
-
-        CLSubBuffer<B> clSubBuffer = new CLSubBuffer<B>(this, origin, slice, subID, bitset);
+        CLSubBuffer<B> clSubBuffer = new CLSubBuffer<B>(this, offset, size, slice, subID, bitset);
         if(childs == null) {
-            childs = new ArrayList<CLBuffer<B>>();
+            childs = new ArrayList<CLSubBuffer<B>>();
         }
         childs.add(clSubBuffer);
         return clSubBuffer;
@@ -87,8 +99,8 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
     @Override
     public void release() {
         if(childs != null) {
-            for (CLBuffer<B> child : childs) {
-                child.release();
+            while(!childs.isEmpty()) {
+                childs.get(0).release();
             }
         }
         super.release();
@@ -96,6 +108,17 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
 
     void onReleaseSubBuffer(CLSubBuffer sub) {
         childs.remove(sub);
+    }
+
+    /**
+     * Returns the list of subbuffers.
+     */
+    public List<CLSubBuffer<B>> getSubBuffers() {
+        if(childs == null) {
+            return Collections.EMPTY_LIST;
+        }else{
+            return Collections.unmodifiableList(childs);
+        }
     }
 
     /**
@@ -107,7 +130,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
     
     @Override
     public <T extends Buffer> CLBuffer<T> cloneWith(T directBuffer) {
-        return new CLBuffer<T>(context, directBuffer, ID, FLAGS);
+        return new CLBuffer<T>(context, directBuffer, size, ID, FLAGS);
     }
 
 }

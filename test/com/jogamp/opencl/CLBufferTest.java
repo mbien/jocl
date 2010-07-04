@@ -4,6 +4,7 @@ import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLMemory.Map;
 import com.jogamp.common.nio.Buffers;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -143,6 +144,75 @@ public class CLBufferTest {
         queue.putUnmapMemory(clBufferB);            // unmap B
 
         context.release();
+
+    }
+
+    @Test
+    public void subBufferTest() {
+
+        CLPlatform[] platforms = CLPlatform.listCLPlatforms();
+        CLPlatform theChosenOne = null;
+        for (CLPlatform platform : platforms) {
+            if(platform.isAtLeast(CLVersion.CL_1_1)) {
+                theChosenOne = platform;
+                break;
+            }
+        }
+
+        if(theChosenOne == null) {
+            out.println("aborting subBufferTest");
+            return;
+        }
+
+        CLContext context = CLContext.create(theChosenOne);
+        try{
+            final int subelements = 5;
+            // device only
+            {
+                CLBuffer<?> buffer = context.createBuffer(64);
+
+                assertFalse(buffer.isSubBuffer());
+                assertNotNull(buffer.getSubBuffers());
+                assertTrue(buffer.getSubBuffers().isEmpty());
+
+                CLSubBuffer<?> subBuffer = buffer.createSubBuffer(10, subelements);
+
+                assertTrue(subBuffer.isSubBuffer());
+                assertEquals(subelements, subBuffer.getCLSize());
+                assertEquals(10, subBuffer.getOffset());
+                assertEquals(10, subBuffer.getCLOffset());
+                assertEquals(buffer, subBuffer.getParent());
+                assertEquals(1, buffer.getSubBuffers().size());
+
+                subBuffer.release();
+                assertEquals(0, buffer.getSubBuffers().size());
+            }
+
+            // device + direct buffer
+            {
+                CLBuffer<FloatBuffer> buffer = context.createFloatBuffer(64);
+                assertFalse(buffer.isSubBuffer());
+                assertNotNull(buffer.getSubBuffers());
+                assertTrue(buffer.getSubBuffers().isEmpty());
+
+                CLSubBuffer<FloatBuffer> subBuffer = buffer.createSubBuffer(10, subelements);
+
+                assertTrue(subBuffer.isSubBuffer());
+                assertEquals(subelements, subBuffer.getBuffer().capacity());
+                assertEquals(10, subBuffer.getOffset());
+                assertEquals(40, subBuffer.getCLOffset());
+                assertEquals(buffer, subBuffer.getParent());
+                assertEquals(1, buffer.getSubBuffers().size());
+
+                assertEquals(subBuffer.getCLCapacity(), subBuffer.getBuffer().capacity());
+
+                subBuffer.release();
+                assertEquals(0, buffer.getSubBuffers().size());
+            }
+
+        }finally{
+            context.release();
+        }
 
     }
     

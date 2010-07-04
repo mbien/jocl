@@ -89,7 +89,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         int ret = cl.clEnqueueWriteBuffer(
                 ID, writeBuffer.ID, clBoolean(blockingWrite),
-                0, writeBuffer.getSize(), writeBuffer.buffer,
+                0, writeBuffer.getNIOSize(), writeBuffer.buffer,
                 conditions, conditionIDs, events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS) {
@@ -133,7 +133,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         int ret = cl.clEnqueueReadBuffer(
                 ID, readBuffer.ID, clBoolean(blockingRead),
-                0, readBuffer.getSize(), readBuffer.buffer,
+                0, readBuffer.getNIOSize(), readBuffer.buffer,
                 conditions, conditionIDs, events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS) {

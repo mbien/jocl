@@ -18,22 +18,24 @@ import static com.jogamp.opencl.gl.CLGLI.*;
 
 /**
  * Common superclass for all OpenCL memory types.
+ * Represents an OpenCL memory object and wraps an optional NIO buffer.
  * @author Michael Bien
  */
 public abstract class CLMemory <B extends Buffer> extends CLObject implements CLResource {
     
     B buffer;
     protected final int FLAGS;
+    protected final long size;
     
-    protected <Buffer> CLMemory(CLContext context, long id, int flags) {
-        super(context, id);
-        this.FLAGS = flags;
+    protected <Buffer> CLMemory(CLContext context, long size, long id, int flags) {
+        this(context, null, size, id, flags);
     }
     
-    protected CLMemory(CLContext context, B directBuffer, long id, int flags) {
+    protected CLMemory(CLContext context, B directBuffer, long size, long id, int flags) {
         super(context, id);
         this.buffer = directBuffer;
         this.FLAGS = flags;
+        this.size = size;
     }
 
     /**
@@ -57,6 +59,13 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
             return Buffers.SIZEOF_DOUBLE;
         }
         throw new RuntimeException("Unexpected buffer type " + buffer.getClass().getName());
+    }
+
+    protected static long getSizeImpl(CL cl, long id) {
+        PointerBuffer pb = PointerBuffer.allocateDirect(1);
+        int ret = cl.clGetMemObjectInfo(id, CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
+        checkForError(ret, "can not obtain buffer info");
+        return pb.get();
     }
 
     protected static CL getCL(CLContext context) {
@@ -89,7 +98,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     /**
      * Returns the capacity of the wrapped direct buffer or 0 if no buffer available.
      */
-    public int getCapacity() {
+    public int getNIOCapacity() {
         if(buffer == null) {
             return 0;
         }
@@ -99,7 +108,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     /**
      * Returns the size of the wrapped direct buffer in byte or 0 if no buffer available.
      */
-    public int getSize() {
+    public int getNIOSize() {
         if(buffer == null) {
             return 0;
         }
@@ -110,10 +119,15 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
      * Returns the size of the allocated OpenCL memory.
      */
     public long getCLSize() {
-        PointerBuffer pb = PointerBuffer.allocateDirect(1);
-        int ret = cl.clGetMemObjectInfo(ID, CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
-        checkForError(ret, "can not obtain buffer info");
-        return pb.get();
+        return size;
+    }
+
+    /**
+     * Returns the size in buffer elements of this memory object.
+     */
+    public int getCLCapacity() {
+        int elemSize = buffer==null ? 1 : sizeOfBufferElem(buffer);
+        return (int) (getCLSize() / elemSize);
     }
 
     /**

@@ -177,6 +177,8 @@ public final class CLImageFormat {
             switch (orderFlag) {
                 case CL_R:
                     return R;
+                case CL_Rx:
+                    return Rx;
                 case CL_A:
                     return A;
                 case CL_INTENSITY:
@@ -185,10 +187,14 @@ public final class CLImageFormat {
                     return LUMINANCE;
                 case CL_RG:
                     return RG;
+                case CL_RGx:
+                    return RGx;
                 case CL_RA:
                     return RA;
                 case CL_RGB:
                     return RGB;
+                case CL_RGBx:
+                    return RGBx;
                 case CL_RGBA:
                     return RGBA;
                 case CL_ARGB:

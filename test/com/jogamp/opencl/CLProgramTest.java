@@ -200,7 +200,6 @@ public class CLProgramTest {
             };
 
             builder.setProgram(program).build(buildCallback);
-            countdown.countDown(); // TODO remove if callbacks are enabled again
             countdown.await();
         }
 

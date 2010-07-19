@@ -78,6 +78,19 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         return new EventIterator(events, size);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getName()).append('[');
+        for (int i = 0; i < size; i++) {
+            sb.append(events[i].toString());
+            if(i+1 != size) {
+                sb.append(", ");
+            }
+        }
+        return sb.append(']').toString();
+    }
+
     private static class EventIterator implements Iterator<CLEvent> {
 
         private final CLEvent[] events;

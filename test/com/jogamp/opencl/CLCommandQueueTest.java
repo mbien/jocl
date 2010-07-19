@@ -77,10 +77,14 @@ public class CLCommandQueueTest {
 
         final CLEventList events = new CLEventList(2);
 
+        out.println(events);
+
         assertEquals(0, events.size());
 
         queue.putWriteBuffer(clBufferA, false, events) // write A
              .putWriteBuffer(clBufferB, false, events);// write B
+
+        out.println(events);
 
         assertEquals(2, events.size());
         queue.putWaitForEvents(events, true);

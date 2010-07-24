@@ -102,7 +102,7 @@
     </target>
 
     <target name="tag.build">
-        <copy file="${jogl.root}/build/artifact.properties" todir="${dist.jar.dir}" overwrite="true"/>
+        <copy file="${jogl.root}/${rootrel.build}/artifact.properties" todir="${dist.jar.dir}" overwrite="true"/>
         <echo file="${dist.jar.dir}/artifact.properties" message='jocl.build.number="${build.number}"${line.separator}' append="true" />
     </target>
 

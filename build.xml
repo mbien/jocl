@@ -88,7 +88,7 @@
 
     <target name="-post-compile" depends="c.compile.default" />
 
-    <target name="-post-jar" depends="jar.natives">
+    <target name="-post-jar" depends="jar.natives,tag.build">
 
         <!-- TODO temporary codebase -->
         <property name="jnlp.codebase" value="http://people.fh-landshut.de/~mbien/jogamp/jocl/"/>
@@ -99,6 +99,11 @@
             </filterchain>
         </copy>
 
+    </target>
+
+    <target name="tag.build">
+        <copy file="${jogl.root}/build/artifact.properties" todir="${dist.jar.dir}" overwrite="true"/>
+        <echo file="${dist.jar.dir}/artifact.properties" message='jocl.build.number="${build.number}"${line.separator}' append="true" />
     </target>
 
     <target name="jar.natives" unless="c.dont.compile">

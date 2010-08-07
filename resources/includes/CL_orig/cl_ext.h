@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  ******************************************************************************/
 
-/* $Revision: 11687 $ on $Date: 2010-06-11 15:17:22 -0700 (Fri, 11 Jun 2010) $ */
+/* $Revision: 11928 $ on $Date: 2010-07-13 09:04:56 -0700 (Tue, 13 Jul 2010) $ */
 
 /* cl_ext.h contains OpenCL extensions which don't have external */
 /* (OpenGL, D3D) dependencies.                                   */
@@ -163,7 +163,7 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clIcdGetPlatformIDsKHR_fn)(
                             cl_device_id * /*out_devices*/,
                             cl_uint * /*num_devices*/ ) CL_EXT_SUFFIX__VERSION_1_1;
 
-    extern CL_API_ENTRY cl_int 
+    typedef CL_API_ENTRY cl_int 
     ( CL_API_CALL * clCreateSubDevicesEXT_fn)(  cl_device_id /*in_device*/,
                                                 const cl_device_partition_property_ext * /* properties */,
                                                 cl_uint /*num_entries*/,

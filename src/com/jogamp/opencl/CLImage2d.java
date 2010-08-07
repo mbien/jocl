@@ -24,9 +24,12 @@ public class CLImage2d<B extends Buffer> extends CLImage<B> {
             int width, int height, int rowPitch, CLImageFormat format, int flags) {
 
         CL cl = context.cl;
-        IntBuffer err = Buffers.newDirectByteBuffer(4).asIntBuffer();
-
-        long id = cl.clCreateImage2D(context.ID, flags, format.getFormatImpl(), width, height, rowPitch, directBuffer, err);
+        IntBuffer err = Buffers.newDirectIntBuffer(1);
+        B host_ptr = null;
+        if(isHostPointerFlag(flags)) {
+            host_ptr = directBuffer;
+        }
+        long id = cl.clCreateImage2D(context.ID, flags, format.getFormatImpl(), width, height, rowPitch, host_ptr, err);
         checkForError(err.get(), "can not create 2d image");
 
         return new CLImage2d<B>(context, directBuffer, format, width, height, id, flags);

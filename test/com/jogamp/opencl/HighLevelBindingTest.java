@@ -321,35 +321,5 @@ public class HighLevelBindingTest {
 
         context.release();
     }
-
-    @Test
-    public void supportedImageFormatsTest() {
-
-        CLDevice[] devices = CLPlatform.getDefault().listCLDevices();
-
-        CLDevice theChosenOne = null;
-        for (CLDevice device : devices) {
-            if(device.isImageSupportAvailable()) {
-                theChosenOne = device;
-                break;
-            }
-        }
-
-        if(theChosenOne == null) {
-            out.println("can not test image api.");
-            return;
-        }
-
-        CLContext context = CLContext.create(theChosenOne);
-
-        try{
-            CLImageFormat[] formats = context.getSupportedImage2dFormats();
-            assertTrue(formats.length > 0);
-            out.println("sample image format: "+formats[0]);
-        }finally{
-            context.release();
-        }
-
-    }
     
 }

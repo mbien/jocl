@@ -30,9 +30,12 @@ public class CLImage3d<B extends Buffer> extends CLImage<B> {
             int width, int height, int depth, int rowPitch, int slicePitch, CLImageFormat format, int flags) {
 
         CL cl = context.cl;
-        IntBuffer err = Buffers.newDirectByteBuffer(4).asIntBuffer();
-
-        long id = cl.clCreateImage3D(context.ID, flags, format.getFormatImpl(), width, height, depth, rowPitch, slicePitch, directBuffer, err);
+        IntBuffer err = Buffers.newDirectIntBuffer(1);
+        B host_ptr = null;
+        if(isHostPointerFlag(flags)) {
+            host_ptr = directBuffer;
+        }
+        long id = cl.clCreateImage3D(context.ID, flags, format.getFormatImpl(), width, height, depth, rowPitch, slicePitch, host_ptr, err);
         checkForError(err.get(), "can not create 2d image");
 
         return new CLImage3d<B>(context, directBuffer, format, width, height, depth, id, flags);

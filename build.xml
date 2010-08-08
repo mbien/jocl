@@ -7,14 +7,9 @@
 
     <property file="${user.home}/jocl.properties"/>
     
-    <condition property="rootrel.build" value="build">
-      <not>
-          <isset property="rootrel.build"/>
-      </not>
-    </condition>
-
     <import file="nbproject/build-impl.xml"/>
 
+    <property name="rootrel.build" value="build"/>
     <property name="gluegen.root" value="../gluegen" />
     <property name="jogl.root" value="../jogl" />
 
@@ -165,7 +160,14 @@
 
     </target>
 
-    <target name="c.setup.build" depends="gluegen.cpptasks.configure.compiler, gluegen.cpptasks.declare.compiler, c.configure.default, jocl.configure.linker">
+    <!-- official OpenCL headers expect a different layout on mac...
+         since we want to use the same headers for all platforms we move them a bit around -->
+    <target name="mac.includepath.hack" if="isOSX">
+        <delete dir="${basedir}/resources/includes/OpenCL" quiet="true"/>
+        <copydir src="${basedir}/resources/includes/CL" dest="${basedir}/resources/includes/OpenCL"/>
+    </target>
+
+    <target name="c.setup.build" depends="gluegen.cpptasks.configure.compiler, gluegen.cpptasks.declare.compiler, c.configure.default, jocl.configure.linker, mac.includepath.hack">
 
         <property name="obj.dir" value="${build.dir}/obj"/>
         <property name="natives.dir" value="${build.dir}/natives"/>
@@ -204,8 +206,7 @@
         </linker>
 
         <linker id="linker.cfg.macosx.jocl" extends="linker.cfg.macosx">
-            <linkerarg value="-framework" />
-            <linkerarg value="OpenCL" />
+            <linkerarg value="-framework OpenCL" if="static.binding"/>
         </linker>
 
     </target>

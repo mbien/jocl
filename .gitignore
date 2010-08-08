@@ -2,6 +2,7 @@ build
 dist
 gensrc
 resources/includes/CL
+resources/includes/OpenCL
 .idea/workspace.xml
 **~
 nbproject/private

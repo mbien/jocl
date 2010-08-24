@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  ******************************************************************************/
 
-/* $Revision: 11708 $ on $Date: 2010-06-13 23:36:24 -0700 (Sun, 13 Jun 2010) $ */
+/* $Revision: 11985 $ on $Date: 2010-07-15 11:16:06 -0700 (Thu, 15 Jul 2010) $ */
 
 #ifndef __OPENCL_CL_H
 #define __OPENCL_CL_H
@@ -146,6 +146,7 @@ typedef struct _cl_buffer_region {
 #define CL_INVALID_BUFFER_SIZE                      -61
 #define CL_INVALID_MIP_LEVEL                        -62
 #define CL_INVALID_GLOBAL_WORK_SIZE                 -63
+#define CL_INVALID_PROPERTY                         -64
 
 /* OpenCL Version */
 #define CL_VERSION_1_0                              1
@@ -780,8 +781,8 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clEnqueueReadBufferRect(cl_command_queue    /* command_queue */,
                         cl_mem              /* buffer */,
                         cl_bool             /* blocking_read */,
-                        const size_t *      /* buffer_offset */,
-                        const size_t *      /* host_offset */, 
+                        const size_t *      /* buffer_origin */,
+                        const size_t *      /* host_origin */, 
                         const size_t *      /* region */,
                         size_t              /* buffer_row_pitch */,
                         size_t              /* buffer_slice_pitch */,
@@ -806,9 +807,9 @@ clEnqueueWriteBuffer(cl_command_queue   /* command_queue */,
 extern CL_API_ENTRY cl_int CL_API_CALL
 clEnqueueWriteBufferRect(cl_command_queue    /* command_queue */,
                          cl_mem              /* buffer */,
-                         cl_bool             /* blocking_read */,
-                         const size_t *      /* buffer_offset */,
-                         const size_t *      /* host_offset */, 
+                         cl_bool             /* blocking_write */,
+                         const size_t *      /* buffer_origin */,
+                         const size_t *      /* host_origin */, 
                          const size_t *      /* region */,
                          size_t              /* buffer_row_pitch */,
                          size_t              /* buffer_slice_pitch */,

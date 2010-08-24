@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  **********************************************************************************/
 
-/* $Revision: 11708 $ on $Date: 2010-06-13 23:36:24 -0700 (Sun, 13 Jun 2010) $ */
+/* $Revision: 11803 $ on $Date: 2010-06-25 10:02:12 -0700 (Fri, 25 Jun 2010) $ */
 
 #ifndef __CL_PLATFORM_H
 #define __CL_PLATFORM_H
@@ -1167,6 +1167,29 @@ typedef union
 #endif
 }cl_double16;
 
+/* Macro to facilitate debugging 
+ * Usage:
+ *   Place CL_PROGRAM_STRING_DEBUG_INFO on the line before the first line of your source. 
+ *   The first line ends with:   CL_PROGRAM_STRING_BEGIN \"
+ *   Each line thereafter of OpenCL C source must end with: \n\
+ *   The last line ends in ";
+ *
+ *   Example:
+ *
+ *   const char *my_program = CL_PROGRAM_STRING_BEGIN "\
+ *   kernel void foo( int a, float * b )             \n\
+ *   {                                               \n\
+ *      // my comment                                \n\
+ *      *b[ get_global_id(0)] = a;                   \n\
+ *   }                                               \n\
+ *   ";
+ *
+ * This should correctly set up the line, (column) and file information for your source 
+ * string so you can do source level debugging.
+ */
+#define  __CL_STRINGIFY( _x )               # _x
+#define  _CL_STRINGIFY( _x )                __CL_STRINGIFY( _x )
+#define  CL_PROGRAM_STRING_DEBUG_INFO       "#line "  _CL_STRINGIFY(__LINE__) " \"" __FILE__ "\" \n\n" 
   
 #ifdef __cplusplus
 }

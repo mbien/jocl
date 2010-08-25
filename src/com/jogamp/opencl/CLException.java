@@ -14,8 +14,9 @@ public class CLException extends RuntimeException {
     public final int errorcode;
     public final String error;
 
-    private final static String ERROR_CODE_DOC =
-            "http://www.khronos.org/opencl/sdk/1.1/docs/man/xhtml/errors.html";
+    //man page no longer exists
+//    private final static String ERROR_CODE_DOC =
+//            "http://www.khronos.org/opencl/sdk/1.1/docs/man/xhtml/errors.html";
 
     public CLException(String message) {
         super(message);
@@ -24,7 +25,7 @@ public class CLException extends RuntimeException {
     }
 
     private CLException(int errorcode, String errorStr, String message) {
-        super(message + "\nerror: " + errorStr + " (man page: "+ERROR_CODE_DOC+")");
+        super(message + "\nerror: " + errorStr/* + " (man page: "+ERROR_CODE_DOC+")"*/);
         this.error = errorStr;
         this.errorcode = errorcode;
     }
@@ -113,6 +114,7 @@ public class CLException extends RuntimeException {
             case CL_INVALID_BUFFER_SIZE:                    return "CL_INVALID_BUFFER_SIZE";
             case CL_INVALID_MIP_LEVEL:                      return "CL_INVALID_MIP_LEVEL";
             case CL_INVALID_GLOBAL_WORK_SIZE:               return "CL_INVALID_GLOBAL_WORK_SIZE";
+            case CL_INVALID_PROPERTY:                       return "CL_INVALID_PROPERTY";
             case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR:    return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
             case CL_PLATFORM_NOT_FOUND_KHR:                 return "CL_PLATFORM_NOT_FOUND_KHR";
             case CL_MISALIGNED_SUB_BUFFER_OFFSET:             return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
@@ -169,6 +171,7 @@ public class CLException extends RuntimeException {
             case CL_INVALID_BUFFER_SIZE:                    return new CLInvalidBufferSizeException(message);
             case CL_INVALID_MIP_LEVEL:                      return new CLInvalidMipLevelException(message);
             case CL_INVALID_GLOBAL_WORK_SIZE:               return new CLInvalidGlobalWorkSizeException(message);
+            case CL_INVALID_PROPERTY:                       return new CLInvalidPropertyException(message);
             case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR:    return new CLInvalidGLSharegroupReferenceKhrException(message);
             case CL_PLATFORM_NOT_FOUND_KHR:                 return new CLPlatformNotFoundKhrException(message);
             case CL_MISALIGNED_SUB_BUFFER_OFFSET:             return new CLMisalignedSubBufferOffsetException(message);
@@ -680,6 +683,17 @@ public class CLException extends RuntimeException {
         private static final long serialVersionUID = CLException.serialVersionUID+CL_INVALID_GLOBAL_WORK_SIZE;
         public CLInvalidGlobalWorkSizeException(String message) {
             super(CL_INVALID_GLOBAL_WORK_SIZE, "CL_INVALID_GLOBAL_WORK_SIZE", message);
+        }
+    }
+
+    /**
+     * {@link CLException} thrown on CL.CL_INVALID_PROPERTY errors.
+     * @author Michael Bien
+     */
+    public final static class CLInvalidPropertyException extends CLException {
+        private static final long serialVersionUID = CLException.serialVersionUID+CL_INVALID_PROPERTY;
+        public CLInvalidPropertyException(String message) {
+            super(CL_INVALID_PROPERTY, "CL_INVALID_PROPERTY", message);
         }
     }
 

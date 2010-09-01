@@ -76,11 +76,14 @@ public final class CLPlatform {
             doPrivileged(new PrivilegedAction<Object>() {
                 public Object run() {
 
-                    NativeLibrary lib = JOCLJNILibLoader.loadJOCL();
+                    NativeLibrary libOpenCL = JOCLJNILibLoader.loadOpenCL();
+                    if(libOpenCL == null) {
+                        throw new JogampRuntimeException("OpenCL library not found.");
+                    }
 
-                    //eagerly init funciton to query extension addresses (used in reset())
-                    table.initEntry("clGetExtensionFunctionAddressImpl", lib);
-                    table.reset(lib);
+                    //eagerly init function to query extension addresses (used in reset())
+                    table.initEntry("clGetExtensionFunctionAddressImpl", libOpenCL);
+                    table.reset(libOpenCL);
                     return null;
                 }
             });
@@ -96,6 +99,13 @@ public final class CLPlatform {
     private CLPlatform(long id) {
         this.ID = id;
         this.version = new CLVersion(getInfoString(CL_PLATFORM_VERSION));
+    }
+
+    /**
+     * Eagerly initializes JOCL. Subsequent calls do nothing.
+     */
+    public static void initialize() throws JogampRuntimeException {
+        //see static initializer
     }
 
     /**

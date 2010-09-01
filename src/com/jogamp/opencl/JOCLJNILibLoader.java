@@ -12,9 +12,10 @@ class JOCLJNILibLoader extends JNILibLoaderBase {
 
     /**
      * Loads the native binding and returns the OpenCL library for dynamic linking.
+     * @return Returns libOpenCL represented as NativeLibrary.
      */
-    static NativeLibrary loadJOCL() {
-        loadLibrary("jocl", null, true);
+    static NativeLibrary loadOpenCL() {
+        loadLibrary("jocl", null, false);
         return NativeLibrary.open("OpenCL", JOCLJNILibLoader.class.getClassLoader());
     }
 }

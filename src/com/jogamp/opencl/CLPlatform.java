@@ -113,9 +113,13 @@ public final class CLPlatform {
      */
     public static CLPlatform getDefault() {
         CLPlatform[] platforms = listCLPlatforms();
-        if(platforms.length > 0)
-            return platforms[0];
-        return null;
+        CLPlatform best = platforms[0];
+        for (CLPlatform platform : platforms) {
+            if(platform.version.compareTo(best.version) > 0) {
+                best = platform;
+            }
+        }
+        return best;
     }
 
     /**

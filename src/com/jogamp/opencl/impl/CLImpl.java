@@ -123,6 +123,17 @@ public class CLImpl extends CLAbstractImpl {
     /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
     private native int clBuildProgram0(long program, int deviceCount, Object deviceList, int deviceListOffset, String options, BuildProgramCallback cb, long address);
 
+
+    public int clSetEventCallback(long event, int trigger, CLEventCallback callback) {
+        final long address = addressTable._addressof_clSetEventCallback;
+        if (address == 0) {
+            throw new UnsupportedOperationException("Method not available");
+        }
+        return clSetEventCallback0(event, trigger, callback, address);
+    }
+
+    private native int clSetEventCallback0(long event, int type, CLEventCallback cb, long address);
+
     /** Interface to C language function: <br> <code> void *  {@native clEnqueueMapImage}(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret); </code>
     @param origin a direct {@link com.jogamp.common.nio.PointerBuffer}
     @param range a direct {@link com.jogamp.common.nio.PointerBuffer}

@@ -1,11 +1,13 @@
 package com.jogamp.opencl;
 
+import java.util.concurrent.CountDownLatch;
 import com.jogamp.opencl.util.MultiQueueBarrier;
 import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLMemory.Mem;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -172,7 +174,6 @@ public class CLCommandQueueTest {
 
         final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
 
-        // 5MB per buffer
         CLPlatform[] platforms = CLPlatform.listCLPlatforms();
         CLPlatform theChosenOne = platforms[0];
         for (CLPlatform platform : platforms) {
@@ -243,6 +244,43 @@ public class CLCommandQueueTest {
         }finally{
             context.release();
         }
+
+    }
+
+    @Test
+    public void eventCallbackTest() throws InterruptedException {
+
+        out.println(" - - - event callback test - - - ");
+
+        CLPlatform platform = CLPlatform.getDefault();
+
+        if(!platform.isAtLeast(CL_1_1)) {
+            out.println("test dissabled, required CLVersion: "+CL_1_1+" available: "+platform.getVersion());
+            return;
+        }
+
+        CLContext context = CLContext.create();
+
+        final CLUserEvent customEvent = CLUserEvent.create(context);
+
+        final CountDownLatch countdown = new CountDownLatch(1);
+        customEvent.registerCallback(new CLEventListener() {
+
+            public void eventStateChanged(CLEvent event, int status) {
+                out.println("event received: "+event);
+                assertEquals(event, customEvent);
+                countdown.countDown();
+            }
+
+        });
+
+        customEvent.setStatus(ExecutionStatus.COMPLETE);
+        countdown.await(2, TimeUnit.SECONDS);
+        assertEquals(countdown.getCount(), 0);
+
+        customEvent.release();
+
+        context.release();
 
     }
 

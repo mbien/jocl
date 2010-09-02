@@ -1,7 +1,10 @@
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.impl.CLEventCallback;
+import java.util.List;
 import com.jogamp.common.nio.PointerBuffer;
 import java.nio.Buffer;
+import java.util.ArrayList;
 
 import static com.jogamp.opencl.CL.*;
 import static com.jogamp.opencl.CLException.*;
@@ -23,6 +26,22 @@ public class CLEvent extends CLObject implements CLResource {
         super(context, id);
         this.eventInfo = new CLEventInfoAccessor();
         this.eventProfilingInfo = new CLEventProfilingInfoAccessor();
+    }
+
+    /**
+     * Registers a callback which will be called when the event terminates (COMPLETE or ERROR).
+     */
+    public void registerCallback(final CLEventListener callback) {
+        this.registerCallback(callback, ExecutionStatus.COMPLETE);
+    }
+
+    // apparently only ExecutionStatus.COMPLETE is allowed -> private
+    private void registerCallback(final CLEventListener callback, ExecutionStatus trigger) {
+        cl.clSetEventCallback(ID, trigger.STATUS, new CLEventCallback() {
+            public void eventStateChanged(long event, int status) {
+                callback.eventStateChanged(CLEvent.this, status);
+            }
+        });
     }
 
     public void release() {

@@ -9,8 +9,10 @@ void checkStatus(const char* msg, int status) {
 
 JavaVM * jvm;
 
-jmethodID bcb_mid;
-jmethodID cccb_mid;
+jmethodID buildCB_mid;
+jmethodID contextCB_mid;
+jmethodID eventCB_mid;
+jmethodID memObjCB_mid;
 
 
 JNIEXPORT jint JNICALL
@@ -26,14 +28,22 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
     // throws ClassNotFoundException (or other reflection stuff)
     jclass buildCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/impl/BuildProgramCallback");
     jclass errorHandlerClassID = (*env)->FindClass(env, "com/jogamp/opencl/CLErrorHandler");
+    jclass eventCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/impl/CLEventCallback");
+    jclass memObjCBClassID     = (*env)->FindClass(env, "com/jogamp/opencl/CLMemObjectDestructorCallback");
 
     // throws even more reflection Exceptions
     // IDs are unique and do not change
     if (buildCBClassID != NULL) {
-        bcb_mid  = (*env)->GetMethodID(env, buildCBClassID, "buildFinished", "(J)V");
+        buildCB_mid   = (*env)->GetMethodID(env, buildCBClassID, "buildFinished", "(J)V");
     }
     if (errorHandlerClassID != NULL) {
-        cccb_mid = (*env)->GetMethodID(env, errorHandlerClassID, "onError", "(Ljava/lang/String;Ljava/nio/ByteBuffer;J)V");
+        contextCB_mid = (*env)->GetMethodID(env, errorHandlerClassID, "onError", "(Ljava/lang/String;Ljava/nio/ByteBuffer;J)V");
+    }
+    if (eventCBClassID != NULL) {
+        eventCB_mid = (*env)->GetMethodID(env, eventCBClassID, "eventStateChanged", "(JI)V");
+    }
+    if (memObjCBClassID != NULL) {
+        memObjCB_mid = (*env)->GetMethodID(env, memObjCBClassID, "memoryDeallocated", "(Lcom/jogamp/opencl/CLMemory;)V");
     }
 
     return JNI_VERSION_1_2;
@@ -43,6 +53,8 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
 // callbacks
 typedef void (CL_CALLBACK * cccallback)(const char *, const void *, size_t, void *);
 typedef void (CL_CALLBACK * bpcallback)(cl_program, void *);
+typedef void (CL_CALLBACK * evcallback)(cl_event, cl_int, void *);
+typedef void (CL_CALLBACK * mocallback)(cl_mem, void *);
 
 CL_CALLBACK void buildProgramCallback(cl_program id, void * object) {
 
@@ -51,7 +63,7 @@ CL_CALLBACK void buildProgramCallback(cl_program id, void * object) {
 
     (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
 
-        (*env)->CallVoidMethod(env, obj, bcb_mid, (jlong)(intptr_t)id);
+        (*env)->CallVoidMethod(env, obj, buildCB_mid, (jlong)(intptr_t)id);
         (*env)->DeleteGlobalRef(env, obj);
 
     (*jvm)->DetachCurrentThread(jvm);
@@ -68,12 +80,35 @@ CL_CALLBACK void createContextCallback(const char * errinfo, const void * privat
         jstring errorString = (*env)->NewStringUTF(env, errinfo);
 
         //TODO private_info
-        (*env)->CallVoidMethod(env, obj, cccb_mid, errorString, NULL, 0);
+        (*env)->CallVoidMethod(env, obj, contextCB_mid, errorString, NULL, 0);
 
     (*jvm)->DetachCurrentThread(jvm);
 
 }
 
+CL_CALLBACK void eventCallback(cl_event event, cl_int status, void * object) {
+
+    JNIEnv *env;
+    jobject obj = (jobject)object;
+
+    (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
+
+        (*env)->CallVoidMethod(env, obj, eventCB_mid, event, status);
+        (*env)->DeleteGlobalRef(env, obj); // events can only fire once
+
+    (*jvm)->DetachCurrentThread(jvm);
+}
+/*
+CL_CALLBACK void memObjDestructorCallback(cl_mem mem, void * object) {
+
+    JNIEnv *env;
+    jobject obj = (jobject)object;
+
+    (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
+    
+    (*jvm)->DetachCurrentThread(jvm);
+}
+*/
 
 /*   Java->C glue code:
  *   Java package: com.jogamp.opencl.impl.CLImpl
@@ -338,4 +373,21 @@ Java_com_jogamp_opencl_impl_CLImpl_clEnqueueMapImage0__JJIJLjava_lang_Object_2IL
     }
 
   return (*env)->NewDirectByteBuffer(env, _res, pixels * (*elements));
+
+}
+
+JNIEXPORT jint JNICALL
+Java_com_jogamp_opencl_impl_CLImpl_clSetEventCallback0(JNIEnv *env, jobject _unused,
+        jlong event, jint trigger, jobject listener, jlong procAddress) {
+
+    cl_event _event = event;
+    cl_int _trigger = trigger;
+    cl_int _res;
+    typedef int32_t (*function)(cl_event, cl_int, void (*pfn_event_notify) (cl_event, cl_int, void *), void *);
+    function clSetEventCallback = (function)(intptr_t) procAddress;
+
+    jobject cb = (*env)->NewGlobalRef(env, listener);
+    _res = (*clSetEventCallback)(_event, _trigger, &eventCallback, cb);
+
+    return _res;
 }

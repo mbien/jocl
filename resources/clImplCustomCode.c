@@ -29,7 +29,7 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
     jclass buildCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/impl/BuildProgramCallback");
     jclass errorHandlerClassID = (*env)->FindClass(env, "com/jogamp/opencl/CLErrorHandler");
     jclass eventCBClassID      = (*env)->FindClass(env, "com/jogamp/opencl/impl/CLEventCallback");
-    jclass memObjCBClassID     = (*env)->FindClass(env, "com/jogamp/opencl/CLMemObjectDestructorCallback");
+    jclass memObjCBClassID     = (*env)->FindClass(env, "com/jogamp/opencl/impl/CLMemObjectDestructorCallback");
 
     // throws even more reflection Exceptions
     // IDs are unique and do not change
@@ -43,7 +43,7 @@ JNI_OnLoad(JavaVM * _jvm, void *reserved) {
         eventCB_mid = (*env)->GetMethodID(env, eventCBClassID, "eventStateChanged", "(JI)V");
     }
     if (memObjCBClassID != NULL) {
-        memObjCB_mid = (*env)->GetMethodID(env, memObjCBClassID, "memoryDeallocated", "(Lcom/jogamp/opencl/CLMemory;)V");
+        memObjCB_mid = (*env)->GetMethodID(env, memObjCBClassID, "memoryDeallocated", "(J)V");
     }
 
     return JNI_VERSION_1_2;
@@ -98,7 +98,7 @@ CL_CALLBACK void eventCallback(cl_event event, cl_int status, void * object) {
 
     (*jvm)->DetachCurrentThread(jvm);
 }
-/*
+
 CL_CALLBACK void memObjDestructorCallback(cl_mem mem, void * object) {
 
     JNIEnv *env;
@@ -106,9 +106,12 @@ CL_CALLBACK void memObjDestructorCallback(cl_mem mem, void * object) {
 
     (*jvm)->AttachCurrentThread(jvm, (void **)&env, NULL);
     
+        (*env)->CallVoidMethod(env, obj, memObjCB_mid, mem);
+        (*env)->DeleteGlobalRef(env, obj);
+
     (*jvm)->DetachCurrentThread(jvm);
 }
-*/
+
 
 /*   Java->C glue code:
  *   Java package: com.jogamp.opencl.impl.CLImpl
@@ -388,6 +391,21 @@ Java_com_jogamp_opencl_impl_CLImpl_clSetEventCallback0(JNIEnv *env, jobject _unu
 
     jobject cb = (*env)->NewGlobalRef(env, listener);
     _res = (*clSetEventCallback)(_event, _trigger, &eventCallback, cb);
+
+    return _res;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_jogamp_opencl_impl_CLImpl_clSetMemObjectDestructorCallback0(JNIEnv *env, jobject _unused,
+        jlong mem, jobject listener, jlong procAddress) {
+
+    cl_mem _mem = mem;
+    cl_int _res;
+    typedef int32_t (*function)(cl_mem, void (*pfn_event_notify) (cl_mem, void *), void *);
+    function clSetMemObjectDestructorCallback = (function)(intptr_t) procAddress;
+
+    jobject cb = (*env)->NewGlobalRef(env, listener);
+    _res = (*clSetMemObjectDestructorCallback)(_mem, &memObjDestructorCallback, cb);
 
     return _res;
 }

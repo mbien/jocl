@@ -3,6 +3,7 @@ package com.jogamp.opencl;
 import com.jogamp.opencl.gl.CLGLI;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.opencl.impl.CLMemObjectDestructorCallback;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -70,6 +71,18 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     protected static CL getCL(CLContext context) {
         return context.cl;
+    }
+
+    /**
+     * Registers a callback which will be called by the OpenCL implementation
+     * when the memory object is released.
+     */
+    public void registerDestructorCallback(final CLMemObjectListener listener) {
+        cl.clSetMemObjectDestructorCallback(ID, new CLMemObjectDestructorCallback() {
+            public void memoryDeallocated(long memObjID) {
+                listener.memoryDeallocated(CLMemory.this);
+            }
+        });
     }
 
     /**

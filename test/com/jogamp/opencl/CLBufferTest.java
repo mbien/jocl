@@ -5,6 +5,8 @@ import com.jogamp.opencl.CLMemory.Map;
 import com.jogamp.common.nio.Buffers;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -150,6 +152,8 @@ public class CLBufferTest {
     @Test
     public void subBufferTest() {
 
+        out.println(" - - - subBufferTest - - - ");
+
         CLPlatform[] platforms = CLPlatform.listCLPlatforms();
         CLPlatform theChosenOne = null;
         for (CLPlatform platform : platforms) {
@@ -215,5 +219,43 @@ public class CLBufferTest {
         }
 
     }
-    
+
+    @Test
+    public void destructorCallbackTest() throws InterruptedException {
+
+        out.println(" - - - destructorCallbackTest - - - ");
+
+        CLPlatform platform = CLPlatform.getDefault();
+        if(!platform.isAtLeast(CLVersion.CL_1_1)) {
+            out.println("aborting destructorCallbackTest");
+            return;
+        }
+
+        CLContext context = CLContext.create(platform);
+
+        try{
+
+            final CLBuffer<?> buffer = context.createBuffer(32);
+            final CountDownLatch countdown = new CountDownLatch(1);
+
+            buffer.registerDestructorCallback(new CLMemObjectListener() {
+                public void memoryDeallocated(CLMemory<?> mem) {
+                    out.println("buffer released");
+                    assertEquals(mem, buffer);
+                    countdown.countDown();
+                }
+            });
+            buffer.release();
+
+            countdown.await(2, TimeUnit.SECONDS);
+            assertEquals(countdown.getCount(), 0);
+
+        }finally{
+            context.release();
+        }
+
+
+    }
+
+
 }

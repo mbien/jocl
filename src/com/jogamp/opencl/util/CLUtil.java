@@ -1,11 +1,17 @@
 package com.jogamp.opencl.util;
 
+import com.jogamp.common.JogampRuntimeException;
 import com.jogamp.opencl.CL;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
+import com.jogamp.opencl.CLProperty;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,80 +48,87 @@ public class CLUtil {
         return b ? CL.CL_TRUE : CL.CL_FALSE;
     }
 
+    /**
+     * Reads all platform properties and returns them as key-value map.
+     */
     public static Map<String, String> obtainPlatformProperties(CLPlatform platform) {
+        return readCLProperties(platform);
+    }
 
+    /**
+     * Reads all device properties and returns them as key-value map.
+     */
+    public static Map<String, String> obtainDeviceProperties(CLDevice dev) {
+        return readCLProperties(dev);
+    }
+
+    private static Map<String, String> readCLProperties(Object obj) {
+        try {
+            return invoke(listMethods(obj.getClass()), obj);
+        } catch (IllegalArgumentException ex) {
+            throw new JogampRuntimeException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new JogampRuntimeException(ex);
+        }
+    }
+
+    static Map<String, String> invoke(List<Method> methods, Object obj) throws IllegalArgumentException, IllegalAccessException {
         Map<String, String> map = new LinkedHashMap<String, String>();
-        map.put("CL_PLATFORM_NAME",     platform.getName());
-        map.put("CL_PLATFORM_PROFILE",  platform.getProfile());
-        map.put("CL_PLATFORM_VERSION",  platform.getVersion().toString());
-        map.put("CL_PLATFORM_VENDOR",   platform.getVendor());
-        map.put("CL_PLATFORM_ICD_SUFFIX",   platform.getICDSuffix());
-        map.put("CL_PLATFORM_EXTENSIONS",   platform.getExtensions().toString());
-//        map.put("fastest device (estimated)", platform.getMaxFlopsDevice().toString());
+        for (Method method : methods) {
+            Object info = null;
+            try {
+                info = method.invoke(obj);
+            } catch (InvocationTargetException ex) {
+                info = ex.getTargetException();
+            }
 
+            if(info.getClass().isArray()) {
+                info = asList(info);
+            }
+
+            String value = method.getAnnotation(CLProperty.class).value();
+            map.put(value, info.toString());
+        }
         return map;
     }
 
-    public static Map<String, String> obtainDeviceProperties(CLDevice dev) {
-        
-        Map<String, String> map = new LinkedHashMap<String, String>();
-        map.put("CL_DEVICE_NAME",       dev.getName());
-        map.put("CL_DEVICE_PROFILE",    dev.getProfile());
-        map.put("CL_DEVICE_VENDOR",     dev.getVendor());
-        map.put("CL_DEVICE_VENDOR_ID",  dev.getVendorID()+"");
-        map.put("CL_DEVICE_VERSION",    dev.getVersion().toString());
-        map.put("CL_DRIVER_VERSION",    dev.getDriverVersion());
-        map.put("CL_DEVICE_TYPE",       dev.getType().toString());
+    static List<Method> listMethods(Class<?> clazz) throws SecurityException {
+        List<Method> list = new ArrayList<Method>();
+        for (Method method : clazz.getDeclaredMethods()) {
+            Annotation[] annotations = method.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof CLProperty) {
+                    list.add(method);
+                }
+            }
+        }
+        return list;
+    }
 
-        map.put("CL_DEVICE_GLOBAL_MEM_SIZE",    dev.getGlobalMemSize()/(1024*1024)+" MB");
-        map.put("CL_DEVICE_MAX_MEM_ALLOC_SIZE", dev.getMaxMemAllocSize()/(1024*1024)+" MB");
-        map.put("CL_DEVICE_MAX_PARAMETER_SIZE", dev.getMaxParameterSize()+" Byte");
-        map.put("CL_DEVICE_LOCAL_MEM_SIZE",     dev.getLocalMemSize()/1024+" KB");
-        map.put("CL_DEVICE_LOCAL_MEM_TYPE",     dev.getLocalMemType()+"");
-        map.put("CL_DEVICE_GLOBAL_MEM_CACHE_SIZE", dev.getGlobalMemCacheSize()+"");
-        map.put("CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE", dev.getGlobalMemCachelineSize()+"");
-        map.put("CL_DEVICE_GLOBAL_MEM_CACHE_TYPE",     dev.getGlobalMemCacheType()+"");
-        map.put("CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE", dev.getMaxConstantBufferSize()+"");
-        map.put("CL_DEVICE_MAX_CONSTANT_ARGS",        dev.getMaxConstantArgs()+"");
-        map.put("CL_DEVICE_ERROR_CORRECTION_SUPPORT", dev.isErrorCorrectionSupported()+"");
-        map.put("CL_DEVICE_HOST_UNIFIED_MEMORY",      dev.isMemoryUnified()+"");
-
-        map.put("CL_DEVICE_MAX_CLOCK_FREQUENCY",        dev.getMaxClockFrequency()+" MHz");
-        map.put("CL_DEVICE_PROFILING_TIMER_RESOLUTION", dev.getProfilingTimerResolution()+" ns");
-        map.put("CL_DEVICE_QUEUE_PROPERTIES",           dev.getQueueProperties()+"");
-        map.put("CL_DEVICE_MAX_WORK_GROUP_SIZE",    dev.getMaxWorkGroupSize()+"");
-        map.put("CL_DEVICE_MAX_COMPUTE_UNITS",      dev.getMaxComputeUnits()+"");
-        map.put("CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS", dev.getMaxWorkItemDimensions()+"");
-        map.put("CL_DEVICE_MAX_WORK_ITEM_SIZES",    Arrays.toString(dev.getMaxWorkItemSizes()));
-        map.put("CL_DEVICE_COMPILER_AVAILABLE",     dev.isCompilerAvailable()+"");
-
-        map.put("CL_DEVICE_IMAGE_SUPPORT",          dev.isImageSupportAvailable()+"");
-        map.put("CL_DEVICE_MAX_READ_IMAGE_ARGS",    dev.getMaxReadImageArgs()+"");
-        map.put("CL_DEVICE_MAX_WRITE_IMAGE_ARGS",   dev.getMaxWriteImageArgs()+"");
-        map.put("CL_DEVICE_IMAGE2D_MAX_DIMENSIONS", Arrays.asList(dev.getMaxImage2dWidth(), dev.getMaxImage2dHeight()).toString());
-        map.put("CL_DEVICE_IMAGE3D_MAX_DIMENSIONS", Arrays.asList(dev.getMaxImage2dWidth(), dev.getMaxImage2dHeight(), dev.getMaxImage3dDepth()).toString());
-        map.put("CL_DEVICE_MAX_SAMPLERS",           dev.getMaxSamplers()+"");
-        map.put("CL_DEVICE_EXECUTION_CAPABILITIES", dev.getExecutionCapabilities()+"");
-
-        map.put("CL_DEVICE_ADDRESS_BITS",   dev.getAddressBits()+"");
-        map.put("cl_khr_fp16",              dev.isHalfFPAvailable()+"");
-        map.put("cl_khr_fp64",              dev.isDoubleFPAvailable()+"");
-        map.put("CL_DEVICE_ENDIAN_LITTLE",  dev.isLittleEndian()+"");
-        map.put("CL_DEVICE_HALF_FP_CONFIG", dev.getHalfFPConfig()+"");
-        map.put("CL_DEVICE_SINGLE_FP_CONFIG", dev.getSingleFPConfig()+"");
-        map.put("CL_DEVICE_DOUBLE_FP_CONFIG", dev.getDoubleFPConfig()+"");
-        map.put("CL_DEVICE_EXTENSIONS",     dev.getExtensions()+"");
-
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT",   dev.getPreferredShortVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR",    dev.getPreferredCharVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT",     dev.getPreferredIntVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG",    dev.getPreferredLongVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT",   dev.getPreferredFloatVectorWidth()+"");
-        map.put("CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE",  dev.getPreferredDoubleVectorWidth()+"");
-
-        //TODO device extensions -> properties
-
-        return map;
+    private static List<Number> asList(Object info) {
+        List<Number> list = new ArrayList<Number>();
+        if(info instanceof int[]) {
+            int[] array = (int[]) info;
+            for (int i : array) {
+                list.add(i);
+            }
+        }else if(info instanceof long[]) {
+            long[] array = (long[]) info;
+            for (long i : array) {
+                list.add(i);
+            }
+        }else if(info instanceof float[]) {
+            float[] array = (float[]) info;
+            for (float i : array) {
+                list.add(i);
+            }
+        }else if(info instanceof double[]) {
+            double[] array = (double[]) info;
+            for (double i : array) {
+                list.add(i);
+            }
+        }
+        return list;
     }
 
 }

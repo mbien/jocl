@@ -89,7 +89,7 @@ public final class CLPlatform {
             });
 
 //            System.out.println("\n"+table);
-            System.out.println("unavailable functions: "+table.getNullPointerFunctions());
+//            System.out.println("unavailable functions: "+table.getNullPointerFunctions());
 
         }catch(Exception ex) {
             throw new JogampRuntimeException("JOCL initialization error.", ex);
@@ -263,6 +263,7 @@ public final class CLPlatform {
     /**
      * Returns the platform name.
      */
+    @CLProperty("CL_PLATFORM_NAME")
     public String getName() {
         return getInfoString(CL_PLATFORM_NAME);
     }
@@ -270,6 +271,7 @@ public final class CLPlatform {
     /**
      * Returns the OpenCL version supported by this platform.
      */
+    @CLProperty("CL_PLATFORM_VERSION")
     public CLVersion getVersion() {
         return version;
     }
@@ -298,6 +300,7 @@ public final class CLPlatform {
     /**
      * Returns the platform profile.
      */
+    @CLProperty("CL_PLATFORM_PROFILE")
     public String getProfile() {
         return getInfoString(CL_PLATFORM_PROFILE);
     }
@@ -305,6 +308,7 @@ public final class CLPlatform {
     /**
      * Returns the platform vendor.
      */
+    @CLProperty("CL_PLATFORM_VENDOR")
     public String getVendor() {
         return getInfoString(CL_PLATFORM_VENDOR);
     }
@@ -312,6 +316,7 @@ public final class CLPlatform {
     /**
      * Returns the ICD suffix.
      */
+    @CLProperty("CL_PLATFORM_ICD_SUFFIX_KHR")
     public String getICDSuffix() {
         return getInfoString(CL_PLATFORM_ICD_SUFFIX_KHR);
     }
@@ -326,6 +331,7 @@ public final class CLPlatform {
     /**
      * Returns all platform extension names as unmodifiable Set.
      */
+    @CLProperty("CL_PLATFORM_EXTENSIONS")
     public Set<String> getExtensions() {
 
         if(extensions == null) {

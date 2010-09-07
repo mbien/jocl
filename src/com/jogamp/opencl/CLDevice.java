@@ -72,6 +72,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the name of this device.
      */
+    @CLProperty("CL_DEVICE_NAME")
     public String getName() {
         return deviceInfo.getString(CL_DEVICE_NAME);
     }
@@ -79,6 +80,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the OpenCL profile of this device.
      */
+    @CLProperty("CL_DEVICE_PROFILE")
     public String getProfile() {
         return deviceInfo.getString(CL_DEVICE_PROFILE);
     }
@@ -86,6 +88,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the vendor of this device.
      */
+    @CLProperty("CL_DEVICE_VENDOR")
     public String getVendor() {
         return deviceInfo.getString(CL_DEVICE_VENDOR);
     }
@@ -93,6 +96,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the vendor id of this device.
      */
+    @CLProperty("CL_DEVICE_VENDOR_ID")
     public long getVendorID() {
         return deviceInfo.getLong(CL_DEVICE_VENDOR_ID);
     }
@@ -100,6 +104,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the OpenCL version supported by the device.
      */
+    @CLProperty("CL_DEVICE_VERSION")
     public CLVersion getVersion() {
         return new CLVersion(deviceInfo.getString(CL_DEVICE_VERSION));
     }
@@ -107,6 +112,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the OpenCL-C version supported by the device.
      */
+    @CLProperty("CL_DEVICE_OPENCL_C_VERSION")
     public CLVersion getCVersion() {
         return new CLVersion(deviceInfo.getString(CL_DEVICE_OPENCL_C_VERSION));
     }
@@ -114,6 +120,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns OpenCL software driver version string in the form major_number.minor_number.
      */
+    @CLProperty("CL_DRIVER_VERSION")
     public String getDriverVersion() {
         return deviceInfo.getString(CL_DRIVER_VERSION);
     }
@@ -121,6 +128,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the type of this device.
      */
+    @CLProperty("CL_DEVICE_TYPE")
     public Type getType() {
         return Type.valueOf((int)deviceInfo.getLong(CL_DEVICE_TYPE));
     }
@@ -129,6 +137,7 @@ public final class CLDevice extends CLObject {
      * The default compute device address space size specified in bits.
      * Currently supported values are 32 or 64 bits.
      */
+    @CLProperty("CL_DEVICE_ADDRESS_BITS")
     public int getAddressBits() {
         return (int)deviceInfo.getLong(CL_DEVICE_ADDRESS_BITS);
     }
@@ -137,6 +146,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in short vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT")
     public int getPreferredShortVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT);
     }
@@ -145,6 +155,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in char vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR")
     public int getPreferredCharVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR);
     }
@@ -153,6 +164,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in int vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT")
     public int getPreferredIntVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT);
     }
@@ -161,6 +173,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in long vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG")
     public int getPreferredLongVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG);
     }
@@ -169,6 +182,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in float vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT")
     public int getPreferredFloatVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT);
     }
@@ -177,6 +191,7 @@ public final class CLDevice extends CLObject {
      * Preferred native vector width size for built-in double vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE")
     public int getPreferredDoubleVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE);
     }
@@ -185,6 +200,7 @@ public final class CLDevice extends CLObject {
      * Native vector width size for built-in char vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_NATIVE_VECTOR_WIDTH_CHAR")
     public int getNativeCharVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_CHAR);
     }
@@ -193,6 +209,7 @@ public final class CLDevice extends CLObject {
      * Native vector width size for built-in short vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_NATIVE_VECTOR_WIDTH_SHORT")
     public int getNativeShortVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_SHORT);
     }
@@ -201,6 +218,7 @@ public final class CLDevice extends CLObject {
      * Native vector width size for built-in int vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_NATIVE_VECTOR_WIDTH_INT")
     public int getNativeIntVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_INT);
     }
@@ -209,6 +227,7 @@ public final class CLDevice extends CLObject {
      * Native vector width size for built-in long vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_NATIVE_VECTOR_WIDTH_LONG")
     public int getNativeLongVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_LONG);
     }
@@ -217,6 +236,7 @@ public final class CLDevice extends CLObject {
      * Native vector width size for built-in half vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF")
     public int getNativeHalfVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF);
     }
@@ -225,6 +245,7 @@ public final class CLDevice extends CLObject {
      * Native vector width size for built-in float vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_NATIVE_VECTOR_WIDTH_FLOAT")
     public int getNativeFloatVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_FLOAT);
     }
@@ -233,6 +254,7 @@ public final class CLDevice extends CLObject {
      * Native vector width size for built-in double vectors.
      * The vector width is defined as the number of scalar elements that can be stored in the vector.
      */
+    @CLProperty("CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE")
     public int getNativeDoubleVectorWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE);
     }
@@ -241,6 +263,7 @@ public final class CLDevice extends CLObject {
      * Returns the number of parallel compute cores on the OpenCL device.
      * The minimum value is 1.
      */
+    @CLProperty("CL_DEVICE_MAX_COMPUTE_UNITS")
     public int getMaxComputeUnits() {
         return (int) deviceInfo.getLong(CL_DEVICE_MAX_COMPUTE_UNITS);
     }
@@ -250,6 +273,7 @@ public final class CLDevice extends CLObject {
      * a kernel using the data parallel execution model.
      * The minimum value is 1.
      */
+    @CLProperty("CL_DEVICE_MAX_WORK_GROUP_SIZE")
     public int getMaxWorkGroupSize() {
         return (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_GROUP_SIZE);
     }
@@ -257,6 +281,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the maximum configured clock frequency of the device in MHz.
      */
+    @CLProperty("CL_DEVICE_MAX_CLOCK_FREQUENCY")
     public int getMaxClockFrequency() {
         return (int) (deviceInfo.getLong(CL_DEVICE_MAX_CLOCK_FREQUENCY));
     }
@@ -266,6 +291,7 @@ public final class CLDevice extends CLObject {
      * IDs used by the data parallel execution model.
      * The minimum value is 3.
      */
+    @CLProperty("CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS")
     public int getMaxWorkItemDimensions() {
         return (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
     }
@@ -275,6 +301,7 @@ public final class CLDevice extends CLObject {
      * dimension of the work-group.
      * The minimum value is (1, 1, 1).
      */
+    @CLProperty("CL_DEVICE_MAX_WORK_ITEM_SIZES")
     public int[] getMaxWorkItemSizes() {
         int n = (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
         return deviceInfo.getInts(n, CL_DEVICE_MAX_WORK_ITEM_SIZES);
@@ -285,6 +312,7 @@ public final class CLDevice extends CLObject {
      * The minimum OpenCL 1.0 value is 256.<br/>
      * The minimum OpenCL 1.1 value is 1024.<br/>
      */
+    @CLProperty("CL_DEVICE_MAX_PARAMETER_SIZE")
     public long getMaxParameterSize() {
         return deviceInfo.getLong(CL_DEVICE_MAX_PARAMETER_SIZE);
     }
@@ -292,6 +320,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the maximal allocatable memory on this device.
      */
+    @CLProperty("CL_DEVICE_MAX_MEM_ALLOC_SIZE")
     public long getMaxMemAllocSize() {
         return deviceInfo.getLong(CL_DEVICE_MAX_MEM_ALLOC_SIZE);
     }
@@ -299,6 +328,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the global memory size in bytes.
      */
+    @CLProperty("CL_DEVICE_GLOBAL_MEM_SIZE")
     public long getGlobalMemSize() {
         return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_SIZE);
     }
@@ -308,6 +338,7 @@ public final class CLDevice extends CLObject {
      * The minimum OpenCL 1.0 value is 16 KB.<br/>
      * The minimum OpenCL 1.1 value is 32 KB.<br/>
      */
+    @CLProperty("CL_DEVICE_LOCAL_MEM_SIZE")
     public long getLocalMemSize() {
         return deviceInfo.getLong(CL_DEVICE_LOCAL_MEM_SIZE);
     }
@@ -315,6 +346,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns true if the device and the host have a unified memory subsystem.
      */
+    @CLProperty("CL_DEVICE_HOST_UNIFIED_MEMORY")
     public boolean isMemoryUnified() {
         return deviceInfo.getLong(CL_DEVICE_HOST_UNIFIED_MEMORY) == CL_TRUE;
     }
@@ -323,6 +355,7 @@ public final class CLDevice extends CLObject {
      * Returns the max size in bytes of a constant buffer allocation.
      * The minimum value is 64 KB.
      */
+    @CLProperty("CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE")
     public long getMaxConstantBufferSize() {
         return deviceInfo.getLong(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE);
     }
@@ -330,6 +363,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the size of global memory cache line in bytes.
      */
+    @CLProperty("CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE")
     public long getGlobalMemCachelineSize() {
         return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE);
     }
@@ -337,6 +371,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the size of global memory cache in bytes.
      */
+    @CLProperty("CL_DEVICE_GLOBAL_MEM_CACHE_SIZE")
     public long getGlobalMemCacheSize() {
         return deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
     }
@@ -345,6 +380,7 @@ public final class CLDevice extends CLObject {
      * Returns the max number of arguments declared with the <code>constant</code>
      * qualifier in a kernel. The minimum value is 8.
      */
+    @CLProperty("CL_DEVICE_MAX_CONSTANT_ARGS")
     public long getMaxConstantArgs() {
         return deviceInfo.getLong(CL_DEVICE_MAX_CONSTANT_ARGS);
     }
@@ -352,6 +388,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns true if images are supported by the OpenCL device and false otherwise.
      */
+    @CLProperty("CL_DEVICE_IMAGE_SUPPORT")
     public boolean isImageSupportAvailable() {
         return deviceInfo.getLong(CL_DEVICE_IMAGE_SUPPORT) == CL_TRUE;
     }
@@ -360,6 +397,7 @@ public final class CLDevice extends CLObject {
      * Returns the max number of simultaneous image objects that can be read by a kernel.
      * The minimum value is 128 if image support is available.
      */
+    @CLProperty("CL_DEVICE_MAX_READ_IMAGE_ARGS")
     public int getMaxReadImageArgs() {
         return (int)deviceInfo.getLong(CL_DEVICE_MAX_READ_IMAGE_ARGS);
     }
@@ -368,6 +406,7 @@ public final class CLDevice extends CLObject {
      * Returns the max number of simultaneous image objects that can be written by a kernel.
      * The minimum value is 8 if image support is available.
      */
+    @CLProperty("CL_DEVICE_MAX_WRITE_IMAGE_ARGS")
     public int getMaxWriteImageArgs() {
         return (int)deviceInfo.getLong(CL_DEVICE_MAX_WRITE_IMAGE_ARGS);
     }
@@ -376,6 +415,7 @@ public final class CLDevice extends CLObject {
      * Returns the max width of 2D image in pixels. The minimum value is 8192 if
      * image support is available.
      */
+    @CLProperty("CL_DEVICE_IMAGE2D_MAX_WIDTH")
     public int getMaxImage2dWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_IMAGE2D_MAX_WIDTH);
     }
@@ -384,6 +424,7 @@ public final class CLDevice extends CLObject {
      * Returns the max height of 2D image in pixels. The minimum value is 8192 if
      * image support is available.
      */
+    @CLProperty("CL_DEVICE_IMAGE2D_MAX_HEIGHT")
     public int getMaxImage2dHeight() {
         return (int)deviceInfo.getLong(CL_DEVICE_IMAGE2D_MAX_HEIGHT);
     }
@@ -392,6 +433,7 @@ public final class CLDevice extends CLObject {
      * Returns the max width of 3D image in pixels. The minimum value is 2048 if
      * image support is available.
      */
+    @CLProperty("CL_DEVICE_IMAGE3D_MAX_WIDTH")
     public int getMaxImage3dWidth() {
         return (int)deviceInfo.getLong(CL_DEVICE_IMAGE3D_MAX_WIDTH);
     }
@@ -400,6 +442,7 @@ public final class CLDevice extends CLObject {
      * Returns the max height of 3D image in pixels. The minimum value is 2048 if
      * image support is available.
      */
+    @CLProperty("CL_DEVICE_IMAGE3D_MAX_HEIGHT")
     public int getMaxImage3dHeight() {
         return (int)deviceInfo.getLong(CL_DEVICE_IMAGE3D_MAX_HEIGHT);
     }
@@ -408,6 +451,7 @@ public final class CLDevice extends CLObject {
      * Returns the max depth of 3D image in pixels. The minimum value is 2048 if
      * image support is available.
      */
+    @CLProperty("CL_DEVICE_IMAGE3D_MAX_DEPTH")
     public int getMaxImage3dDepth() {
         return (int)deviceInfo.getLong(CL_DEVICE_IMAGE3D_MAX_DEPTH);
     }
@@ -416,6 +460,7 @@ public final class CLDevice extends CLObject {
      * Returns the maximum number of samplers that can be used in a kernel. The
      * minimum value is 16 if image support is available.
      */
+    @CLProperty("CL_DEVICE_MAX_SAMPLERS")
     public int getMaxSamplers() {
         return (int)deviceInfo.getLong(CL_DEVICE_MAX_SAMPLERS);
     }
@@ -423,6 +468,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the resolution of device timer. This is measured in nanoseconds.
      */
+    @CLProperty("CL_DEVICE_PROFILING_TIMER_RESOLUTION")
     public long getProfilingTimerResolution() {
         return deviceInfo.getLong(CL_DEVICE_PROFILING_TIMER_RESOLUTION);
     }
@@ -430,6 +476,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the execution capabilities as EnumSet.
      */
+    @CLProperty("CL_DEVICE_EXECUTION_CAPABILITIES")
     public EnumSet<Capabilities> getExecutionCapabilities() {
         return Capabilities.valuesOf((int)deviceInfo.getLong(CL_DEVICE_EXECUTION_CAPABILITIES));
     }
@@ -441,6 +488,7 @@ public final class CLDevice extends CLObject {
      * and {@link FPConfig#INF_NAN}.
      * @return An EnumSet containing the extensions, never null.
      */
+    @CLProperty("CL_DEVICE_HALF_FP_CONFIG")
     public EnumSet<FPConfig> getHalfFPConfig() {
         if(isHalfFPAvailable())
             return FPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_HALF_FP_CONFIG));
@@ -454,6 +502,7 @@ public final class CLDevice extends CLObject {
      * {@link FPConfig#INF_NAN}.
      * @return An EnumSet containing the extensions, never null.
      */
+    @CLProperty("CL_DEVICE_SINGLE_FP_CONFIG")
     public EnumSet<FPConfig> getSingleFPConfig() {
         return FPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_SINGLE_FP_CONFIG));
     }
@@ -465,6 +514,7 @@ public final class CLDevice extends CLObject {
      * {@link FPConfig#ROUND_TO_INF}, {@link FPConfig#INF_NAN}, and {@link FPConfig#DENORM}.
      * @return An EnumSet containing the extensions, never null.
      */
+    @CLProperty("CL_DEVICE_DOUBLE_FP_CONFIG")
     public EnumSet<FPConfig> getDoubleFPConfig() {
         if(isDoubleFPAvailable())
             return FPConfig.valuesOf((int)deviceInfo.getLong(CL_DEVICE_DOUBLE_FP_CONFIG));
@@ -475,6 +525,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the local memory type.
      */
+    @CLProperty("CL_DEVICE_LOCAL_MEM_TYPE")
     public LocalMemType getLocalMemType() {
         return LocalMemType.valueOf((int)deviceInfo.getLong(CL_DEVICE_LOCAL_MEM_TYPE));
     }
@@ -482,6 +533,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the type of global memory cache supported.
      */
+    @CLProperty("CL_DEVICE_GLOBAL_MEM_CACHE_TYPE")
     public GlobalMemCacheType getGlobalMemCacheType() {
         return GlobalMemCacheType.valueOf((int)deviceInfo.getLong(CL_DEVICE_GLOBAL_MEM_CACHE_TYPE));
     }
@@ -489,6 +541,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns the command-queue properties supported by the device.
      */
+    @CLProperty("CL_DEVICE_QUEUE_PROPERTIES")
     public EnumSet<CLCommandQueue.Mode> getQueueProperties() {
         return CLCommandQueue.Mode.valuesOf((int)deviceInfo.getLong(CL_DEVICE_QUEUE_PROPERTIES));
     }
@@ -496,6 +549,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns true if this device is available.
      */
+    @CLProperty("CL_DEVICE_AVAILABLE")
     public boolean isAvailable() {
         return deviceInfo.getLong(CL_DEVICE_AVAILABLE) == CL_TRUE;
     }
@@ -505,6 +559,7 @@ public final class CLDevice extends CLObject {
      * compile the program source. Is true if the compiler is available.
      * This can be false for the OpenCL ES profile only.
      */
+    @CLProperty("CL_DEVICE_COMPILER_AVAILABLE")
     public boolean isCompilerAvailable() {
         return deviceInfo.getLong(CL_DEVICE_COMPILER_AVAILABLE) == CL_TRUE;
     }
@@ -512,6 +567,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns true if the OpenCL device is a little endian device and false otherwise.
      */
+    @CLProperty("CL_DEVICE_ENDIAN_LITTLE")
     public boolean isLittleEndian() {
         return deviceInfo.getLong(CL_DEVICE_ENDIAN_LITTLE) == CL_TRUE;
     }
@@ -521,6 +577,7 @@ public final class CLDevice extends CLObject {
      * caches, registers etc. in the device. Is false if the device does not
      * implement error correction.
      */
+    @CLProperty("CL_DEVICE_ERROR_CORRECTION_SUPPORT")
     public boolean isErrorCorrectionSupported() {
         return deviceInfo.getLong(CL_DEVICE_ERROR_CORRECTION_SUPPORT) == CL_TRUE;
     }
@@ -529,6 +586,7 @@ public final class CLDevice extends CLObject {
      * Returns {@link #isExtensionAvailable}("cl_khr_fp16").
      * @see #getExtensions()
      */
+    @CLProperty("cl_khr_fp16")
     public boolean isHalfFPAvailable() {
         return isExtensionAvailable("cl_khr_fp16");
     }
@@ -537,6 +595,7 @@ public final class CLDevice extends CLObject {
      * Returns {@link #isExtensionAvailable}("cl_khr_fp64").
      * @see #getExtensions()
      */
+    @CLProperty("cl_khr_fp64")
     public boolean isDoubleFPAvailable() {
         return isExtensionAvailable("cl_khr_fp64");
     }
@@ -545,6 +604,7 @@ public final class CLDevice extends CLObject {
      * Returns {@link #isExtensionAvailable}("cl_khr_gl_sharing") || {@link #isExtensionAvailable}("cl_apple_gl_sharing").
      * @see #getExtensions()
      */
+    @CLProperty("cl_khr_gl_sharing | cl_apple_gl_sharing")
     public boolean isGLMemorySharingSupported() {
         return isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_apple_gl_sharing");
     }
@@ -560,6 +620,7 @@ public final class CLDevice extends CLObject {
     /**
      * Returns all device extension names as unmodifiable Set.
      */
+    @CLProperty("CL_DEVICE_EXTENSIONS")
     public Set<String> getExtensions() {
 
         if(extensions == null) {

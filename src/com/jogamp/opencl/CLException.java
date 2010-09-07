@@ -25,7 +25,7 @@ public class CLException extends RuntimeException {
     }
 
     private CLException(int errorcode, String errorStr, String message) {
-        super(message + "\nerror: " + errorStr/* + " (man page: "+ERROR_CODE_DOC+")"*/);
+        super(message + " [error: " + errorStr+"]"/* + " (man page: "+ERROR_CODE_DOC+")"*/);
         this.error = errorStr;
         this.errorcode = errorcode;
     }

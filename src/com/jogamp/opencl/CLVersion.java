@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  */
 public class CLVersion implements Comparable<CLVersion> {
 
-    private final static Pattern pattern = Pattern.compile("OpenCL (\\d+)\\.(\\d+)(.*)");
+    private final static Pattern pattern = Pattern.compile("OpenCL (?:C )?(\\d+)\\.(\\d+)(.*)");
 
     public final static CLVersion CL_1_0 = new CLVersion("OpenCL 1.0");
     public final static CLVersion CL_1_1 = new CLVersion("OpenCL 1.1");
@@ -134,7 +134,7 @@ public class CLVersion implements Comparable<CLVersion> {
      */
     @Override
     public boolean equals(Object obj) {
-        return obj != null && fullversion.equals(obj);
+        return obj != null && obj.getClass() == getClass() && fullversion.equals(((CLVersion)obj).fullversion);
     }
 
 

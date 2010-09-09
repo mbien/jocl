@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<jnlp codebase="CODEBASE_TAG" href="jocl.jnlp">
+<jnlp codebase="JOCL_CODEBASE_TAG" href="jocl.jnlp">
     <information>
         <title>Java(tm) Binding to the OpenCL(r) API</title>
         <vendor>JogAmp Community</vendor>
@@ -14,7 +14,7 @@
     </security>
     <resources>
         <jar href="jocl.jar" />
-        <extension name="gluegen-rt" href="http://jogamp.org/deployment/webstart-next/gluegen-rt.jnlp" />
+        <extension name="gluegen-rt" href="GLUEGEN_CODEBASE_TAG/gluegen-rt.jnlp" />
     </resources>
     <resources os="Windows" arch="x86">
         <nativelib href = "jocl-natives-windows-i586.jar" />

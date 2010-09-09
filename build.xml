@@ -85,12 +85,13 @@
 
     <target name="-post-jar" depends="jar.natives,tag.build">
 
-        <!-- TODO temporary codebase -->
-        <property name="jnlp.codebase" value="http://people.fh-landshut.de/~mbien/jogamp/jocl/"/>
+        <property name="jocl.jnlp.codebase"     value="http://jogamp.org/deployment/webstart-next/jocl"/>
+        <property name="gluegen.jnlp.codebase"  value="http://jogamp.org/deployment/jocl-webstart-next"/>
 
         <copy file="jocl.jnlp" tofile="${dist.jar.dir}/jocl.jnlp">
             <filterchain>
-                <replacestring from="CODEBASE_TAG" to="${jnlp.codebase}"/>
+                <replacestring from="JOCL_CODEBASE_TAG"     to="${jocl.jnlp.codebase}"/>
+                <replacestring from="GLUEGEN_CODEBASE_TAG"  to="${gluegen.jnlp.codebase}"/>
             </filterchain>
         </copy>
 

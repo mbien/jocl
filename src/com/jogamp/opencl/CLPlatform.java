@@ -29,6 +29,7 @@ import static com.jogamp.opencl.CL.*;
  * CLPlatfrorm representing an OpenCL installation (e.g. graphics driver).
  * 
  * @author Michael Bien
+ * @see #initialize()
  * @see #getDefault()
  * @see #listCLPlatforms()
  */
@@ -44,16 +45,31 @@ public final class CLPlatform {
      */
     public final CLVersion version;
 
-    private static final CL cl;
+    private static CL cl;
 
     private Set<String> extensions;
 
-    static{
+
+    private CLPlatform(long id) {
+        this.ID = id;
+        this.version = new CLVersion(getInfoString(CL_PLATFORM_VERSION));
+    }
+
+    /**
+     * Eagerly initializes JOCL. Subsequent calls do nothing.
+     * @throws JogampRuntimeException if something went wrong in the initialization (e.g. OpenCL lib not found).
+     */
+    public synchronized static void initialize() throws JogampRuntimeException {
+
+        if(cl != null) {
+            return;
+        }
+
         try {
 
             final CLProcAddressTable table = new CLProcAddressTable(new FunctionAddressResolver() {
                 public long resolve(String name, DynamicLookupHelper lookup) {
-                    
+
                     //FIXME workaround to fix a gluegen issue
                     if(name.endsWith("Impl")) {
                         name = name.substring(0, name.length() - "Impl".length());
@@ -71,7 +87,7 @@ public final class CLPlatform {
             });
 
             cl = new CLImpl(table);
-            
+
             //load JOCL and init table
             doPrivileged(new PrivilegedAction<Object>() {
                 public Object run() {
@@ -94,24 +110,14 @@ public final class CLPlatform {
         }catch(Exception ex) {
             throw new JogampRuntimeException("JOCL initialization error.", ex);
         }
-    }
 
-    private CLPlatform(long id) {
-        this.ID = id;
-        this.version = new CLVersion(getInfoString(CL_PLATFORM_VERSION));
-    }
-
-    /**
-     * Eagerly initializes JOCL. Subsequent calls do nothing.
-     */
-    public static void initialize() throws JogampRuntimeException {
-        //see static initializer
     }
 
     /**
      * Returns the default OpenCL platform or null when no platform found.
      */
     public static CLPlatform getDefault() {
+        initialize();
         CLPlatform[] platforms = listCLPlatforms();
         CLPlatform best = platforms[0];
         for (CLPlatform platform : platforms) {
@@ -127,6 +133,7 @@ public final class CLPlatform {
      * @throws CLException if something went wrong initializing OpenCL
      */
     public static CLPlatform[] listCLPlatforms() {
+        initialize();
 
         IntBuffer ib = Buffers.newDirectIntBuffer(1);
         // find all available OpenCL platforms
@@ -150,6 +157,7 @@ public final class CLPlatform {
      * Returns the low level binding interface to the OpenCL APIs.
      */
     public static CL getLowLevelCLInterface() {
+        initialize();
         return cl;
     }
 
@@ -158,6 +166,7 @@ public final class CLPlatform {
      * Calls to {@link CLProgram#build()} after unloadCompiler will reload the compiler if necessary.
      */
     public static void unloadCompiler() {
+        initialize();
         int ret = cl.clUnloadCompiler();
         checkForError(ret, "error while sending unload compiler hint");
     }
@@ -174,6 +183,7 @@ public final class CLPlatform {
      * Lists all physical devices available on this platform matching the given {@link CLDevice.Type}.
      */
     public CLDevice[] listCLDevices(CLDevice.Type... types) {
+        initialize();
 
         IntBuffer ib = Buffers.newDirectIntBuffer(1);
 
@@ -214,6 +224,7 @@ public final class CLPlatform {
     }
     
     static CLDevice findMaxFlopsDevice(CLDevice[] devices, CLDevice.Type type) {
+        initialize();
 
         CLDevice maxFLOPSDevice = null;
 

@@ -83,7 +83,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
     /**
      * Loads a CLProgramConfiguration containing a CLProgram.
      * The CLProgram is initialized and ready to be build after this method call.
-     * This method preferes program initialization from binaries if this fails or if
+     * This method prefers program initialization from binaries if this fails or if
      * no binaries have been found, it will try to load the program from sources. If
      * This also fails an appropriate exception will be thrown.
      * @param ois The ObjectInputStream for reading the object.
@@ -231,11 +231,17 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         return this;
     }
 
+    // format: { platform_suffix, num_binaries, (device.ID, length, binaries)+ }
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
+
+        Set<CLDevice> devices = binariesMap.keySet();
+        String suffix = devices.iterator().next().getPlatform().getICDSuffix();
+        out.writeUTF(suffix);
+
         out.writeInt(binariesMap.size());
 
-        for (CLDevice device : binariesMap.keySet()) {
+        for (CLDevice device : devices) {
             byte[] binaries = binariesMap.get(device);
             out.writeLong(device.ID);
             out.writeInt(binaries.length);
@@ -245,6 +251,16 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
+
+        String suffix = in.readUTF();
+        CLPlatform platform = null;
+        for (CLPlatform p : CLPlatform.listCLPlatforms()) {
+            if(p.getICDSuffix().equals(suffix)) {
+                platform = p;
+                break;
+            }
+        }
+
         this.binariesMap = new LinkedHashMap<CLDevice, byte[]>();
         int mapSize = in.readInt();
 
@@ -254,7 +270,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
             byte[] binaries = new byte[length];
             in.readFully(binaries);
 
-            CLDevice device = new CLDevice(CLPlatform.getLowLevelCLInterface(), deviceID);
+            CLDevice device = new CLDevice(CLPlatform.getLowLevelCLInterface(), platform, deviceID);
             binariesMap.put(device, binaries);
         }
     }

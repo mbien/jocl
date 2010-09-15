@@ -59,16 +59,6 @@ public final class CLGLContext extends CLContext {
     }
 
     /**
-     * Creates a shared context on the specified devices.
-     * The platform to be used is implementation dependent.
-     * Note: This will make the GLContext current.
-     * @see GLContext#makeCurrent()
-     */
-    public static CLGLContext create(GLContext glContext, CLDevice... devices) {
-        return create(glContext, null, devices);
-    }
-
-    /**
      * Creates a shared context on the specified platform and with the specified
      * device types.
      * Note: This will make the GLContext current.
@@ -95,11 +85,15 @@ public final class CLGLContext extends CLContext {
      * Note: This will make the GLContext current.
      * @see GLContext#makeCurrent()
      */
-    public static CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice... devices) {
+    public static CLGLContext create(GLContext glContext, CLDevice... devices) {
 
-        if(platform == null) {
-            platform = CLPlatform.getDefault();
+        if(devices == null) {
+            throw new IllegalArgumentException("no devices specified");
+        }else if(devices[0] == null) {
+            throw new IllegalArgumentException("first device was null");
         }
+
+        CLPlatform platform = devices[0].getPlatform();
 
         long[] glID = new long[1];
         PointerBuffer properties = setupContextProperties(platform, glContext, glID);
@@ -126,7 +120,7 @@ public final class CLGLContext extends CLContext {
         }
 
         // context must be current
-        glContext.makeCurrent();
+//        glContext.makeCurrent();
 
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
         glID[0] = glContext.getHandle();
@@ -211,13 +205,13 @@ public final class CLGLContext extends CLContext {
     public final <B extends Buffer> CLGLImage2d<B> createFromGLRenderbuffer(B directBuffer, int glBuffer, Mem... flags) {
         return createFromGLRenderbuffer(directBuffer, glBuffer, Mem.flagsToInt(flags));
     }
-    
+
     public final <B extends Buffer> CLGLImage2d<B> createFromGLRenderbuffer(B directBuffer, int glBuffer, int flags) {
         CLGLImage2d<B> buffer = CLGLImage2d.createFromGLRenderbuffer(this, directBuffer, flags, glBuffer);
         memoryObjects.add(buffer);
         return buffer;
     }
-    
+
     //2d Textures
     public final CLGLTexture2d<?> createFromGLTexture2d(int target, int texture, int mipmap, Mem... flags) {
         return createFromGLTexture2d(null, target, texture, mipmap, Mem.flagsToInt(flags));
@@ -230,13 +224,13 @@ public final class CLGLContext extends CLContext {
     public final <B extends Buffer> CLGLTexture2d<B> createFromGLTexture2d(B directBuffer, int target, int texture, int mipmap, Mem... flags) {
         return createFromGLTexture2d(directBuffer, target, texture, mipmap, Mem.flagsToInt(flags));
     }
-    
+
     public final <B extends Buffer> CLGLTexture2d<B> createFromGLTexture2d(B directBuffer, int target, int texture, int mipmap, int flags) {
         CLGLTexture2d<B> buffer = CLGLTexture2d.createFromGLTexture2d(this, directBuffer, target, texture, mipmap, flags);
         memoryObjects.add(buffer);
         return buffer;
     }
-    
+
     //3d Textures
     public final CLGLTexture3d<?> createFromGLTexture3d(int target, int texture, int mipmap, Mem... flags) {
         return createFromGLTexture3d(null, target, texture, mipmap, Mem.flagsToInt(flags));

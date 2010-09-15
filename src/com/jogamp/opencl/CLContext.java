@@ -106,14 +106,6 @@ public class CLContext extends CLObject implements CLResource {
     }
 
     /**
-     * Creates a context on the specified devices.
-     * The platform to be used is implementation dependent.
-     */
-    public static CLContext create(CLDevice... devices) {
-        return create(null, devices);
-    }
-
-    /**
      * Creates a context on the specified platform on all available devices (CL_DEVICE_TYPE_ALL).
      */
     public static CLContext create(CLPlatform platform) {
@@ -138,14 +130,17 @@ public class CLContext extends CLObject implements CLResource {
     }
 
     /**
-     * Creates a context on the specified platform and with the specified
-     * devices.
+     * Creates a context on the specified devices.
      */
-    public static CLContext create(CLPlatform platform, CLDevice... devices) {
+    public static CLContext create(CLDevice... devices) {
 
-        if(platform == null) {
-            platform = CLPlatform.getDefault();
+        if(devices == null) {
+            throw new IllegalArgumentException("no devices specified");
+        }else if(devices[0] == null) {
+            throw new IllegalArgumentException("first device was null");
         }
+
+        CLPlatform platform = devices[0].getPlatform();
 
         PointerBuffer properties = setupContextProperties(platform);
         ErrorDispatcher dispatcher = new ErrorDispatcher();

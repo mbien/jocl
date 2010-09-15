@@ -29,14 +29,17 @@ public final class CLDevice extends CLObject {
     private Set<String> extensions;
 
     private final CLDeviceInfoAccessor deviceInfo;
+    private final CLPlatform platform;
 
-    CLDevice(CL cl, long id) {
+    CLDevice(CL cl, CLPlatform platform, long id) {
         super(cl, id);
+        this.platform = platform;
         this.deviceInfo = new CLDeviceInfoAccessor();
     }
 
     CLDevice(CLContext context, long id) {
         super(context, id);
+        this.platform = context.getPlatform();
         this.deviceInfo = new CLDeviceInfoAccessor();
     }
 
@@ -67,6 +70,11 @@ public final class CLDevice extends CLObject {
     /*keep this package private*/
     void setContext(CLContext context) {
         this.context = context;
+    }
+
+    @Override
+    public CLPlatform getPlatform() {
+        return platform;
     }
 
     /**

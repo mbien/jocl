@@ -169,8 +169,8 @@ public class HighLevelBindingTest {
         out.println(" - - - highLevelTest; create context - - - ");
 
         CLPlatform platform = CLPlatform.getDefault();
-        int deviceCount = platform.listCLDevices().length;
-        CLDevice firstDevice = platform.listCLDevices()[0];
+        CLDevice[] devices = platform.listCLDevices();
+        int deviceCount = devices.length;
 
         CLContext c = CLContext.create();
         assertNotNull(c);
@@ -182,19 +182,16 @@ public class HighLevelBindingTest {
         assertEquals(deviceCount, c.getDevices().length);
         c.release();
 
-        c = CLContext.create(firstDevice);
-        assertNotNull(c);
-        assertEquals(1, c.getDevices().length);
-        c.release();
+        for (CLDevice device : devices) {
+            c = CLContext.create(device);
+            assertNotNull(c);
+            assertEquals(1, c.getDevices().length);
+            c.release();
+        }
 
         c = CLContext.create(CLDevice.Type.ALL);
         assertNotNull(c);
         assertEquals(deviceCount, c.getDevices().length);
-        c.release();
-
-        c = CLContext.create(platform, firstDevice);
-        assertNotNull(c);
-        assertEquals(1, c.getDevices().length);
         c.release();
 
         c = CLContext.create(platform, CLDevice.Type.ALL);
@@ -213,12 +210,6 @@ public class HighLevelBindingTest {
         try{
             CLContext.create((CLDevice.Type)null);
             fail("create with null CLDevice.Type");
-        }catch(IllegalArgumentException ex) {
-            // expected
-        }
-        try{
-            CLContext.create((CLPlatform)null, (CLDevice)null);
-            fail("create with null device");
         }catch(IllegalArgumentException ex) {
             // expected
         }

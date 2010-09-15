@@ -207,7 +207,7 @@ public final class CLPlatform {
 
             //add device to list
             for (int n = 0; n < deviceIDs.capacity(); n++)
-                list.add(new CLDevice(cl, deviceIDs.get(n)));
+                list.add(new CLDevice(cl, this, deviceIDs.get(n)));
         }
 
         CLDevice[] devices = new CLDevice[list.size()];

@@ -96,10 +96,10 @@ public class MultiQueueBarrier {
      * @param timeout the maximum time to wait
      * @param unit the time unit of the {@code timeout} argument
      */
-    public MultiQueueBarrier await(long timeout, TimeUnit unit) throws InterruptedException {
-        latch.await(timeout, unit);
+    public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+        boolean ret = latch.await(timeout, unit);
         rebuildBarrierIfBroken();
-        return this;
+        return ret;
     }
     
     /**

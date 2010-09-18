@@ -1514,11 +1514,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
                 events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS) {
-            throw newException(ret, "can not enqueue "+workDimension+"DRangeKernel: " + kernel+ "\n"
-                    + " with gwo: " + toStr(globalWorkOffset, workDimension)
-                    + " gws: " + toStr(globalWorkSize, workDimension)
-                    + " lws: " + toStr(localWorkSize, workDimension)
-                    + toStr(condition, events));
+            throw newException(ret, "can not enqueue "+workDimension+"DRange " + kernel+ "\n"
+                    + " with gwo: " + toStr(globalWorkOffset)
+                    + " gws: " + toStr(globalWorkSize)
+                    + " lws: " + toStr(localWorkSize)
+                    + " " + toStr(condition, events));
         }
 
         if(events != null) {
@@ -1663,7 +1663,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
-        return (PointerBuffer) buffer.put(0, a);
+        return (PointerBuffer) buffer.put(2, a).position(2);
     }
 
 //    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
@@ -1682,15 +1682,15 @@ public class CLCommandQueue extends CLObject implements CLResource {
         return (PointerBuffer) ((PointerBuffer)buffer.rewind()).put(a).put(b).put(c).rewind();
     }
 
-    private static String toStr(PointerBuffer buffer, int length) {
+    private static String toStr(PointerBuffer buffer) {
         if(buffer == null) {
             return null;
         }
         StringBuilder sb = new StringBuilder();
         sb.append('{');
-        for (int i = buffer.position(); i < length; i++) {
+        for (int i = buffer.position(); i < buffer.capacity(); i++) {
             sb.append(buffer.get(i));
-            if(i != length-1) {
+            if(i != buffer.capacity()-1) {
                 sb.append(", ");
             }
         }

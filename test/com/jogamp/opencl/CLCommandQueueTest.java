@@ -23,7 +23,6 @@ import static com.jogamp.common.nio.Buffers.*;
  */
 public class CLCommandQueueTest {
 
-    private final int groupSize = 256;
 
     @Test
     public void enumsTest() {
@@ -59,11 +58,13 @@ public class CLCommandQueueTest {
 
         out.println(" - - - event synchronization test - - - ");
 
-        final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
-
         CLContext context = CLContext.create();
 
         try{
+            CLDevice device = context.getDevices()[0];
+            int groupSize = device.getMaxWorkItemSizes()[0];
+            
+            final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
 
             CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
             CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
@@ -75,7 +76,7 @@ public class CLCommandQueueTest {
 
             CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
             CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-            CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
+            CLCommandQueue queue = device.createCommandQueue();
 
             out.println(queue);
 
@@ -123,11 +124,13 @@ public class CLCommandQueueTest {
 
         out.println(" - - - event synchronization test - - - ");
 
-        final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
-
         CLContext context = CLContext.create();
 
         try {
+            CLDevice device = context.getDevices()[0];
+            int groupSize = device.getMaxWorkItemSizes()[0];
+
+            final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
 
             CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
             CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
@@ -138,7 +141,7 @@ public class CLCommandQueueTest {
 
             CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
             CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-            CLCommandQueue queue = context.getDevices()[0].createCommandQueue(Mode.PROFILING_MODE);
+            CLCommandQueue queue = device.createCommandQueue(Mode.PROFILING_MODE);
 
             out.println(queue);
 
@@ -176,8 +179,6 @@ public class CLCommandQueueTest {
     public void customEventsTest() throws IOException, InterruptedException {
         out.println(" - - - user events test - - - ");
 
-        final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
-
         CLPlatform[] platforms = CLPlatform.listCLPlatforms();
         CLPlatform theChosenOne = platforms[0];
         for (CLPlatform platform : platforms) {
@@ -201,6 +202,10 @@ public class CLCommandQueueTest {
         }
 
         try{
+            CLDevice device = context.getDevices()[0];
+            int groupSize = device.getMaxWorkItemSizes()[0];
+
+            final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
 
             CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
             CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
@@ -211,7 +216,7 @@ public class CLCommandQueueTest {
 
             CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
             CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-            CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
+            CLCommandQueue queue = device.createCommandQueue();
 
             queue.putWriteBuffer(clBufferA, true) // write A
                  .putWriteBuffer(clBufferB, true);// write B
@@ -340,6 +345,8 @@ public class CLCommandQueueTest {
                 @Override
                 public void run() {
 
+                    int groupSize = queue1.getDevice().getMaxWorkItemSizes()[0];
+
                     fillBuffer(clBufferA1.buffer, 12345);
                     fillBuffer(clBufferB1.buffer, 67890);
 
@@ -364,6 +371,8 @@ public class CLCommandQueueTest {
 
                 @Override
                 public void run() {
+
+                    int groupSize = queue2.getDevice().getMaxWorkItemSizes()[0];
 
                     fillBuffer(clBufferA2.buffer, 12345);
                     fillBuffer(clBufferB2.buffer, 67890);

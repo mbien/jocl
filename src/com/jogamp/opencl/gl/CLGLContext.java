@@ -120,7 +120,7 @@ public final class CLGLContext extends CLContext {
         }
 
         // context must be current
-//        glContext.makeCurrent();
+        glContext.makeCurrent();
 
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
         glID[0] = glContext.getHandle();

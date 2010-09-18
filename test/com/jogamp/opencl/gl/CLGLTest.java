@@ -53,6 +53,7 @@ public class CLGLTest {
         glWindow.setVisible(true);
 
         glcontext = glWindow.getContext();
+        glcontext.makeCurrent();
         out.println("useing glcontext:");
         out.println(glcontext);
     }
@@ -89,7 +90,7 @@ public class CLGLTest {
         assumeNotNull(glcontext);
         CLContext context = CLGLContext.create(glcontext, device);
         assertNotNull(context);
-//        assertTrue(glcontext.isCurrent());
+        assertTrue(glcontext.isCurrent());
 
         try{
             out.println(context);

@@ -63,61 +63,61 @@ public class CLCommandQueueTest {
 
         CLContext context = CLContext.create();
 
-        CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        CLBuffer<ByteBuffer> clBufferC = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        CLBuffer<ByteBuffer> clBufferD = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+        try{
 
-        fillBuffer(clBufferA.buffer, 12345);
-        fillBuffer(clBufferB.buffer, 67890);
+            CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            CLBuffer<ByteBuffer> clBufferC = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            CLBuffer<ByteBuffer> clBufferD = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
 
-        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
-        CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-        CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
+            fillBuffer(clBufferA.buffer, 12345);
+            fillBuffer(clBufferB.buffer, 67890);
 
-        out.println(queue);
+            CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
+            CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
+            CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
 
-        final CLEventList events = new CLEventList(2);
+            out.println(queue);
 
-        out.println(events);
+            final CLEventList events = new CLEventList(2);
 
-        assertEquals(0, events.size());
+            out.println(events);
 
-        queue.putWriteBuffer(clBufferA, false, events) // write A
-             .putWriteBuffer(clBufferB, false, events);// write B
+            assertEquals(0, events.size());
 
-        out.println(events);
+            queue.putWriteBuffer(clBufferA, false, events) // write A
+                 .putWriteBuffer(clBufferB, false, events);// write B
 
-        assertEquals(2, events.size());
-        queue.putWaitForEvents(events, true);
+            out.println(events);
 
-        events.release();
-        assertEquals(0, events.size());
+            assertEquals(2, events.size());
+            queue.putWaitForEvents(events, true);
 
-        vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferC); // C = A+B
-        queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
+            events.release();
+            assertEquals(0, events.size());
 
-        vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferD); // D = A+B
-        queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
+            vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferC); // C = A+B
+            queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
 
-        assertEquals(2, events.size());
-        queue.putWaitForEvent(events, 0, false)
-             .putWaitForEvent(events, 1, true);
+            vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferD); // D = A+B
+            queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
 
-        queue.putReadBuffer(clBufferC, false)
-             .putReadBuffer(clBufferD, true);
+            assertEquals(2, events.size());
+            queue.putWaitForEvent(events, 0, false)
+                 .putWaitForEvent(events, 1, true);
 
-        events.release();
+            queue.putReadBuffer(clBufferC, false)
+                 .putReadBuffer(clBufferD, true);
 
-        checkIfEqual(clBufferC.buffer, clBufferD.buffer, elements);
+            events.release();
 
-
-        context.release();
-
-
-        out.println("results are valid");
-
+            checkIfEqual(clBufferC.buffer, clBufferD.buffer, elements);
+            out.println("results are valid");
+        }finally{
+            context.release();
+        }
     }
+
     @Test
     public void profilingEventsTest() throws IOException {
 
@@ -127,44 +127,48 @@ public class CLCommandQueueTest {
 
         CLContext context = CLContext.create();
 
-        CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        CLBuffer<ByteBuffer> clBufferC = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+        try {
 
-        fillBuffer(clBufferA.buffer, 12345);
-        fillBuffer(clBufferB.buffer, 67890);
+            CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            CLBuffer<ByteBuffer> clBufferC = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
 
-        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
-        CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-        CLCommandQueue queue = context.getDevices()[0].createCommandQueue(Mode.PROFILING_MODE);
+            fillBuffer(clBufferA.buffer, 12345);
+            fillBuffer(clBufferB.buffer, 67890);
 
-        out.println(queue);
+            CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
+            CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
+            CLCommandQueue queue = context.getDevices()[0].createCommandQueue(Mode.PROFILING_MODE);
 
-        queue.putWriteBuffer(clBufferA, true) // write A
-             .putWriteBuffer(clBufferB, true);// write B
+            out.println(queue);
 
-        final CLEventList events = new CLEventList(1);
+            queue.putWriteBuffer(clBufferA, true) // write A
+                 .putWriteBuffer(clBufferB, true);// write B
 
-        assertEquals(0, events.size());
+            final CLEventList events = new CLEventList(1);
 
-        vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferC); // C = A+B
-        queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
+            assertEquals(0, events.size());
 
-        assertEquals(1, events.size());
-        CLEvent probe = events.getEvent(0);
-        out.println(probe);
+            vectorAddKernel.setArgs(clBufferA, clBufferB, clBufferC); // C = A+B
+            queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
 
-        queue.putWaitForEvents(events, true);
-        assertEquals(CLEvent.ExecutionStatus.COMPLETE, probe.getStatus());
+            assertEquals(1, events.size());
+            CLEvent probe = events.getEvent(0);
+            out.println(probe);
 
-        out.println(probe);
-        long time = probe.getProfilingInfo(CLEvent.ProfilingCommand.END)
-                  - probe.getProfilingInfo(CLEvent.ProfilingCommand.START);
-        out.println("time: "+time);
-        assertTrue(time > 0);
+            queue.putWaitForEvents(events, true);
+            assertEquals(CLEvent.ExecutionStatus.COMPLETE, probe.getStatus());
 
-        events.release();
-        context.release();
+            out.println(probe);
+            long time = probe.getProfilingInfo(CLEvent.ProfilingCommand.END)
+                      - probe.getProfilingInfo(CLEvent.ProfilingCommand.START);
+            out.println("time: "+time);
+            assertTrue(time > 0);
+
+            events.release();
+        }finally{
+            context.release();
+        }
 
     }
 
@@ -261,26 +265,29 @@ public class CLCommandQueueTest {
 
         CLContext context = CLContext.create();
 
-        final CLUserEvent customEvent = CLUserEvent.create(context);
+        try{
 
-        final CountDownLatch countdown = new CountDownLatch(1);
-        customEvent.registerCallback(new CLEventListener() {
+            final CLUserEvent customEvent = CLUserEvent.create(context);
 
-            public void eventStateChanged(CLEvent event, int status) {
-                out.println("event received: "+event);
-                assertEquals(event, customEvent);
-                countdown.countDown();
-            }
+            final CountDownLatch countdown = new CountDownLatch(1);
+            customEvent.registerCallback(new CLEventListener() {
 
-        });
+                public void eventStateChanged(CLEvent event, int status) {
+                    out.println("event received: "+event);
+                    assertEquals(event, customEvent);
+                    countdown.countDown();
+                }
 
-        customEvent.setStatus(ExecutionStatus.COMPLETE);
-        countdown.await(2, TimeUnit.SECONDS);
-        assertEquals(countdown.getCount(), 0);
+            });
 
-        customEvent.release();
+            customEvent.setStatus(ExecutionStatus.COMPLETE);
+            countdown.await(2, TimeUnit.SECONDS);
+            assertEquals(countdown.getCount(), 0);
 
-        context.release();
+            customEvent.release();
+        }finally{
+            context.release();
+        }
 
     }
 
@@ -293,101 +300,103 @@ public class CLCommandQueueTest {
 
         CLContext context = CLContext.create();
 
-        CLDevice[] devices = context.getDevices();
+        try{
 
-        // ignore this test if we can't test in parallel
-        if (devices.length < 2) {
-            out.println("aborting test... need at least 2 devices");
+            CLDevice[] devices = context.getDevices();
+
+            // ignore this test if we can't test in parallel
+            if (devices.length < 2) {
+                out.println("aborting test... need at least 2 devices");
+                return;
+            }
+
+            final CLBuffer<ByteBuffer> clBufferC = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            final CLBuffer<ByteBuffer> clBufferD = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+
+            final CLBuffer<ByteBuffer> clBufferA1 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            final CLBuffer<ByteBuffer> clBufferB1 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            final CLBuffer<ByteBuffer> clBufferA2 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+            final CLBuffer<ByteBuffer> clBufferB2 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
+
+            CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
+
+            //two independent kernel instances
+            final CLKernel vectorAddKernel1 = program.createCLKernel("VectorAddGM").setArg(3, elements);
+            final CLKernel vectorAddKernel2 = program.createCLKernel("VectorAddGM").setArg(3, elements);
+
+            final CLCommandQueue queue1 = devices[0].createCommandQueue();
+            final CLCommandQueue queue2 = devices[1].createCommandQueue();
+
+            out.println(queue1);
+            out.println(queue2);
+
+            fillBuffer(clBufferC.buffer, 12345);
+
+
+            final MultiQueueBarrier barrier = new MultiQueueBarrier(2);
+
+            Thread thread1 = new Thread("C") {
+
+                @Override
+                public void run() {
+
+                    fillBuffer(clBufferA1.buffer, 12345);
+                    fillBuffer(clBufferB1.buffer, 67890);
+
+    //                System.out.println("C buffer");
+                    queue1.putWriteBuffer(clBufferA1, false)  // write A
+                          .putWriteBuffer(clBufferB1, false); // write B
+
+    //                System.out.println("C args");
+                    vectorAddKernel1.setArgs(clBufferA1, clBufferB1, clBufferC); // C = A+B
+
+    //                System.out.println("C kernels");
+                    CLEventList events1 = new CLEventList(2);
+                    queue1.put1DRangeKernel(vectorAddKernel1, 0, elements, groupSize, events1)
+                          .putReadBuffer(clBufferC, false, events1);
+
+                    barrier.waitFor(queue1, events1);
+
+                }
+            };
+
+            Thread thread2 = new Thread("D") {
+
+                @Override
+                public void run() {
+
+                    fillBuffer(clBufferA2.buffer, 12345);
+                    fillBuffer(clBufferB2.buffer, 67890);
+
+    //                System.out.println("D buffer");
+                    queue2.putWriteBuffer(clBufferA2, false)  // write A
+                          .putWriteBuffer(clBufferB2, false); // write B
+
+    //                System.out.println("D args");
+                    vectorAddKernel2.setArgs(clBufferA2, clBufferB2, clBufferD); // D = A+B
+
+    //                System.out.println("D kernels");
+                    CLEventList events2 = new CLEventList(2);
+                    queue2.put1DRangeKernel(vectorAddKernel2, 0, elements, groupSize, events2);
+                    queue2.putReadBuffer(clBufferD, false, events2);
+
+                    barrier.waitFor(queue2, events2);
+
+                }
+            };
+
+            out.println("starting threads");
+            thread1.start();
+            thread2.start();
+            assertTrue(barrier.await(5, TimeUnit.SECONDS));
+            out.println("done");
+
+            checkIfEqual(clBufferC.buffer, clBufferD.buffer, elements);
+            out.println("results are valid");
+
+        }finally{
             context.release();
-            return;
         }
-
-        final CLBuffer<ByteBuffer> clBufferC = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        final CLBuffer<ByteBuffer> clBufferD = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-
-        final CLBuffer<ByteBuffer> clBufferA1 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        final CLBuffer<ByteBuffer> clBufferB1 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        final CLBuffer<ByteBuffer> clBufferA2 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-        final CLBuffer<ByteBuffer> clBufferB2 = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
-
-        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
-
-        //two independent kernel instances
-        final CLKernel vectorAddKernel1 = program.createCLKernel("VectorAddGM").setArg(3, elements);
-        final CLKernel vectorAddKernel2 = program.createCLKernel("VectorAddGM").setArg(3, elements);
-
-        final CLCommandQueue queue1 = devices[0].createCommandQueue();
-        final CLCommandQueue queue2 = devices[1].createCommandQueue();
-
-        out.println(queue1);
-        out.println(queue2);
-
-        fillBuffer(clBufferC.buffer, 12345);
-
-
-        final MultiQueueBarrier barrier = new MultiQueueBarrier(2);
-
-        Thread thread1 = new Thread("C") {
-
-            @Override
-            public void run() {
-
-                fillBuffer(clBufferA1.buffer, 12345);
-                fillBuffer(clBufferB1.buffer, 67890);
-
-//                System.out.println("C buffer");
-                queue1.putWriteBuffer(clBufferA1, false)  // write A
-                      .putWriteBuffer(clBufferB1, false); // write B
-
-//                System.out.println("C args");
-                vectorAddKernel1.setArgs(clBufferA1, clBufferB1, clBufferC); // C = A+B
-
-//                System.out.println("C kernels");
-                CLEventList events1 = new CLEventList(2);
-                queue1.put1DRangeKernel(vectorAddKernel1, 0, elements, groupSize, events1)
-                      .putReadBuffer(clBufferC, false, events1);
-
-                barrier.waitFor(queue1, events1);
-
-            }
-        };
-
-        Thread thread2 = new Thread("D") {
-
-            @Override
-            public void run() {
-
-                fillBuffer(clBufferA2.buffer, 12345);
-                fillBuffer(clBufferB2.buffer, 67890);
-
-//                System.out.println("D buffer");
-                queue2.putWriteBuffer(clBufferA2, false)  // write A
-                      .putWriteBuffer(clBufferB2, false); // write B
-
-//                System.out.println("D args");
-                vectorAddKernel2.setArgs(clBufferA2, clBufferB2, clBufferD); // D = A+B
-
-//                System.out.println("D kernels");
-                CLEventList events2 = new CLEventList(2);
-                queue2.put1DRangeKernel(vectorAddKernel2, 0, elements, groupSize, events2)
-                      .putReadBuffer(clBufferD, false, events2);
-
-                barrier.waitFor(queue2, events2);
-
-            }
-        };
-
-        out.println("starting threads");
-        thread1.start();
-        thread2.start();
-        barrier.await();
-        out.println("done");
-
-        checkIfEqual(clBufferC.buffer, clBufferD.buffer, elements);
-
-        context.release();
-
-        out.println("results are valid");
 
     }
 }

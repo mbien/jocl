@@ -232,7 +232,7 @@ public class LowLevelBindingTest {
         long commandQueue = cl.clCreateCommandQueue(context, device, 0, intBuffer);
         checkError("on clCreateCommandQueue", intBuffer.get(0));
 
-        int localWorkSize = 256;      // set and log Global and Local work size dimensions
+        int localWorkSize = 128;      // set and log Global and Local work size dimensions
         int globalWorkSize = roundUp(localWorkSize, ELEMENT_COUNT);  // rounded up to the nearest multiple of the LocalWorkSize
 
         out.println("allocateing buffers of size: "+globalWorkSize);

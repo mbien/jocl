@@ -242,6 +242,7 @@ public class HighLevelBindingTest {
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
 
         CLDevice[] programDevices = program.getCLDevices();
+        CLDevice device = programDevices[0];
 
         assertEquals(contextDevices.length, programDevices.length);
 
@@ -256,7 +257,7 @@ public class HighLevelBindingTest {
         assertFalse(binaries.isEmpty());
 
         int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
-        int localWorkSize = 256;      // set and log Global and Local work size dimensions
+        int localWorkSize = device.getMaxWorkItemSizes()[0];      // set and log Global and Local work size dimensions
         int globalWorkSize = roundUp(localWorkSize, elementCount);  // rounded up to the nearest multiple of the LocalWorkSize
 
         out.println("allocateing buffers of size: "+globalWorkSize);
@@ -279,7 +280,7 @@ public class HighLevelBindingTest {
                        .setArg(2, clBufferC)
                        .setArg(3, elementCount);
 
-        CLCommandQueue queue = programDevices[0].createCommandQueue();
+        CLCommandQueue queue = device.createCommandQueue();
 
         // Asynchronous write of data to GPU device, blocking read later
         queue.putWriteBuffer(clBufferA, false)

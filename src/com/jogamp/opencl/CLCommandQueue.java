@@ -1,5 +1,6 @@
 package com.jogamp.opencl;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.gl.CLGLI;
 import com.jogamp.common.nio.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -31,7 +32,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /*
      * Those direct memory buffers are used to move data between the JVM and OpenCL.
      */
-    private final PointerBuffer pbA;
+    private final IntBuffer pbA;
     private final PointerBuffer ibA;
     private final PointerBuffer ibB;
     private final PointerBuffer ibC;
@@ -46,7 +47,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         this.ibB = PointerBuffer.allocateDirect(3);
         this.ibC = PointerBuffer.allocateDirect(3);
 
-        this.pbA = PointerBuffer.allocateDirect(1);
+        this.pbA = Buffers.newDirectIntBuffer(1);
 
     }
 
@@ -1115,7 +1116,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        IntBuffer error = pbA.position(0).getBuffer().asIntBuffer();
+        IntBuffer error = pbA;
         ByteBuffer mappedBuffer = cl.clEnqueueMapBuffer(ID, buffer.ID, clBoolean(blockingMap),
                                          flag.FLAGS, offset, length,
                                          conditions, conditionIDs, events==null ? null : events.IDs, error);
@@ -1175,7 +1176,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        IntBuffer error = pbA.position(0).getBuffer().asIntBuffer();
+        IntBuffer error = pbA;
 
         // spec: CL_INVALID_VALUE if image is a 2D image object and origin[2] is not equal to 0 or region[2] is not equal to 1
         copy2NIO(ibB, offsetX, offsetY, 0);
@@ -1241,7 +1242,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        IntBuffer error = pbA.position(0).getBuffer().asIntBuffer();
+        IntBuffer error = pbA;
         copy2NIO(ibB, offsetX, offsetY, offsetZ);
         copy2NIO(ibC, rangeX, rangeY, rangeZ);
         ByteBuffer mappedImage = cl.clEnqueueMapImage(ID, image.ID, clBoolean(blockingMap),
@@ -1558,7 +1559,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = copy2NIO(pbA, glObject);
+        PointerBuffer glObj = copy2NIO(ibA, glObject);
         
         int ret = xl.clEnqueueAcquireGLObjects(ID, 1, glObj,
                     conditions, conditionIDs,
@@ -1605,7 +1606,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         CLGLI xl = (CLGLI) cl;
 
-        PointerBuffer glObj = copy2NIO(pbA, glObject);
+        PointerBuffer glObj = copy2NIO(ibA, glObject);
 
         int ret = xl.clEnqueueReleaseGLObjects(ID, 1, glObj,
                 conditions, conditionIDs,

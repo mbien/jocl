@@ -22,6 +22,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.jogamp.opencl.TestUtils.*;
+import static com.jogamp.opencl.util.CLPlatformFilters.*;
+import static com.jogamp.opencl.CLVersion.*;
+import static com.jogamp.opencl.CLDevice.Type.*;
 import static com.jogamp.common.nio.Buffers.*;
 
 /**
@@ -161,6 +164,21 @@ public class HighLevelBindingTest {
             }
         }
 
+    }
+
+    @Test
+    public void platformTest() {
+
+        CLPlatform platformGPU = CLPlatform.getDefault(version(CL_1_0), type(GPU));
+        CLPlatform platformCPU = CLPlatform.getDefault(version(CL_1_0), type(CPU));
+        
+        if(platformGPU != null) {
+            assertTrue(platformGPU.listCLDevices(GPU).length > 0);
+        }else if(platformCPU != null) {
+            assertTrue(platformCPU.listCLDevices(CPU).length > 0);
+        }else{
+            fail("please tell us about your hardware");
+        }
     }
 
     @Test

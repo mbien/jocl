@@ -10,6 +10,7 @@ import com.jogamp.gluegen.runtime.FunctionAddressResolver;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.impl.CLImpl;
 import com.jogamp.opencl.impl.CLProcAddressTable;
+import com.jogamp.opencl.util.Filter;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -118,10 +119,25 @@ public final class CLPlatform {
      */
     public static CLPlatform getDefault() {
         initialize();
-        CLPlatform[] platforms = listCLPlatforms();
+        return latest(listCLPlatforms());
+    }
+
+    /**
+     * Returns the default OpenCL platform or null when no platform found.
+     */
+    public static CLPlatform getDefault(Filter<CLPlatform>... filter) {
+        CLPlatform[] platforms = listCLPlatforms(filter);
+        if(platforms.length > 0) {
+            return latest(platforms);
+        }else{
+            return null;
+        }
+    }
+
+    private static CLPlatform latest(CLPlatform[] platforms) {
         CLPlatform best = platforms[0];
         for (CLPlatform platform : platforms) {
-            if(platform.version.compareTo(best.version) > 0) {
+            if (platform.version.compareTo(best.version) > 0) {
                 best = platform;
             }
         }
@@ -133,6 +149,15 @@ public final class CLPlatform {
      * @throws CLException if something went wrong initializing OpenCL
      */
     public static CLPlatform[] listCLPlatforms() {
+        return listCLPlatforms((Filter<CLPlatform>[])null);
+    }
+
+    /**
+     * Lists all available OpenCL implementations. The platforms returned must pass all filters.
+     * @param filter Acceptance filter for the returned platforms.
+     * @throws CLException if something went wrong initializing OpenCL
+     */
+    public static CLPlatform[] listCLPlatforms(Filter<CLPlatform>... filter) {
         initialize();
 
         IntBuffer ib = Buffers.newDirectIntBuffer(1);
@@ -145,12 +170,27 @@ public final class CLPlatform {
         ret = cl.clGetPlatformIDs(platformId.capacity(), platformId, null);
         checkForError(ret, "can not enumerate platforms");
 
-        CLPlatform[] platforms = new CLPlatform[platformId.capacity()];
+        List<CLPlatform> platforms = new ArrayList<CLPlatform>();
 
-        for (int i = 0; i < platformId.capacity(); i++)
-            platforms[i] = new CLPlatform(platformId.get(i));
+        for (int i = 0; i < platformId.capacity(); i++) {
+            CLPlatform platform = new CLPlatform(platformId.get(i));
+            if(filter == null) {
+                platforms.add(platform);
+            }else{
+                boolean accepted = true;
+                for (Filter<CLPlatform> f : filter) {
+                    if(!f.accept(platform)) {
+                        accepted = false;
+                        break;
+                    }
+                }
+                if(accepted) {
+                    platforms.add(platform);
+                }
+            }
+        }
 
-        return platforms;
+        return platforms.toArray(new CLPlatform[platforms.size()]);
     }
 
     /**
@@ -410,6 +450,5 @@ public final class CLPlatform {
         hash = 71 * hash + (int) (this.ID ^ (this.ID >>> 32));
         return hash;
     }
-
 
 }

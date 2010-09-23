@@ -42,7 +42,7 @@ public class CLGLTest {
         Screen screen  = NewtFactory.createScreen(display, 0); // screen 0
         assertNotNull(screen);
 
-        Window window = NewtFactory.createWindow(screen, new GLCapabilities(GLProfile.getDefault()), false /* undecorated */);
+        Window window = NewtFactory.createWindow(screen, new GLCapabilities(GLProfile.getDefault()));
         assertNotNull(window);
 
         window.setSize(640, 480);
@@ -88,6 +88,7 @@ public class CLGLTest {
         }
 
         assumeNotNull(glcontext);
+        out.println(device.getPlatform());
         CLContext context = CLGLContext.create(glcontext, device);
         assertNotNull(context);
         assertTrue(glcontext.isCurrent());

@@ -4,6 +4,9 @@
 
 package com.jogamp.opencl.gl;
 
+import org.junit.Rule;
+import org.junit.rules.MethodRule;
+import org.junit.rules.Timeout;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
@@ -28,6 +31,9 @@ import static java.lang.System.*;
  * @author Michael Bien
  */
 public class CLGLTest {
+
+    @Rule
+    public MethodRule methodTimeout= new Timeout(5000);
 
     private static GLContext glcontext;
 
@@ -95,6 +101,11 @@ public class CLGLTest {
 
         try{
             out.println(context);
+            /*
+            CLDevice currentDevice = context.getCurrentGLCLDevice();
+            assertNotNull(currentDevice);
+            out.println(currentDevice);
+             */
         }finally{
             context.release();
         }

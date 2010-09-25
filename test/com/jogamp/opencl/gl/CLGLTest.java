@@ -4,6 +4,7 @@
 
 package com.jogamp.opencl.gl;
 
+import com.jogamp.common.os.Platform;
 import org.junit.Rule;
 import org.junit.rules.MethodRule;
 import org.junit.rules.Timeout;
@@ -23,7 +24,6 @@ import javax.media.opengl.GLContext;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 import static java.lang.System.*;
 
 /**
@@ -36,11 +36,17 @@ public class CLGLTest {
     public MethodRule methodTimeout= new Timeout(5000);
 
     private static GLContext glcontext;
+    private static GLWindow glWindow;
 
     @BeforeClass
     public static void init() {
 
         GLProfile.initSingleton();
+
+        // FIXME remove when JOCL is stabelized on mac
+        if(Platform.getOS().toLowerCase().contains("mac")) {
+            fail("quick exit to prevent deadlock");
+        }
 
         Display display = NewtFactory.createDisplay(null); // local display
         assertNotNull(display);
@@ -53,9 +59,9 @@ public class CLGLTest {
 
         window.setSize(640, 480);
 
-        GLWindow glWindow = GLWindow.create(window);
+        glWindow = GLWindow.create(window);
         
-        assumeNotNull(glWindow);
+        assertNotNull(glWindow);
         glWindow.setVisible(true);
 
         glcontext = glWindow.getContext();
@@ -93,7 +99,7 @@ public class CLGLTest {
             out.println("isGLMemorySharingSupported==true on: \n    "+device);
         }
 
-        assumeNotNull(glcontext);
+        assertNotNull(glcontext);
         out.println(device.getPlatform());
         CLContext context = CLGLContext.create(glcontext, device);
         assertNotNull(context);

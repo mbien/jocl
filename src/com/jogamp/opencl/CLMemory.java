@@ -241,7 +241,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     @Override
     public String toString() {
-        return getClass().getSimpleName()+" [id: " + ID+"]";
+        return getClass().getSimpleName()+" [id: " + ID+" buffer: "+buffer+"]";
     }
 
     /**

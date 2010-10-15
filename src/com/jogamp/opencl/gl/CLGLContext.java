@@ -133,7 +133,7 @@ public final class CLGLContext extends CLContext {
 //          set to the Display handle of the X Window System display used to
 //          create the OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
-            long displayHandle = ctxImpl.getDrawableImpl().getNativeWindow().getDisplayHandle();
+            long displayHandle = ctxImpl.getDrawableImpl().getNativeSurface().getDisplayHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_GLX_DISPLAY_KHR).put(displayHandle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
@@ -143,7 +143,7 @@ public final class CLGLContext extends CLContext {
 //          context, and the attribute CL_WGL_HDC_KHR should be set to the
 //          HDC handle of the display used to create the OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
-            long surfaceHandle = ctxImpl.getDrawableImpl().getNativeWindow().getSurfaceHandle();
+            long surfaceHandle = ctxImpl.getDrawableImpl().getNativeSurface().getSurfaceHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_WGL_HDC_KHR).put(surfaceHandle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
@@ -163,7 +163,7 @@ public final class CLGLContext extends CLContext {
 //          CL_EGL_DISPLAY_KHR should be set to the EGLDisplay handle of the
 //          display used to create the OpenGL ES or OpenGL context."
             properties = PointerBuffer.allocateDirect(7);
-            long displayHandle = ctxImpl.getDrawableImpl().getNativeWindow().getDisplayHandle();
+            long displayHandle = ctxImpl.getDrawableImpl().getNativeSurface().getDisplayHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_EGL_DISPLAY_KHR).put(displayHandle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);

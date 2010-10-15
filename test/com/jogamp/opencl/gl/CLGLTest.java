@@ -18,8 +18,6 @@ import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLPlatform;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import javax.media.opengl.GLContext;
 import org.junit.Test;
 
@@ -38,10 +36,9 @@ public class CLGLTest {
     private static GLContext glcontext;
     private static GLWindow glWindow;
 
-    @BeforeClass
+//    @BeforeClass
     public static void init() {
-
-        GLProfile.initSingleton();
+        GLProfile.initSingleton(true);
 
         // FIXME remove when JOCL is stabelized on mac
         if(Platform.getOS().toLowerCase().contains("mac")) {
@@ -65,21 +62,22 @@ public class CLGLTest {
         glWindow.setVisible(true);
 
         glcontext = glWindow.getContext();
-        glcontext.makeCurrent();
+//        glcontext.makeCurrent();
         out.println("useing glcontext:");
         out.println(glcontext);
     }
 
-    @AfterClass
+//    @AfterClass
     public static void release() {
         if(glcontext!= null) {
-            glcontext.destroy();
             glcontext = null;
         }
     }
 
     @Test
     public void createContextTest() {
+
+        init();
 
         out.println(" - - - glcl; createContextTest - - - ");
 
@@ -116,7 +114,10 @@ public class CLGLTest {
             context.release();
         }
 
+        glcontext.destroy();
 
+
+        release();
     }
 
 

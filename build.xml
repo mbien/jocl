@@ -26,7 +26,7 @@
             <pathelement location="${antlr.jar}" />
         </path>
 
-        <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
+        <taskdef name="gluegen" classname="com.jogamp.gluegen.ant.GlueGenTask" classpathref="gluegen.classpath" />
 
         <!--OpenCL Impl including OpenGL interoperability-->
         <dirset id="jocl.include.path" dir="${basedir}">
@@ -42,7 +42,8 @@
         <gluegen src="resources/opencl.h"
                  config="resources/cl-if.cfg"
                  includeRefid="jocl.include.path"
-                 emitter="com.sun.gluegen.JavaEmitter">
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 debug="false">
             <classpath refid="gluegen.classpath" />
         </gluegen>
 
@@ -50,7 +51,8 @@
         <gluegen src="resources/opencl.h"
                  config="resources/clgl-if.cfg"
                  includeRefid="jocl.include.path"
-                 emitter="com.sun.gluegen.JavaEmitter">
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 debug="false">
             <classpath refid="gluegen.classpath" />
         </gluegen>
 
@@ -58,7 +60,8 @@
         <gluegen src="resources/opencl.h"
                  config="resources/cl-impl.cfg"
                  includeRefid="jocl.include.path"
-                 emitter="com.sun.gluegen.procaddress.ProcAddressEmitter">
+                 emitter="com.jogamp.gluegen.procaddress.ProcAddressEmitter"
+                 debug="false">
             <classpath refid="gluegen.classpath" />
         </gluegen>
         <echo message=" - - - JOCL binding files generated - - - "/>

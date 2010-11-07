@@ -1,9 +1,5 @@
-#ifdef _WIN32
-#include    <windows.h>
-#else
 //just to make ANTLR happy
-#define __GNUC__
-#endif
+// #define __GNUC__
 
 #include    <CL/cl_platform.h>
 #include    <CL/cl.h>

@@ -43,11 +43,10 @@
                  config="resources/cl-if.cfg"
                  includeRefid="jocl.include.path"
                  emitter="com.jogamp.gluegen.JavaEmitter"
-                 dumpCPP="true"
+                 dumpCPP="false"
                  debug="false">
             <classpath refid="gluegen.classpath" />
         </gluegen>
-        <fail/>
 
         <echo message="generate CLGLI interface..."/>
         <gluegen src="resources/opencl.h"

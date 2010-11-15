@@ -405,7 +405,7 @@ typedef unsigned int cl_GLenum;
     /* #define CL_ALIGNED(_x)          _CRT_ALIGN(_x)                                                                   */
     #define CL_ALIGNED(_x)
 #else
-   #warning  Need to implement some method to align data here
+   #warning "Need to implement some method to align data here"
    #define  CL_ALIGNED(_x)
 #endif
 

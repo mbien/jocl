@@ -334,6 +334,10 @@
             <arg line="${javadoc.additionalparam} -J-Dnativetaglet.mapping=${basedir}/resources/native-taglet.properties"/>
             <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/${rootrel.build}/gluegen.jar:/home/jogamp/NetBeansProjects/JOGL/jocl/"/>
 
+            <link offline="true" href="http://jogamp.org/deployment/jogamp-next/javadoc/gluegen/javadoc/" packagelistloc="${gluegen.root}/build/javadoc"/>
+            <link offline="true" href="http://jogamp.org/deployment/jogamp-next/javadoc/jogl/javadoc/" packagelistloc="${jogl.root}/build/javadoc"/>
+            <link href="http://download.oracle.com/javase/6/docs/api"/>
+
             <classpath>
                 <pathelement path="${javac.classpath}"/>
             </classpath>

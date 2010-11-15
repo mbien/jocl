@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 Implementation-Title: Java Bindings for OpenCL
+Implementation-URL: http://jocl.jogamp.org/
 Implementation-Version: @VERSION@
 Implementation-Branch: @SCM_BRANCH@
 Implementation-Commit: @SCM_COMMIT@

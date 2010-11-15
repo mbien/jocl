@@ -87,6 +87,27 @@
 
     <target name="-post-compile" depends="c.compile.default" />
 
+    <target name="-pre-jar">
+
+        <property name="jocl.build.number" value="CUSTOM" />
+        <property name="jocl.scm.branch" value="unknown" />
+        <property name="jocl.scm.commit" value="unknown" />
+
+        <tstamp>
+            <format property="version.timestamp" pattern="yyyyMMdd"/>
+        </tstamp>
+
+        <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
+
+        <copy file="${basedir}/manifest_template.mf" tofile="${rootrel.build}/manifest.mf">
+            <filterset>
+                <filter token="VERSION" value="${jocl.version}"/>
+                <filter token="SCM_BRANCH" value="${jocl.scm.branch}"/>
+                <filter token="SCM_COMMIT" value="${jocl.scm.commit}"/>
+            </filterset>
+        </copy>
+    </target>
+
     <target name="-post-jar" depends="jar.natives,tag.build">
 
         <property name="jocl.jnlp.codebase"     value="http://jogamp.org/deployment/webstart-next/jocl"/>
@@ -98,6 +119,15 @@
                 <replacestring from="GLUEGEN_CODEBASE_TAG"  to="${gluegen.jnlp.codebase}"/>
             </filterchain>
         </copy>
+
+        <zip destfile="${dist.dir}/jocl-${jocl.version}-${os.and.arch}.zip">
+            <fileset dir="${dist.dir}">
+                <include name="*.jar"/>
+                <include name="*.jnlp"/>
+                <include name="*.properties"/>
+                <include name="lib/*"/>
+            </fileset>
+        </zip>
 
     </target>
 
@@ -112,7 +142,7 @@
 
         <jar basedir="${natives.jocl.dir}/${namespace}" excludes="*.xml"
              destfile="${dist.jar.dir}/jocl-natives-${os.and.arch}.jar"
-             manifest="${basedir}/manifest.mf" />
+             manifest="${rootrel.build}/manifest.mf" />
 
     </target>
 

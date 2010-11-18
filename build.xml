@@ -325,6 +325,12 @@
 
         <mkdir dir="${dist.javadoc.dir}"/>
 
+        <!-- copy gluegen and jogl doc next to the jocl doc for relative linking -->
+        <copy todir="${dist.dir}/javadoc" failonerror="false">
+            <fileset dir="${gluegen.root}/build/javadoc"/>
+            <fileset dir="${jogl.root}/build/javadoc"/>
+        </copy>
+
         <javadoc author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}"
             docencoding="UTF-8" encoding="${javadoc.encoding.used}" failonerror="true"
             noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}"
@@ -335,8 +341,10 @@
             <arg line="${javadoc.additionalparam} -J-Dnativetaglet.mapping=${basedir}/resources/native-taglet.properties"/>
             <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/${rootrel.build}/gluegen.jar:/home/jogamp/NetBeansProjects/JOGL/jocl/"/>
 
-            <link offline="true" href="http://jogamp.org/deployment/jogamp-next/javadoc/gluegen/javadoc/" packagelistloc="${gluegen.root}/build/javadoc"/>
-            <link offline="true" href="http://jogamp.org/deployment/jogamp-next/javadoc/jogl/javadoc/" packagelistloc="${jogl.root}/build/javadoc"/>
+            <!-- relative linking between docs -->
+            <link href="../../gluegen/javadoc"/>
+            <link href="../../jogl/javadoc"/>
+
             <link href="http://download.oracle.com/javase/6/docs/api"/>
 
             <classpath>
@@ -356,7 +364,10 @@
             <excludepackage name="com.jogamp.opencl.impl"/>
         </javadoc>
 
-        <zip destfile="${dist.javadoc.dir}/../jocl-javadoc.zip" basedir="${dist.javadoc.dir}"/>
+        <zip destfile="${dist.dir}/jocl-javadoc.zip">
+            <zipfileset dir="${dist.javadoc.dir}" prefix="jocl/javadoc"/>
+        </zip>
+        
     </target>
 
     <target name="test-file">

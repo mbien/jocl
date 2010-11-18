@@ -11,6 +11,7 @@ import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.impl.CLImpl;
 import com.jogamp.opencl.impl.CLProcAddressTable;
 import com.jogamp.opencl.util.Filter;
+import com.jogamp.opencl.util.JOCLVersion;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -108,7 +109,11 @@ public final class CLPlatform {
 //            System.out.println("\n"+table);
 //            System.out.println("unavailable functions: "+table.getNullPointerFunctions());
 
+        }catch(UnsatisfiedLinkError ex) {
+            System.err.println(JOCLVersion.getAllVersions());
+            throw ex;
         }catch(Exception ex) {
+            System.err.println(JOCLVersion.getAllVersions());
             throw new JogampRuntimeException("JOCL initialization error.", ex);
         }
 

@@ -16,44 +16,50 @@ import java.util.Map;
  */
 public class CLInfo {
 
-    public static void main(String[] args) throws Exception {
+    public static StringBuilder print(StringBuilder sb) {
 
         // host
-        System.out.println("HOST_JRE: " + System.getProperty("java.runtime.version"));
-        System.out.println("HOST_JVM: " + System.getProperty("java.vm.name"));
-        System.out.println("HOST_ARCH: " + Platform.getArch());
-        System.out.println("HOST_NUM_CORES: " + Runtime.getRuntime().availableProcessors());
-        System.out.println("HOST_OS: " + Platform.getOS());
-        System.out.println("HOST_LITTLE_ENDIAN: " + Platform.isLittleEndian());
-        
+        sb.append("HOST_JRE: ").append(System.getProperty("java.runtime.version")).append("\n");
+        sb.append("HOST_JVM: ").append(System.getProperty("java.vm.name")).append("\n");
+        sb.append("HOST_ARCH: ").append(Platform.getArch()).append("\n");
+        sb.append("HOST_NUM_CORES: ").append(Runtime.getRuntime().availableProcessors()).append("\n");
+        sb.append("HOST_OS: ").append(Platform.getOS()).append("\n");
+        sb.append("HOST_LITTLE_ENDIAN: ").append(Platform.isLittleEndian()).append("\n");
+
         CLPlatform.initialize();
 
         // binding
-        System.out.println();
-        System.out.println("CL_BINDING_UNAVAILABLE_FUNCTIONS: " +
-                ((CLImpl)CLPlatform.getLowLevelCLInterface()).getAddressTable().getNullPointerFunctions());
+        sb.append("CL_BINDING_UNAVAILABLE_FUNCTIONS: ");
+        sb.append(((CLImpl) CLPlatform.getLowLevelCLInterface()).getAddressTable().getNullPointerFunctions());
+        sb.append("\n");
 
         // OpenCL
         CLPlatform[] platforms = CLPlatform.listCLPlatforms();
 
         for (CLPlatform platform : platforms) {
             Map<String, String> platformProperties = platform.getProperties();
-            System.out.println();
-            printInfo("", platformProperties);
+            sb.append("\n");
+            printInfo(sb, "", platformProperties);
 
             CLDevice[] devices = platform.listCLDevices();
             for (CLDevice device : devices) {
                 Map<String, String> deviceProperties = device.getProperties();
-                System.out.println();
-                printInfo(" - ", deviceProperties);
+                sb.append("\n");
+                printInfo(sb, " - ", deviceProperties);
             }
         }
 
+        return sb;
     }
 
-    private static void printInfo(String prefix, Map<String, String> properties) {
+
+    private static void printInfo(StringBuilder sb, String prefix, Map<String, String> properties) {
         for (Map.Entry<String, String> entry : properties.entrySet()) {
-            System.out.println(prefix + entry.getKey() + ": " + entry.getValue());
+            sb.append(prefix).append(entry.getKey()).append(": ").append(entry.getValue()).append(Platform.getNewline());
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println(print(new StringBuilder()).toString());
     }
 }

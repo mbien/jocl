@@ -89,7 +89,7 @@
 
     <target name="-pre-jar">
 
-        <property name="jocl.build.number" value="CUSTOM" />
+        <property name="jocl.build.number" value="manual" />
         <property name="jocl.scm.branch" value="unknown" />
         <property name="jocl.scm.commit" value="unknown" />
 
@@ -101,6 +101,7 @@
 
         <copy file="${basedir}/manifest_template.mf" tofile="${rootrel.build}/manifest.mf">
             <filterset>
+                <filter token="SPEC_VERSION" value="${jocl_base_version}"/>
                 <filter token="VERSION" value="${jocl.version}"/>
                 <filter token="SCM_BRANCH" value="${jocl.scm.branch}"/>
                 <filter token="SCM_COMMIT" value="${jocl.scm.commit}"/>

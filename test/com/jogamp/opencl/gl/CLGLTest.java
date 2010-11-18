@@ -35,6 +35,7 @@ public class CLGLTest {
 
     private static GLContext glcontext;
     private static GLWindow glWindow;
+    private static Window window;
 
 //    @BeforeClass
     public static void init() {
@@ -51,13 +52,13 @@ public class CLGLTest {
         Screen screen  = NewtFactory.createScreen(display, 0); // screen 0
         assertNotNull(screen);
 
-        Window window = NewtFactory.createWindow(screen, new GLCapabilities(GLProfile.getDefault()));
+        window = NewtFactory.createWindow(screen, new GLCapabilities(GLProfile.getDefault()));
         assertNotNull(window);
 
         window.setSize(640, 480);
 
         glWindow = GLWindow.create(window);
-        
+
         assertNotNull(glWindow);
         glWindow.setVisible(true);
 
@@ -69,9 +70,12 @@ public class CLGLTest {
 
 //    @AfterClass
     public static void release() {
-        if(glcontext!= null) {
+        if(glcontext != null) {
+            glcontext.destroy();
             glcontext = null;
         }
+        glWindow.destroy();
+//        window.destroy();
     }
 
     @Test
@@ -113,9 +117,6 @@ public class CLGLTest {
         }finally{
             context.release();
         }
-
-        glcontext.destroy();
-
 
         release();
     }

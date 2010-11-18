@@ -1306,6 +1306,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not enqueue marker " + events);
         }
+        events.createEvent(context);
         return this;
     }
 

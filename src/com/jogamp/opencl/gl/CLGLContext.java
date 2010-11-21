@@ -32,7 +32,6 @@ public final class CLGLContext extends CLContext {
 
     /**
      * Creates a shared context on all available devices (CL_DEVICE_TYPE_ALL).
-     * Note: This will make the GLContext current.
      * @see GLContext#makeCurrent()
      */
     public static CLGLContext create(GLContext glContext) {
@@ -41,7 +40,6 @@ public final class CLGLContext extends CLContext {
 
     /**
      * Creates a shared context on the specified platform on all available devices (CL_DEVICE_TYPE_ALL).
-     * Note: This will make the GLContext current.
      * @see GLContext#makeCurrent()
      */
     public static CLGLContext create(GLContext glContext, CLPlatform platform) {
@@ -51,7 +49,6 @@ public final class CLGLContext extends CLContext {
     /**
      * Creates a shared context on the specified platform and with the specified
      * device types.
-     * Note: This will make the GLContext current.
      * @see GLContext#makeCurrent()
      */
     public static CLGLContext create(GLContext glContext, CLDevice.Type... deviceTypes) {
@@ -61,7 +58,6 @@ public final class CLGLContext extends CLContext {
     /**
      * Creates a shared context on the specified platform and with the specified
      * device types.
-     * Note: This will make the GLContext current.
      * @see GLContext#makeCurrent()
      */
     public static CLGLContext create(GLContext glContext, CLPlatform platform, CLDevice.Type... deviceTypes) {
@@ -82,7 +78,6 @@ public final class CLGLContext extends CLContext {
     /**
      * Creates a shared context on the specified platform and with the specified
      * devices.
-     * Note: This will make the GLContext current.
      * @see GLContext#makeCurrent()
      */
     public static CLGLContext create(GLContext glContext, CLDevice... devices) {

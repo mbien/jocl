@@ -8,8 +8,8 @@ import java.util.Arrays;
 /**
  * Pre-defined filters.
  * @author Michael Bien
- * @see CLPlatform#getDefault(com.jogamp.opencl.util.Filter<com.jogamp.opencl.CLPlatform>[])
- * @see CLPlatform#listCLPlatforms(com.jogamp.opencl.util.Filter<com.jogamp.opencl.CLPlatform>[]) 
+ * @see CLPlatform#getDefault(com.jogamp.opencl.util.Filter[])
+ * @see CLPlatform#listCLPlatforms(com.jogamp.opencl.util.Filter[]) 
  */
 public class CLPlatformFilters {
 

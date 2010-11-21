@@ -121,13 +121,13 @@
             </filterchain>
         </copy>
 
-        <zip destfile="${dist.dir}/jocl-${jocl.version}-${os.and.arch}.zip">
-            <fileset dir="${dist.dir}">
-                <include name="*.jar"/>
-                <include name="*.jnlp"/>
-                <include name="*.properties"/>
-                <include name="lib/*"/>
-            </fileset>
+        <property name="dist.zip.name" value="jocl-${jocl.version}-${os.and.arch}"/>
+        
+        <zip destfile="${dist.dir}/${dist.zip.name}.zip">
+            <zipfileset dir="${dist.dir}" includes="jocl.jar" prefix="${dist.zip.name}/jar"/>
+            <zipfileset dir="${dist.dir}" includes="jocl-natives-*.jar" prefix="${dist.zip.name}/lib"/>
+            <zipfileset dir="${dist.dir}" includes="*.jnlp" prefix="${dist.zip.name}/jnlp-files"/>
+            <zipfileset dir="${dist.dir}" includes="*.properties" prefix="${dist.zip.name}"/>
         </zip>
 
     </target>
@@ -137,6 +137,7 @@
         <property name="jocl.build.number" value="manual-build"/>
         <copy file="${jogl.root}/${rootrel.build}/artifact.properties" todir="${dist.jar.dir}" overwrite="true" failonerror="false"/>
         <echo file="${dist.jar.dir}/artifact.properties" message="jocl.build.number=${jocl.build.number}${line.separator}" append="true" />
+        <echo file="${dist.jar.dir}/artifact.properties" message="jocl.scm.commit=${jocl.scm.commit}${line.separator}" append="true" />
     </target>
 
     <target name="jar.natives" unless="c.dont.compile">

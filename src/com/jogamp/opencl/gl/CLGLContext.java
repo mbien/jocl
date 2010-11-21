@@ -120,7 +120,10 @@ public final class CLGLContext extends CLContext {
         }
 
         // context must be current
-        glContext.makeCurrent();
+        if(!glContext.isCurrent()) {
+            throw new IllegalArgumentException("OpenGL context is not current,\n"+
+                    " creating a OpenCL context for context sharing is not allowed in this situation.");
+        }
 
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
         glID[0] = glContext.getHandle();

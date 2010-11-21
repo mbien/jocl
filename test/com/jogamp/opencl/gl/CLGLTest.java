@@ -68,16 +68,6 @@ public class CLGLTest {
         out.println(glcontext);
     }
 
-//    @AfterClass
-    public static void release() {
-        if(glcontext != null) {
-            glcontext.destroy();
-            glcontext = null;
-        }
-        glWindow.destroy();
-//        window.destroy();
-    }
-
     @Test
     public void createContextTest() {
 
@@ -101,11 +91,14 @@ public class CLGLTest {
             out.println("isGLMemorySharingSupported==true on: \n    "+device);
         }
 
-        assertNotNull(glcontext);
         out.println(device.getPlatform());
+        
+        assertNotNull(glcontext);
+        glcontext.makeCurrent();
+        assertTrue(glcontext.isCurrent());
+        
         CLContext context = CLGLContext.create(glcontext, device);
         assertNotNull(context);
-        assertTrue(glcontext.isCurrent());
 
         try{
             out.println(context);
@@ -115,10 +108,13 @@ public class CLGLTest {
             out.println(currentDevice);
              */
         }finally{
+            // destroy cl context, gl context still current
             context.release();
+            
+            glcontext.release();
+            glWindow.destroy();
         }
 
-        release();
     }
 
 

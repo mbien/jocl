@@ -109,6 +109,17 @@ public final class CLGLContext extends CLContext {
         return context;
     }
 
+    public void release() {
+        // 1st we have to release the GLContext if aquired,
+        // since it is made current 1st.
+        // A different destruction sequence than used at construction
+        // will cause a SIGSEGV on AMD GPUs (bug).
+        // This is similar to the X11 Display sequence bug.
+        if(null != glContext && glContext.isCurrent()) {
+            glContext.release();
+        }
+        super.release();
+    }
 
     private static PointerBuffer setupContextProperties(CLPlatform platform, GLContext glContext, long[] glID) {
 

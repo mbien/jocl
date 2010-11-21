@@ -70,12 +70,7 @@ public class CLGLTest {
 
 //    @AfterClass
     public static void release() {
-        if(glcontext != null) {
-            glcontext.destroy();
-            glcontext = null;
-        }
         glWindow.destroy();
-//        window.destroy();
     }
 
     @Test
@@ -116,6 +111,7 @@ public class CLGLTest {
              */
         }finally{
             context.release();
+            assertFalse(glcontext.isCurrent());
         }
 
         release();

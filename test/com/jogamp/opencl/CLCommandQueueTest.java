@@ -193,18 +193,11 @@ public class CLCommandQueueTest {
             }
         }
 
-        final CLContext context = CLContext.create(theChosenOne);
-
-        // we expect an UOE if CL 1.1 is not supported
         if(!theChosenOne.isAtLeast(CL_1_1)) {
-            try{
-                CLUserEvent.create(context);
-                fail("");
-            }catch(UnsupportedOperationException ex) {
-                out.println("test dissabled, required CLVersion: "+CL_1_1+" available: "+theChosenOne.getVersion());
-                return;
-            }
+            out.println("test disabled, required CLVersion: "+CL_1_1+" available: "+theChosenOne.getVersion());
         }
+
+        final CLContext context = CLContext.create(theChosenOne);
 
         try{
             CLDevice device = context.getDevices()[0];
@@ -269,7 +262,7 @@ public class CLCommandQueueTest {
         CLPlatform platform = CLPlatform.getDefault();
 
         if(!platform.isAtLeast(CL_1_1)) {
-            out.println("test dissabled, required CLVersion: "+CL_1_1+" available: "+platform.getVersion());
+            out.println("test disabled, required CLVersion: "+CL_1_1+" available: "+platform.getVersion());
             return;
         }
 

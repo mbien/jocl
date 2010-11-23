@@ -195,6 +195,7 @@ public class CLCommandQueueTest {
 
         if(!theChosenOne.isAtLeast(CL_1_1)) {
             out.println("test disabled, required CLVersion: "+CL_1_1+" available: "+theChosenOne.getVersion());
+            return;
         }
 
         final CLContext context = CLContext.create(theChosenOne);

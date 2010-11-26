@@ -9,6 +9,7 @@ import com.jogamp.common.util.JogampVersion;
 import com.jogamp.common.util.VersionUtil;
 import java.util.jar.Manifest;
 
+import static com.jogamp.common.util.VersionUtil.*;
 
 /**
  *
@@ -36,7 +37,7 @@ public class JOCLVersion extends JogampVersion {
         StringBuilder sb = new StringBuilder();
 
         sb.append(SEPERATOR).append(Platform.getNewline());
-        sb.append(VersionUtil.getPlatformInfo(null));
+        sb.append(getPlatformInfo(null));
         sb.append(SEPERATOR).append(Platform.getNewline());
 
         createInstance().toString(sb);

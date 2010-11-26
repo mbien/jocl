@@ -110,6 +110,9 @@
     </target>
 
     <target name="-post-jar" depends="jar.natives,tag.build">
+        
+        <!-- don't know how to get rid of the NetBeans readme file -->
+        <delete file="${dist.dir}/README.TXT"/>
 
         <property name="jocl.jnlp.codebase"     value="http://jogamp.org/deployment/webstart-next/jocl"/>
         <property name="gluegen.jnlp.codebase"  value="http://jogamp.org/deployment/jocl-webstart-next"/>

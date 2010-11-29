@@ -129,7 +129,7 @@
         <zip destfile="${dist.dir}/${dist.zip.name}.zip">
             <zipfileset dir="${dist.dir}" includes="jocl.jar" prefix="${dist.zip.name}/jar"/>
             <zipfileset dir="${dist.dir}" includes="jocl-natives-*.jar" prefix="${dist.zip.name}/jar"/>
-            <zipfileset dir="${dist.dir}" includes="*.jnlp" prefix="${dist.zip.name}/jnlp-files"/>
+            <zipfileset dir="." includes="*.jnlp" prefix="${dist.zip.name}/jnlp-files"/>
             <zipfileset dir="${dist.dir}" includes="*.properties" prefix="${dist.zip.name}"/>
         </zip>
 

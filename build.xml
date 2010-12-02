@@ -88,23 +88,23 @@
     <target name="-post-compile" depends="c.compile.default" />
 
     <target name="-pre-jar">
-
-        <property name="jocl.build.number" value="manual" />
-        <property name="jocl.scm.branch" value="unknown" />
-        <property name="jocl.scm.commit" value="unknown" />
-
         <tstamp>
             <format property="version.timestamp" pattern="yyyyMMdd"/>
         </tstamp>
+
+        <property name="jocl.build.number" value="manual" />
+        <property name="jocl.build.id"     value="${version.timestamp}" />
+        <property name="jocl.build.branch" value="master" />
+        <property name="jocl.build.commit" value="manual" />
 
         <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
 
         <copy file="${basedir}/manifest_template.mf" tofile="${rootrel.build}/manifest.mf">
             <filterset>
                 <filter token="SPEC_VERSION" value="${jocl_base_version}"/>
-                <filter token="VERSION" value="${jocl.version}"/>
-                <filter token="SCM_BRANCH" value="${jocl.scm.branch}"/>
-                <filter token="SCM_COMMIT" value="${jocl.scm.commit}"/>
+                <filter token="VERSION"      value="${jocl.version}"/>
+                <filter token="SCM_BRANCH"   value="${jocl.build.branch}"/>
+                <filter token="SCM_COMMIT"   value="${jocl.build.commit}"/>
             </filterset>
         </copy>
     </target>
@@ -114,8 +114,9 @@
         <!-- don't know how to get rid of the NetBeans readme file -->
         <delete file="${dist.dir}/README.TXT"/>
 
-        <property name="jocl.jnlp.codebase"     value="http://jogamp.org/deployment/webstart-next/jocl"/>
-        <property name="gluegen.jnlp.codebase"  value="http://jogamp.org/deployment/jocl-webstart-next"/>
+        <!-- for local testing -->
+        <property name="jocl.jnlp.codebase"     value="http://jogamp.org/deployment/webstart-next"/>
+        <property name="gluegen.jnlp.codebase"  value="http://jogamp.org/deployment/webstart-next"/>
 
         <copy file="jocl.jnlp" tofile="${dist.jar.dir}/jocl.jnlp">
             <filterchain>
@@ -123,24 +124,36 @@
                 <replacestring from="GLUEGEN_CODEBASE_TAG"  to="${gluegen.jnlp.codebase}"/>
             </filterchain>
         </copy>
+        
+        <!-- add native dependencies to lib folder -->
+        <copy file="${gluegen.root}/${rootrel.build}/gluegen-rt-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
+        <copy file="${jogl.root}/${rootrel.build}/jogl/jogl-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
+        <copy file="${jogl.root}/${rootrel.build}/nativewindow/nativewindow-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
+        <copy file="${jogl.root}/${rootrel.build}/newt/newt-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
 
         <property name="dist.zip.name" value="jocl-${jocl.version}-${os.and.arch}"/>
         
+        <!-- zip distribution -->
         <zip destfile="${dist.dir}/${dist.zip.name}.zip">
             <zipfileset dir="${dist.dir}" includes="jocl.jar" prefix="${dist.zip.name}/jar"/>
             <zipfileset dir="${dist.dir}" includes="jocl-natives-*.jar" prefix="${dist.zip.name}/jar"/>
+            <zipfileset dir="${dist.dir}/lib" includes="*-natives-*.jar" prefix="${dist.zip.name}/jar"/>
             <zipfileset dir="." includes="*.jnlp" prefix="${dist.zip.name}/jnlp-files"/>
             <zipfileset dir="${dist.dir}" includes="*.properties" prefix="${dist.zip.name}"/>
+            <zipfileset dir="${basedir}/${rootrel.build}/natives/jocl" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
+            <zipfileset dir="${jogl.root}/${rootrel.build}/lib" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
+            <zipfileset dir="${gluegen.root}/${rootrel.build}/obj" includes="*gluegen-rt.*" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
         </zip>
 
     </target>
 
     <target name="tag.build">
         <property file="${dist.jar.dir}/artifact.properties"/>
-        <property name="jocl.build.number" value="manual-build"/>
         <copy file="${jogl.root}/${rootrel.build}/artifact.properties" todir="${dist.jar.dir}" overwrite="true" failonerror="false"/>
         <echo file="${dist.jar.dir}/artifact.properties" message="jocl.build.number=${jocl.build.number}${line.separator}" append="true" />
-        <echo file="${dist.jar.dir}/artifact.properties" message="jocl.scm.commit=${jocl.scm.commit}${line.separator}" append="true" />
+        <echo file="${dist.jar.dir}/artifact.properties" message="jocl.build.id=${jocl.build.id}${line.separator}" append="true" />
+        <echo file="${dist.jar.dir}/artifact.properties" message="jocl.build.branch=${jocl.build.branch}${line.separator}" append="true" />
+        <echo file="${dist.jar.dir}/artifact.properties" message="jocl.build.commit=${jocl.build.commit}${line.separator}" append="true" />
     </target>
 
     <target name="jar.natives" unless="c.dont.compile">

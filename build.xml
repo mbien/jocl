@@ -15,9 +15,24 @@
 
     <property name="etc.build.dir" value="${basedir}/etc/build" />
     <property name="headers.dest" value="${basedir}/resources/includes/CL" />
+    
+    <tstamp>
+        <format property="version.timestamp" pattern="yyyyMMdd"/>
+    </tstamp>
+
+    <property name="jocl.build.number" value="manual" />
+    <property name="jocl.build.id"     value="${version.timestamp}" />
+    <property name="jocl.build.branch" value="master" />
+    <property name="jocl.build.commit" value="manual" />
 
     <!-- Pull in GlueGen cpptasks build file -->
     <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
+    
+    <!-- -post-init is after all properties are imported -->
+    <target name="-post-init" depends="gluegen.cpptasks.detect.os">
+        <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
+        <property name="dist.zip.name" value="jocl-${jocl.version}-${os.and.arch}"/>
+    </target>
 
     <target name="-pre-compile" depends="prepare-build,preprocess-headers">
 
@@ -88,17 +103,7 @@
     <target name="-post-compile" depends="c.compile.default" />
 
     <target name="-pre-jar">
-        <tstamp>
-            <format property="version.timestamp" pattern="yyyyMMdd"/>
-        </tstamp>
-
-        <property name="jocl.build.number" value="manual" />
-        <property name="jocl.build.id"     value="${version.timestamp}" />
-        <property name="jocl.build.branch" value="master" />
-        <property name="jocl.build.commit" value="manual" />
-
-        <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
-
+        
         <copy file="${basedir}/manifest_template.mf" tofile="${rootrel.build}/manifest.mf">
             <filterset>
                 <filter token="SPEC_VERSION" value="${jocl_base_version}"/>
@@ -107,6 +112,7 @@
                 <filter token="SCM_COMMIT"   value="${jocl.build.commit}"/>
             </filterset>
         </copy>
+        
     </target>
 
     <target name="-post-jar" depends="jar.natives,tag.build">
@@ -131,8 +137,6 @@
         <copy file="${jogl.root}/${rootrel.build}/nativewindow/nativewindow-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
         <copy file="${jogl.root}/${rootrel.build}/newt/newt-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
 
-        <property name="dist.zip.name" value="jocl-${jocl.version}-${os.and.arch}"/>
-        
         <!-- zip distribution -->
         <zip destfile="${dist.dir}/${dist.zip.name}.zip">
             <zipfileset dir="${dist.dir}" includes="jocl.jar" prefix="${dist.zip.name}/jar"/>
@@ -356,7 +360,7 @@
             windowtitle="${javadoc.windowtitle}">
 
             <arg line="${javadoc.additionalparam} -J-Dnativetaglet.mapping=${basedir}/resources/native-taglet.properties"/>
-            <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/${rootrel.build}/gluegen.jar:/home/jogamp/NetBeansProjects/JOGL/jocl/"/>
+            <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/${rootrel.build}/gluegen.jar"/>
 
             <!-- relative linking between docs -->
             <link href="../../gluegen/javadoc"/>
@@ -391,6 +395,14 @@
         <property name="javac.includes" value="${test.file}"/>
         <property name="test.includes" value="${test.file}"/>
         <antcall target="test-single" inheritall="true"/>
+    </target>
+    
+    <!-- overwrites default target - watch out when build-impl.xml changes -->
+    <target name="-post-test-run" depends="init,compile-test,-pre-test-run,-do-test-run" if="have.tests">
+        <zip destfile="${dist.dir}/${dist.zip.name}-test-results.zip" update="false">
+            <zipfileset dir="${build.test.results.dir}" prefix="${dist.zip.name}/test-results"/>
+        </zip>
+        <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
     </target>
 
 </project>

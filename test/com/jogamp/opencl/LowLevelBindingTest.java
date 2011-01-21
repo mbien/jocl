@@ -279,7 +279,7 @@ public class LowLevelBindingTest {
 
 
         // Create the program
-        PointerBuffer lengths = (PointerBuffer)PointerBuffer.allocateDirect(1).put(programSource.length());
+        PointerBuffer lengths = (PointerBuffer)PointerBuffer.allocateDirect(1).put(programSource.length()).rewind();
         final long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
         out.println("program id: "+program);
         checkError("on clCreateProgramWithSource", intBuffer.get(0));

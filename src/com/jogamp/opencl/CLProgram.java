@@ -73,14 +73,19 @@ public class CLProgram extends CLObject implements CLResource {
     
     static CLProgram create(CLContext context, String src) {
 
-        IntBuffer status = newDirectByteBuffer(4).asIntBuffer();
+        IntBuffer status = newDirectIntBuffer(1);
+        
+        PointerBuffer length = (PointerBuffer)PointerBuffer.allocateDirect(1).put(0, src.length());
+        String[] srcArray = new String[] {src};
+        
         // Create the program
-        long id = context.cl.clCreateProgramWithSource(context.ID, 1, new String[] {src},
-                               (PointerBuffer)PointerBuffer.allocateDirect(1).put(src.length()), status);
+        long id = context.cl.clCreateProgramWithSource(context.ID, 1, srcArray, length, status);
 
         int err = status.get();
         if(err != CL_SUCCESS) {
-            throw newException(err, "can not create program with source on "+context);
+            // don't remove: locks the reference (length and srcArray)
+            length.rewind();
+            throw newException(err, "can not create program with source (length="+srcArray[0].length()+") on "+context);
         }
         
         return new CLProgram(context, id);

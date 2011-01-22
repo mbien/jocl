@@ -83,9 +83,7 @@ public class CLProgram extends CLObject implements CLResource {
 
         int err = status.get();
         if(err != CL_SUCCESS) {
-            // don't remove: locks the reference (length and srcArray)
-            length.rewind();
-            throw newException(err, "can not create program with source (length="+srcArray[0].length()+") on "+context);
+            throw newException(err, "can not create program with source on "+context);
         }
         
         return new CLProgram(context, id);

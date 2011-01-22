@@ -139,16 +139,19 @@
 
         <!-- zip distribution -->
         <zip destfile="${dist.dir}/${dist.zip.name}.zip">
-            <zipfileset dir="${dist.dir}" includes="jocl.jar" prefix="${dist.zip.name}/jar"/>
-            <zipfileset dir="${dist.dir}" includes="jocl-natives-*.jar" prefix="${dist.zip.name}/jar"/>
-            <zipfileset dir="${dist.dir}/lib" includes="*-natives-*.jar" prefix="${dist.zip.name}/jar"/>
+            <!-- jars and jared natives -->
+            <zipfileset dir="${dist.dir}" includes="jocl.jar,jocl-natives-*.jar" prefix="${dist.zip.name}/jar"/>
+            <zipfileset dir="${dist.dir}/lib" includes="*.jar" prefix="${dist.zip.name}/jar"/>
+            
             <zipfileset dir="." includes="*.jnlp" prefix="${dist.zip.name}/jnlp-files"/>
+            <zipfileset dir="." includes="README,LICENSE" prefix="${dist.zip.name}"/>
             <zipfileset dir="${dist.dir}" includes="*.properties" prefix="${dist.zip.name}"/>
+            
+            <!-- native files, TODO: remove when no longer needed -->
             <zipfileset dir="${basedir}/${rootrel.build}/natives/jocl" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
             <zipfileset dir="${jogl.root}/${rootrel.build}/lib" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
-            <zipfileset dir="${gluegen.root}/${rootrel.build}/obj" includes="*gluegen-rt.*" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
         </zip>
-
+        
     </target>
 
     <target name="tag.build">
@@ -399,7 +402,7 @@
     
     <!-- overwrites default target - watch out when build-impl.xml changes -->
     <target name="-post-test-run" depends="init,compile-test,-pre-test-run,-do-test-run" if="have.tests">
-        <zip destfile="${dist.dir}/${dist.zip.name}-test-results.zip" update="false">
+        <zip destfile="${dist.dir}/${dist.zip.name}-test-results.zip">
             <zipfileset dir="${build.test.results.dir}" prefix="${dist.zip.name}/test-results"/>
         </zip>
         <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>

@@ -59,7 +59,7 @@ import static java.lang.System.*;
 public class CLGLTest {
 
     @Rule
-    public MethodRule methodTimeout= new Timeout(5000);
+    public MethodRule methodTimeout= new Timeout(15000);
 
     private static GLContext glcontext;
     private static GLWindow glWindow;

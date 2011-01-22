@@ -255,12 +255,17 @@ public class LowLevelBindingTest {
         out.println("using device# " + offset);
         offset *= (is32Bit() ? 4 : 8);
         long device = is32Bit()?bb.getInt(offset):bb.getLong(offset);
+        
+        ret = cl.clGetDeviceInfo(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE, bb.capacity(), bb, null);
+        checkError("on clGetDeviceInfo", ret);
+        int maxWGS = bb.getInt();
+        out.println("max WGS: " + maxWGS);
 
         // Create a command-queue
         long commandQueue = cl.clCreateCommandQueue(context, device, 0, intBuffer);
         checkError("on clCreateCommandQueue", intBuffer.get(0));
 
-        int localWorkSize = 128;      // set and log Global and Local work size dimensions
+        int localWorkSize = Math.min(128, maxWGS);      // set and log Global and Local work size dimensions
         int globalWorkSize = roundUp(localWorkSize, ELEMENT_COUNT);  // rounded up to the nearest multiple of the LocalWorkSize
 
         out.println("allocateing buffers of size: "+globalWorkSize);
@@ -448,11 +453,11 @@ public class LowLevelBindingTest {
         return (ByteBuffer) newDirectByteBuffer(8).putLong(value).rewind();
     }
 
-    private final void checkForError(int ret) {
+    private void checkForError(int ret) {
         this.checkError("", ret);
     }
 
-    private final void checkError(String msg, int ret) {
+    private void checkError(String msg, int ret) {
         if(ret != CL.CL_SUCCESS)
             throw CLException.newException(ret, msg);
     }

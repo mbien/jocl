@@ -268,7 +268,7 @@ public final class CLPlatform {
             int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, ib);
 
             // return an empty array rather than throwing an exception
-            if(ret == CL.CL_DEVICE_NOT_FOUND) {
+            if(ret == CL.CL_DEVICE_NOT_FOUND || ib.get(0) == 0) {
                 continue;
             }
 

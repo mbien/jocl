@@ -33,9 +33,11 @@
         <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
         <property name="dist.zip.name" value="jocl-${jocl.version}-${os.and.arch}"/>
     </target>
-
-    <target name="-pre-compile" depends="prepare-build,preprocess-headers">
-
+    
+    <target name="-pre-compile" depends="generate-binding"/>
+        
+    <target name="generate-binding" depends="prepare-build,preprocess-headers" unless="dont-generate">
+    
         <path id="gluegen.classpath">
             <pathelement location="${file.reference.gluegen.jar}" />
             <pathelement location="${antlr.jar}" />
@@ -407,5 +409,7 @@
         </zip>
         <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
     </target>
+    
+    <target name="clean-jar-test" depends="clean,jar,test"/>
 
 </project>

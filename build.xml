@@ -117,7 +117,7 @@
         
     </target>
 
-    <target name="-post-jar" depends="jar.natives,tag.build">
+    <target name="-post-jar" depends="jar.natives,tag.build" unless="c.dont.compile">
         
         <!-- don't know how to get rid of the NetBeans readme file -->
         <delete file="${dist.dir}/README.TXT"/>

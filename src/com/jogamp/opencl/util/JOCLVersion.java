@@ -35,12 +35,15 @@ import com.jogamp.common.GlueGenVersion;
 import com.jogamp.common.os.Platform;
 import com.jogamp.common.util.JogampVersion;
 import com.jogamp.common.util.VersionUtil;
+import com.jogamp.opencl.CL;
+import java.security.PrivilegedAction;
 import java.util.jar.Manifest;
 
+import static java.security.AccessController.*;
 import static com.jogamp.common.util.VersionUtil.*;
 
 /**
- *
+ * Utility for querying module versions and environment properties.
  * @author Michael Bien
  */
 public class JOCLVersion extends JogampVersion {
@@ -51,9 +54,16 @@ public class JOCLVersion extends JogampVersion {
         super(PACKAGE, mf);
     }
 
-    private static JOCLVersion createInstance(){
-        Manifest manifest = VersionUtil.getManifest(JOCLVersion.class.getClassLoader(), PACKAGE);
-        return new JOCLVersion(manifest);
+    private static JOCLVersion createInstance() {
+        return doPrivileged(new PrivilegedAction<JOCLVersion>() {
+            public JOCLVersion run() {
+                Manifest manifest = VersionUtil.getManifest(CL.class.getClassLoader(), PACKAGE);
+                if(manifest == null) {
+                manifest = new Manifest();
+                }
+                return new JOCLVersion(manifest);
+            }
+        });
     }
 
     public static String getVersion() {
@@ -62,15 +72,35 @@ public class JOCLVersion extends JogampVersion {
 
     public static String getAllVersions() {
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
-        sb.append(SEPERATOR).append(Platform.getNewline());
-        sb.append(getPlatformInfo(null));
-        sb.append(SEPERATOR).append(Platform.getNewline());
+        try{
+            sb.append(SEPERATOR).append(Platform.getNewline());
+            sb.append(getPlatformInfo(null));
+            sb.append(SEPERATOR).append(Platform.getNewline());
+        }catch(Exception e) {
+            sb.append(e.getMessage());
+            e.printStackTrace();
+        }
 
-        createInstance().toString(sb);
+        try{
+            createInstance().toString(sb);
+        }catch(Exception e) {
+            sb.append(e.getMessage());
+            e.printStackTrace();
+        }
 
-        sb.append(GlueGenVersion.getInstance().toString());
+        try{
+            doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    sb.append(GlueGenVersion.getInstance().toString());
+                    return null;
+                }
+            });
+        }catch(Exception e) {
+            sb.append(e.getMessage());
+            e.printStackTrace();
+        }
 
         return sb.toString();
     }

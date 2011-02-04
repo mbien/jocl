@@ -49,16 +49,21 @@ import java.util.Map;
 public class CLUtil {
 
     public static String clString2JavaString(byte[] chars, int clLength) {
-        return clLength==0 ? "" : new String(chars, 0, clLength-1);
+
+        // certain char queries on windows always claim to have a fixed length
+        // e.g. (clDeviceInfo(CL_DEVICE_NAME) is always 64.. but luckily they are 0 terminated)
+        while(clLength > 0 && chars[--clLength] == 0);
+
+        return clLength==0 ? "" : new String(chars, 0, clLength+1);
     }
 
     public static String clString2JavaString(ByteBuffer chars, int clLength) {
         if (clLength==0) {
             return "";
         }else{
-            byte[] array = new byte[clLength-1]; // last char is always null
+            byte[] array = new byte[clLength];
             chars.get(array).rewind();
-            return new String(array, 0, clLength-1);
+            return clString2JavaString(array, clLength);
         }
     }
 

@@ -77,7 +77,7 @@ abstract class CLInfoAccessor {
         checkForError(ret, "error while asking for info string");
 
         int clSize = (int)sizeBuffer.get(0);
-        byte[] array = new byte[clSize-1]; // last char is always null
+        byte[] array = new byte[clSize];
         buffer.get(array).rewind();
 
         return CLUtil.clString2JavaString(array, clSize);

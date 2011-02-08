@@ -56,7 +56,32 @@ import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.opencl.CL.*;
 
 /**
- * CLPlatfrorm representing an OpenCL installation (e.g. graphics driver).
+ * CLPlatfrorm representing a OpenCL implementation (e.g. graphics driver).
+ * 
+ * optional eager initialization:
+ * <p><pre>
+ *     try{
+ *          CLPlatform.initialize();
+ *     }catch(JogampRuntimeException ex) {
+ *          throw new RuntimeException("could not load Java OpenCL Binding");
+ *     }
+ * </pre></p>
+ * 
+ * Example initialization:
+ * <p><pre>
+ *     CLPlatform platform = CLPlatform.getDefault(type(GPU));
+ *      
+ *     if(platform == null) {
+ *          throw new RuntimeException("please update your graphics drivers");
+ *     }
+ * 
+ *     CLContext context = CLContext.create(platform.getMaxFlopsDevice());
+ *     try {
+ *          // use it
+ *     }finally{
+ *          context.release();
+ *     }
+ * </pre></p>
  * 
  * @author Michael Bien
  * @see #initialize()

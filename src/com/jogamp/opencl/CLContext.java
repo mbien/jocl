@@ -47,30 +47,45 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import static java.lang.System.*;
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.common.nio.Buffers.*;
 import static com.jogamp.common.os.Platform.*;
 import static com.jogamp.opencl.CL.*;
 import static com.jogamp.opencl.CLBuffer.*;
+import static java.util.Collections.*;
 
 /**
  * CLContext is responsible for managing objects such as command-queues, memory,
  * program and kernel objects and for executing kernels on one or more devices
  * specified in the context.
+ * <p>
+ *  Must be released if no longer used to free native resources. {@link #release()} will
+ *  also free all associated {@link CLResource} like programs, samplers, command queues and memory
+ *  objects.
+ * </p>
+ * <p>
+ *  For a code example see {@link CLPlatform}.
+ * <p/>
+ * 
+ * concurrency:<br/>
+ * CLContext is threadsafe.
+ * 
  * @author Michael Bien
  */
 public class CLContext extends CLObject implements CLResource {
 
     protected CLDevice[] devices;
 
-    protected final List<CLProgram> programs;
-    protected final List<CLSampler> samplers;
-    protected final List<CLMemory<? extends Buffer>> memoryObjects;
+    protected final Set<CLProgram> programs;
+    protected final Set<CLSampler> samplers;
+    protected final Set<CLMemory<? extends Buffer>> memoryObjects;
     
     protected final Map<CLDevice, List<CLCommandQueue>> queuesMap;
 
@@ -81,10 +96,13 @@ public class CLContext extends CLObject implements CLResource {
     protected CLContext(CLPlatform platform, long contextID, ErrorDispatcher dispatcher) {
         super(CLPlatform.getLowLevelCLInterface(), contextID);
         this.platform = platform;
-        this.programs = new ArrayList<CLProgram>();
-        this.samplers = new ArrayList<CLSampler>();
-        this.memoryObjects = new ArrayList<CLMemory<? extends Buffer>>();
+        
+        this.programs = synchronizedSet(new HashSet<CLProgram>());
+        this.samplers = synchronizedSet(new HashSet<CLSampler>());
+        this.memoryObjects = synchronizedSet(new HashSet<CLMemory<? extends Buffer>>());
+        
         this.queuesMap = new HashMap<CLDevice, List<CLCommandQueue>>();
+        
         this.errorHandler = dispatcher;
 
         /*
@@ -97,7 +115,7 @@ public class CLContext extends CLObject implements CLResource {
         
     }
 
-    private void initDevices() {
+    private synchronized void initDevices() {
         
         if (devices == null) {
 
@@ -415,12 +433,14 @@ public class CLContext extends CLObject implements CLResource {
 
         CLCommandQueue queue = CLCommandQueue.create(this, device, properties);
 
-        List<CLCommandQueue> list = queuesMap.get(device);
-        if(list == null) {
-            list = new ArrayList<CLCommandQueue>();
-            queuesMap.put(device, list);
+        synchronized(queuesMap) {
+            List<CLCommandQueue> list = queuesMap.get(device);
+            if(list == null) {
+                list = new ArrayList<CLCommandQueue>();
+                queuesMap.put(device, list);
+            }
+            list.add(queue);
         }
-        list.add(queue);
 
         return queue;
     }
@@ -440,11 +460,13 @@ public class CLContext extends CLObject implements CLResource {
     }
 
     void onCommandQueueReleased(CLDevice device, CLCommandQueue queue) {
-        List<CLCommandQueue> list = queuesMap.get(device);
-        list.remove(queue);
-        // remove empty lists from map
-        if(list.isEmpty())
-            queuesMap.remove(device);
+        synchronized(queuesMap) {
+            List<CLCommandQueue> list = queuesMap.get(device);
+            list.remove(queue);
+            // remove empty lists from map
+            if(list.isEmpty())
+                queuesMap.remove(device);
+        }
     }
 
     void onSamplerReleased(CLSampler sampler) {
@@ -458,30 +480,28 @@ public class CLContext extends CLObject implements CLResource {
     public void removeCLErrorHandler(CLErrorHandler handler) {
         errorHandler.removeHandler(handler);
     }
+    
+    private void release(Collection<? extends CLResource> resources) {
+        // resources remove themselves when released, see above
+        CLResource[] array = resources.toArray(new CLResource[resources.size()]);
+        for (CLResource resource : array) {
+            resource.release();
+        }
+    }
 
     /**
-     * Releases the context and all resources.
+     * Releases this context and all resources.
      */
-    public void release() {
+    public synchronized void release() {
 
         try{
             //release all resources
-            while(!programs.isEmpty())
-                programs.get(0).release();
-
-            while(!memoryObjects.isEmpty())
-                memoryObjects.get(0).release();
-
-            while(!samplers.isEmpty())
-                samplers.get(0).release();
+            release(programs);
+            release(memoryObjects);
+            release(samplers);
 
             for (CLDevice device : getDevices()) {
-                List<CLCommandQueue> list = queuesMap.get(device);
-                if(list != null) {
-                    while(!list.isEmpty()) {
-                        list.get(0).release();
-                    }
-                }
+                release(queuesMap.get(device));
             }
 
         }finally{
@@ -553,24 +573,30 @@ public class CLContext extends CLObject implements CLResource {
     }
 
     /**
-     * Returns a read only view of all programs associated with this context.
+     * Returns a read only shapshot of all programs associated with this context.
      */
     public List<CLProgram> getPrograms() {
-        return Collections.unmodifiableList(programs);
+        synchronized(programs) {
+            return unmodifiableList(new ArrayList<CLProgram>(programs));
+        }
     }
 
     /**
-     * Returns a read only view of all allocated memory objects associated with this context.
+     * Returns a read only shapshot of all allocated memory objects associated with this context.
      */
     public List<CLMemory<? extends Buffer>> getMemoryObjects() {
-        return Collections.unmodifiableList(memoryObjects);
+        synchronized(memoryObjects) {
+            return unmodifiableList(new ArrayList<CLMemory<? extends Buffer>>(memoryObjects));
+        }
     }
 
     /**
-     * Returns a read only view of all samplers associated with this context.
+     * Returns a read only shapshot of all samplers associated with this context.
      */
     public List<CLSampler> getSamplers() {
-        return Collections.unmodifiableList(samplers);
+        synchronized(samplers) {
+            return unmodifiableList(new ArrayList<CLSampler>(samplers));
+        }
     }
 
     /**
@@ -667,7 +693,7 @@ public class CLContext extends CLObject implements CLResource {
 
     protected static class ErrorDispatcher implements CLErrorHandler {
 
-        private volatile CLErrorHandler[] clientHandlers = new CLErrorHandler[0];
+        private CLErrorHandler[] clientHandlers = new CLErrorHandler[0];
 
         public void onError(String errinfo, ByteBuffer private_info, long cb) {
             CLErrorHandler[] handlers = this.clientHandlers;
@@ -676,7 +702,7 @@ public class CLContext extends CLObject implements CLResource {
             }
         }
 
-        private void addHandler(CLErrorHandler handler) {
+        private synchronized void addHandler(CLErrorHandler handler) {
 
             if(handler == null) {
                 throw new IllegalArgumentException("handler was null.");
@@ -688,7 +714,7 @@ public class CLContext extends CLObject implements CLResource {
             clientHandlers = handlers;
         }
 
-        private void removeHandler(CLErrorHandler handler) {
+        private synchronized void removeHandler(CLErrorHandler handler) {
             
             if(handler == null) {
                 throw new IllegalArgumentException("handler was null.");

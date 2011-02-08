@@ -82,6 +82,8 @@ import static com.jogamp.opencl.CL.*;
  *          context.release();
  *     }
  * </pre></p>
+ * concurrency:<br/>
+ * CLPlatform is threadsafe.
  * 
  * @author Michael Bien
  * @see #initialize()
@@ -441,7 +443,7 @@ public final class CLPlatform {
      * Returns all platform extension names as unmodifiable Set.
      */
     @CLProperty("CL_PLATFORM_EXTENSIONS")
-    public Set<String> getExtensions() {
+    public synchronized Set<String> getExtensions() {
 
         if(extensions == null) {
             extensions = new HashSet<String>();

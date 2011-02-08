@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.common.AutoCloseable;
 import com.jogamp.common.nio.PointerBuffer;
 import java.util.Iterator;
 
@@ -78,6 +79,9 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         IDs.rewind();
     }
 
+    /**
+     * @deprecated use {@link #release()} instead.
+     */
     public final void close() throws Exception {
         release();
     }

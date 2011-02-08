@@ -28,6 +28,8 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.common.AutoCloseable;
+
 /**
  * Common superclass for all OpenCL objects.
  * @author Michael Bien

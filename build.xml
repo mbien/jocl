@@ -34,7 +34,39 @@
         <property name="dist.zip.name" value="jocl-${jocl.version}-${os.and.arch}"/>
     </target>
     
-    <target name="-pre-compile" depends="generate-binding"/>
+    <target name="-pre-compile" depends="detect-jdk,prepare-jdk5-build,prepare-jdk7-build,generate-binding"/>
+    
+    <target name="detect-jdk">
+        <condition property="enable.jdk7.features">
+            <or>
+                <equals arg1="1.7" arg2="${javac.source}"/>
+                <equals arg1="1.8" arg2="${javac.source}"/>
+            </or>
+        </condition>
+    </target>
+    
+    <target name="prepare-jdk5-build" if="${enable.jdk7.features}">
+        
+        <echo message="JDK7 features enabled"/>
+        
+        <copy file="${basedir}/src/com/jogamp/common/AutoCloseable.jtemplate"
+            tofile="${basedir}/gensrc/java/com/jogamp/common/AutoCloseable.java" overwrite="true">
+            <filterchain>
+                <replaceregex pattern="/\*extends java.lang.AutoCloseable\*/" replace="extends java.lang.AutoCloseable"/>
+            </filterchain>
+        </copy>
+        
+    </target>
+    
+    <target name="prepare-jdk7-build" unless="${enable.jdk7.features}">
+        
+        <echo message="JDK7 features dissabled"/>
+        
+        <copy file="${basedir}/src/com/jogamp/common/AutoCloseable.jtemplate"
+            tofile="${basedir}/gensrc/java/com/jogamp/common/AutoCloseable.java" overwrite="true">
+        </copy>
+        
+    </target>
         
     <target name="generate-binding" depends="prepare-build,preprocess-headers" unless="dont-generate">
     

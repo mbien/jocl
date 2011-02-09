@@ -483,9 +483,11 @@ public class CLContext extends CLObject implements CLResource {
     
     private void release(Collection<? extends CLResource> resources) {
         // resources remove themselves when released, see above
-        CLResource[] array = resources.toArray(new CLResource[resources.size()]);
-        for (CLResource resource : array) {
-            resource.release();
+        if(!resources.isEmpty()) {
+            CLResource[] array = resources.toArray(new CLResource[resources.size()]);
+            for (CLResource resource : array) {
+                resource.release();
+            }
         }
     }
 
@@ -501,7 +503,10 @@ public class CLContext extends CLObject implements CLResource {
             release(samplers);
 
             for (CLDevice device : getDevices()) {
-                release(queuesMap.get(device));
+                Collection<CLCommandQueue> queues = queuesMap.get(device);
+                if(queues != null) {
+                    release(queues);
+                }
             }
 
         }finally{

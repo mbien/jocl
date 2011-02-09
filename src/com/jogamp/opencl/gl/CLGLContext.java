@@ -34,11 +34,11 @@ import java.nio.Buffer;
 import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.common.nio.PointerBuffer;
-import com.jogamp.opengl.impl.GLContextImpl;
-import com.jogamp.opengl.impl.egl.EGLContext;
-import com.jogamp.opengl.impl.macosx.cgl.MacOSXCGLContext;
-import com.jogamp.opengl.impl.windows.wgl.WindowsWGLContext;
-import com.jogamp.opengl.impl.x11.glx.X11GLXContext;
+import jogamp.opengl.GLContextImpl;
+import jogamp.opengl.egl.EGLContext;
+import jogamp.opengl.macosx.cgl.MacOSXCGLContext;
+import jogamp.opengl.windows.wgl.WindowsWGLContext;
+import jogamp.opengl.x11.glx.X11GLXContext;
 import javax.media.opengl.GLContext;
 
 import static com.jogamp.opencl.gl.CLGLI.*;

@@ -268,21 +268,14 @@ public class CLProgramTest {
     @Test
     public void kernelTest() {
 
-        String source = "__attribute__((reqd_work_group_size(256, 256, 256))) kernel void foo(void) { }\n";
+        String source = "__attribute__((reqd_work_group_size(1, 1, 1))) kernel void foo(void) { }\n";
 
-        // to workaround "Internal error: Link failed." on AMD platform + GPU device
-        final CLPlatform platform = CLPlatform.getDefault();
-        CLDevice.Type type = CLDevice.Type.DEFAULT;
-        if(platform.getVendor().toLowerCase().contains("amd")) {
-            type = CLDevice.Type.CPU;
-        }
-
-        CLContext context = CLContext.create(platform, type);
+        CLContext context = CLContext.create();
 
         try{
             CLProgram program = context.createProgram(source).build();
             assertTrue(program.isExecutable());
-            
+
             CLKernel kernel = program.createCLKernel("foo");
             assertNotNull(kernel);
 
@@ -290,16 +283,15 @@ public class CLProgramTest {
 
             out.println("compile workgroup size: " + wgs[0]+" "+wgs[1]+" "+wgs[2]);
 
-            assertEquals(256, wgs[0]);
-            assertEquals(256, wgs[1]);
-            assertEquals(256, wgs[2]);
-
+            assertEquals(1, wgs[0]);
+            assertEquals(1, wgs[1]);
+            assertEquals(1, wgs[2]);
 
         }finally{
             context.release();
         }
 
-    }
+    } 
 
     @Test
     public void createAllKernelsTest() {

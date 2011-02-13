@@ -75,7 +75,7 @@ public class CLProgram extends CLObject implements CLResource {
 
         IntBuffer status = newDirectIntBuffer(1);
         
-        PointerBuffer length = (PointerBuffer)PointerBuffer.allocateDirect(1).put(0, src.length());
+        PointerBuffer length = PointerBuffer.allocateDirect(1).put(0, src.length());
         String[] srcArray = new String[] {src};
         
         // Create the program

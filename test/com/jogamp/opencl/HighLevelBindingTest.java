@@ -40,6 +40,7 @@ import com.jogamp.opencl.CLDevice.LocalMemType;
 import com.jogamp.opencl.CLDevice.Type;
 import com.jogamp.opencl.CLDevice.Capabilities;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -285,7 +286,8 @@ public class HighLevelBindingTest {
 
         out.println("max FLOPS device: " + context.getMaxFlopsDevice());
 
-        CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
+        InputStream stream = getClass().getResourceAsStream("testkernels.cl");
+        CLProgram program = context.createProgram(stream).build();
 
         CLDevice[] programDevices = program.getCLDevices();
         CLDevice device = programDevices[0];

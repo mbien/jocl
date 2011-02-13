@@ -102,7 +102,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
 
         B slice = null;
         if(buffer != null) {
-            slice = (B)Buffers.slice(buffer, offset, size);
+            slice = Buffers.slice(buffer, offset, size);
             int elemSize = Buffers.sizeOfBufferElem(buffer);
             offset *= elemSize;
             size *= elemSize;
@@ -141,6 +141,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
     /**
      * Returns the list of subbuffers.
      */
+    @SuppressWarnings("unchecked")
     public List<CLSubBuffer<B>> getSubBuffers() {
         if(childs == null) {
             return Collections.EMPTY_LIST;

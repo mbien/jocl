@@ -228,7 +228,7 @@ public class LowLevelBindingTest {
         checkForError(ret);
 
         long platform = pb.get(0);
-        PointerBuffer properties = (PointerBuffer)PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
+        PointerBuffer properties = PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
                                               .put(platform).put(0) // 0 terminated array
                                               .rewind();
         long context = cl.clCreateContextFromType(properties, CL.CL_DEVICE_TYPE_ALL, null, null);
@@ -284,7 +284,7 @@ public class LowLevelBindingTest {
 
 
         // Create the program
-        PointerBuffer lengths = (PointerBuffer)PointerBuffer.allocateDirect(1).put(programSource.length()).rewind();
+        PointerBuffer lengths = PointerBuffer.allocateDirect(1).put(programSource.length()).rewind();
         final long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
         out.println("program id: "+program);
         checkError("on clCreateProgramWithSource", intBuffer.get(0));
@@ -370,8 +370,8 @@ public class LowLevelBindingTest {
         checkError("on clEnqueueWriteBuffer", ret);
 
         // Launch kernel
-        PointerBuffer gWS = (PointerBuffer) PointerBuffer.allocateDirect(1).put(globalWorkSize).rewind();
-        PointerBuffer lWS = (PointerBuffer) PointerBuffer.allocateDirect(1).put(localWorkSize).rewind();
+        PointerBuffer gWS = PointerBuffer.allocateDirect(1).put(globalWorkSize).rewind();
+        PointerBuffer lWS = PointerBuffer.allocateDirect(1).put(localWorkSize).rewind();
         ret = cl.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, gWS, lWS, 0, null, null);
         checkError("on clEnqueueNDRangeKernel", ret);
 

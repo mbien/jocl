@@ -236,7 +236,7 @@ public class CLContext extends CLObject implements CLResource {
             throw new RuntimeException("no OpenCL installation found");
         }
 
-        return (PointerBuffer)PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
+        return PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
                                               .put(platform.ID).put(0) // 0 terminated array
                                               .rewind();
     }

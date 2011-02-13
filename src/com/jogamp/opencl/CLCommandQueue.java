@@ -1693,7 +1693,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
-        return (PointerBuffer) buffer.put(2, a).position(2);
+        return buffer.put(2, a).position(2);
     }
 
 //    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
@@ -1705,11 +1705,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
 //    }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
-        return (PointerBuffer) ((PointerBuffer)buffer.position(1)).put(a).put(b).position(1);
+        return buffer.position(1).put(a).put(b).position(1);
     }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
-        return (PointerBuffer) ((PointerBuffer)buffer.rewind()).put(a).put(b).put(c).rewind();
+        return buffer.rewind().put(a).put(b).put(c).rewind();
     }
 
     private static String toStr(PointerBuffer buffer) {

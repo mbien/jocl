@@ -197,7 +197,7 @@ public final class CLGLContext extends CLContext {
             throw new RuntimeException("unsupported GLContext: "+glContext);
         }
 
-        return (PointerBuffer)properties.put(0).rewind(); // 0 terminated array
+        return properties.put(0).rewind(); // 0 terminated array
     }
 
     // Buffers

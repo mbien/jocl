@@ -354,7 +354,7 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns the maximal allocatable memory on this device.
+     * Returns the largest allocatable size of a {@link CLBuffer} on this device.
      */
     @CLProperty("CL_DEVICE_MAX_MEM_ALLOC_SIZE")
     public long getMaxMemAllocSize() {

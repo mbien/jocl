@@ -28,6 +28,10 @@
     <!-- Pull in GlueGen cpptasks build file -->
     <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
     
+    <condition property="build.noarchives" value="true">
+        <isset property="c.dont.compile"/>
+    </condition>
+    
     <!-- -post-init is after all properties are imported -->
     <target name="-post-init" depends="gluegen.cpptasks.detect.os">
         <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
@@ -149,7 +153,7 @@
         
     </target>
 
-    <target name="-post-jar" depends="jar.natives,tag.build" unless="c.dont.compile">
+    <target name="-post-jar" depends="jar.natives,tag.build" unless="build.noarchives">
         
         <!-- don't know how to get rid of the NetBeans readme file -->
         <delete file="${dist.dir}/README.TXT"/>
@@ -436,7 +440,7 @@
     
     <!-- overwrites default target - watch out when build-impl.xml changes -->
     <target name="-post-test-run" depends="init,compile-test,-pre-test-run,-do-test-run" if="have.tests">
-        <zip destfile="${dist.dir}/${dist.zip.name}-test-results.zip">
+        <zip destfile="${dist.dir}/${dist.zip.name}-test-results-${env.NODE_NAME}.zip">
             <zipfileset dir="${build.test.results.dir}" prefix="${dist.zip.name}/test-results"/>
         </zip>
         <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>

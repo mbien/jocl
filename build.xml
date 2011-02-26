@@ -27,13 +27,15 @@
 
     <!-- Pull in GlueGen cpptasks build file -->
     <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
+    <import file="${gluegen.root}/make/jogamp-env.xml" />
+    <import file="${gluegen.root}/make/jogamp-archivetasks.xml" />
     
-    <condition property="build.noarchives" value="true">
+    <condition property="build.archiveon" value="true">
         <isset property="c.dont.compile"/>
     </condition>
     
     <!-- -post-init is after all properties are imported -->
-    <target name="-post-init" depends="gluegen.cpptasks.detect.os">
+    <target name="-post-init" depends="jogamp.env.init,gluegen.cpptasks.detect.os">
         <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
         <property name="dist.zip.name" value="jocl-${jocl.version}-${os.and.arch}"/>
     </target>
@@ -153,8 +155,9 @@
         
     </target>
 
-    <target name="-post-jar" depends="jar.natives,tag.build" unless="build.noarchives">
+    <target name="-post-jar" depends="jar.natives,tag.build,package-dist,archive-dist"/>
         
+    <target name="package-dist">
         <!-- don't know how to get rid of the NetBeans readme file -->
         <delete file="${dist.dir}/README.TXT"/>
 
@@ -174,24 +177,39 @@
         <copy file="${jogl.root}/${rootrel.build}/jogl/jogl-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
         <copy file="${jogl.root}/${rootrel.build}/nativewindow/nativewindow-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
         <copy file="${jogl.root}/${rootrel.build}/newt/newt-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
-
-        <!-- zip distribution -->
-        <zip destfile="${dist.dir}/${dist.zip.name}.zip">
-            <!-- jars and jared natives -->
-            <zipfileset dir="${dist.dir}" includes="jocl.jar,jocl-natives-*.jar" prefix="${dist.zip.name}/jar"/>
-            <zipfileset dir="${dist.dir}/lib" includes="*.jar" prefix="${dist.zip.name}/jar"/>
-            
-            <zipfileset dir="." includes="*.jnlp" prefix="${dist.zip.name}/jnlp-files"/>
-            <zipfileset dir="." includes="README,LICENSE" prefix="${dist.zip.name}"/>
-            <zipfileset dir="${dist.dir}" includes="*.properties" prefix="${dist.zip.name}"/>
-            
-            <!-- native files, TODO: remove when no longer needed -->
-            <zipfileset dir="${basedir}/${rootrel.build}/natives/jocl" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
-            <zipfileset dir="${jogl.root}/${rootrel.build}/lib" excludes="*.xml" prefix="${dist.zip.name}/lib"/>
-        </zip>
         
     </target>
-
+        
+    <target name="archive-dist" if="build.archiveon">
+    
+        <!-- zip distribution -->
+        <mkdir dir="${dist.dir}/tmp/${dist.zip.name}"/>
+        
+        <!-- jars and jared natives -->
+        <copy todir="${dist.dir}/tmp/${dist.zip.name}/jar" flatten="true">
+            <fileset dir="${dist.dir}" includes="jocl.jar,jocl-natives-*.jar,lib/*.jar"/>
+        </copy>
+        <copy todir="${dist.dir}/tmp/${dist.zip.name}/jnlp-files">
+            <fileset dir="." includes="*.jnlp"/>
+        </copy>
+        <copy todir="${dist.dir}/tmp/${dist.zip.name}">
+            <fileset dir="." includes="README,LICENSE"/>
+            <fileset dir="${dist.dir}" includes="*.properties"/>
+        </copy>
+        
+        <!-- native files, TODO: remove when no longer needed -->
+        <copy todir="${dist.dir}/tmp/${dist.zip.name}/lib">
+            <fileset dir="${basedir}/${rootrel.build}/natives/jocl" excludes="*.xml"/>
+            <fileset dir="${jogl.root}/${rootrel.build}/lib" excludes="*.xml"/>
+        </copy>
+        
+        <!-- zip/7z it -->
+        <zip        basedir="${dist.dir}/tmp/${dist.zip.name}" destfile="${dist.dir}/${dist.zip.name}.zip"/>
+        <archive.7z basedir="${dist.dir}/tmp/${dist.zip.name}" destfile="${dist.dir}/${dist.zip.name}.7z" includes="*"/>
+        
+        <delete dir="${dist.dir}/tmp"/>
+    </target>
+    
     <target name="tag.build">
         <property file="${dist.jar.dir}/artifact.properties"/>
         <copy file="${jogl.root}/${rootrel.build}/artifact.properties" todir="${dist.jar.dir}" overwrite="true" failonerror="false"/>
@@ -383,8 +401,10 @@
       <move file="${natives.jocl.dir}/${namespace}/libjocl.so" tofile="${natives.jocl.dir}/${namespace}/jocl.dll" />
     </target>
 
-    <target name="-javadoc-build" depends="init">
-
+    <target name="-javadoc-build" depends="init,build-javadoc,archive-javadoc"/>
+    
+    <target name="build-javadoc">
+        
         <mkdir dir="${dist.javadoc.dir}"/>
 
         <!-- copy gluegen and jogl doc next to the jocl doc for relative linking -->
@@ -426,10 +446,13 @@
             <excludepackage name="com.jogamp.opencl.impl"/>
         </javadoc>
 
+    </target>
+    
+    <target name="archive-javadoc" if="build.archiveon">
         <zip destfile="${dist.dir}/jocl-javadoc.zip">
             <zipfileset dir="${dist.javadoc.dir}" prefix="jocl/javadoc"/>
         </zip>
-        
+        <archive.7z basedir="${dist.dir}/javadoc" destfile="${dist.dir}/jocl-javadoc.7z" includes="*"/>
     </target>
 
     <target name="test-file">
@@ -440,9 +463,10 @@
     
     <!-- overwrites default target - watch out when build-impl.xml changes -->
     <target name="-post-test-run" depends="init,compile-test,-pre-test-run,-do-test-run" if="have.tests">
-        <zip destfile="${dist.dir}/${dist.zip.name}-test-results-${env.NODE_NAME}.zip">
+        <zip destfile="${dist.dir}/${dist.zip.name}-test-results-${build.node.name}.zip">
             <zipfileset dir="${build.test.results.dir}" prefix="${dist.zip.name}/test-results"/>
         </zip>
+        <archive.7z basedir="${build.test.results.dir}" destfile="${dist.dir}/${dist.zip.name}-test-results-${build.node.name}.7z" includes="*"/>
         <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
     </target>
     

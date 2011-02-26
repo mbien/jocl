@@ -75,9 +75,8 @@ public class JOCLVersion extends JogampVersion {
         final StringBuilder sb = new StringBuilder();
 
         try{
-            sb.append(SEPERATOR).append(Platform.getNewline());
             sb.append(getPlatformInfo(null));
-            sb.append(SEPERATOR).append(Platform.getNewline());
+            sb.append(Platform.getNewline());
         }catch(Exception e) {
             sb.append(e.getMessage());
             e.printStackTrace();
@@ -85,6 +84,7 @@ public class JOCLVersion extends JogampVersion {
 
         try{
             createInstance().toString(sb);
+            sb.append(Platform.getNewline());
         }catch(Exception e) {
             sb.append(e.getMessage());
             e.printStackTrace();
@@ -103,19 +103,6 @@ public class JOCLVersion extends JogampVersion {
         }
 
         return sb.toString();
-    }
-
-
-    public StringBuilder toString(StringBuilder sb) {
-        return sb.append(toString((StringBuffer)null));
-    }
-    
-    @Override
-    public StringBuffer toString(StringBuffer sb) {
-        if(sb == null) {
-            sb = new StringBuffer();
-        }
-        return super.toString(sb);
     }
 
     public static void main(String[] args) {

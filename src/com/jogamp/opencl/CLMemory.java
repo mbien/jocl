@@ -56,6 +56,10 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     protected final int FLAGS;
     protected final long size;
     
+    // depends on the nio buffer type
+    protected int elementSize;
+    protected int clCapacity;
+    
     protected <Buffer> CLMemory(CLContext context, long size, long id, int flags) {
         this(context, null, size, id, flags);
     }
@@ -65,6 +69,12 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         this.buffer = directBuffer;
         this.FLAGS = flags;
         this.size = size;
+        initElementSizes();
+    }
+
+    private void initElementSizes() {
+        this.elementSize = (buffer==null) ? 1 : sizeOfBufferElem(buffer);
+        this.clCapacity  = (int) (size / elementSize);
     }
 
     /**
@@ -75,7 +85,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
             || (flags & CL_MEM_USE_HOST_PTR)  != 0;
     }
 
-    protected static int sizeOfBufferElem(Buffer buffer) {
+    static int sizeOfBufferElem(Buffer buffer) {
         if (buffer instanceof ByteBuffer) {
             return Buffers.SIZEOF_BYTE;
         } else if (buffer instanceof IntBuffer) {
@@ -107,6 +117,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
      */
     public void registerDestructorCallback(final CLMemObjectListener listener) {
         cl.clSetMemObjectDestructorCallback(ID, new CLMemObjectDestructorCallback() {
+            @Override
             public void memoryDeallocated(long memObjID) {
                 listener.memoryDeallocated(CLMemory.this);
             }
@@ -126,6 +137,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
                     +" but got " + buffer.getClass());
         }
         this.buffer = buffer;
+        initElementSizes();
         return this;
     }
 
@@ -153,11 +165,11 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         if(buffer == null) {
             return 0;
         }
-        return sizeOfBufferElem(buffer) * buffer.capacity();
+        return getElementSize() * buffer.capacity();
     }
 
     /**
-     * Returns the size of the allocated OpenCL memory.
+     * Returns the size of the allocated OpenCL memory in bytes.
      */
     public long getCLSize() {
         return size;
@@ -167,8 +179,15 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
      * Returns the size in buffer elements of this memory object.
      */
     public int getCLCapacity() {
-        int elemSize = buffer==null ? 1 : sizeOfBufferElem(buffer);
-        return (int) (getCLSize() / elemSize);
+        return clCapacity;
+    }
+    
+    /**
+     * Returns the size in bytes of a single buffer element.
+     * This method returns 1 if no buffer is available indicating regular byte access.
+     */
+    public int getElementSize() {
+        return elementSize;
     }
 
     /**
@@ -210,6 +229,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         return (Mem.READ_WRITE.CONFIG & FLAGS) != 0;
     }
 
+    @Override
     public void release() {
         int ret = cl.clReleaseMemObject(ID);
         context.onMemoryReleased(this);

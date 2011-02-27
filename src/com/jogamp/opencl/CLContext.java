@@ -494,6 +494,7 @@ public class CLContext extends CLObject implements CLResource {
     /**
      * Releases this context and all resources.
      */
+    @Override
     public synchronized void release() {
 
         try{
@@ -700,7 +701,8 @@ public class CLContext extends CLObject implements CLResource {
 
         private CLErrorHandler[] clientHandlers = new CLErrorHandler[0];
 
-        public void onError(String errinfo, ByteBuffer private_info, long cb) {
+        @Override
+        public synchronized void onError(String errinfo, ByteBuffer private_info, long cb) {
             CLErrorHandler[] handlers = this.clientHandlers;
             for (int i = 0; i < handlers.length; i++) {
                 handlers[i].onError(errinfo, private_info, cb);

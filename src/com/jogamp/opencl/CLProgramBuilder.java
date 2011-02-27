@@ -55,7 +55,7 @@ import java.util.Set;
  * @see #loadConfiguration(java.io.ObjectInputStream, com.jogamp.opencl.CLContext)
  * @author Michael Bien
  */
-public final class CLProgramBuilder implements CLProgramConfiguration, Serializable {
+public final class CLProgramBuilder implements CLProgramConfiguration, Serializable, Cloneable {
 
     static final long serialVersionUID = 42;
 
@@ -185,8 +185,10 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
 
     @Override
     public CLProgramBuilder withDefines(Map<String, ? extends Object> defines) {
-        for (String name : defines.keySet()) {
-            defineSet.add(CLProgram.define(name, defines.get(name)));
+        for (Map.Entry<String, ? extends Object> define : defines.entrySet()) {
+            String name = define.getKey();
+            Object value = define.getValue();
+            defineSet.add(CLProgram.define(name, value));
         }
         return this;
     }
@@ -319,10 +321,12 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         return builder;
     }
 
+    @Override
     public CLProgram getProgram() {
         return program;
     }
 
+    @Override
     public CLProgramBuilder setProgram(CLProgram program) {
         this.program = program;
         return this;

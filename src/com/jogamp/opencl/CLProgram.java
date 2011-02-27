@@ -96,10 +96,10 @@ public class CLProgram extends CLObject implements CLResource {
         PointerBuffer lengths = PointerBuffer.allocateDirect(binaries.size());
 
         int i = 0;
-        Set<CLDevice> keys = binaries.keySet();
-        for (CLDevice device : keys) {
+        for (Map.Entry<CLDevice, byte[]> entry : binaries.entrySet()) {
 
-            byte[] bytes = binaries.get(device);
+            byte[] bytes = entry.getValue();
+            CLDevice device = entry.getKey();
 
             devices.put(device.ID);
             lengths.put(bytes.length);
@@ -337,6 +337,7 @@ public class CLProgram extends CLObject implements CLResource {
         BuildProgramCallback callback = null;
         if(listener != null) {
             callback = new BuildProgramCallback() {
+                @Override
                 public void buildFinished(long cl_program) {
                     buildLock.unlock();
                     listener.buildFinished(CLProgram.this);
@@ -446,6 +447,7 @@ public class CLProgram extends CLObject implements CLResource {
     /**
      * Releases this program with its kernels.
      */
+    @Override
     public void release() {
 
         releaseKernels();

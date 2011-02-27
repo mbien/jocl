@@ -46,9 +46,12 @@ import static com.jogamp.opencl.util.CLUtil.*;
  * The command queue is used to queue a set of operations for a specific {@link CLDevice}.
  * Having multiple command-queues allows applications to queue multiple independent commands without
  * requiring synchronization. Note that this should work as long as these objects are
- * not being shared.<br/>
+ * not being shared.
+ * <p>
+ * concurrency note:<br/>
  * Sharing of objects across multiple queues or using a CLCommandQueue
  * form multiple Threads will require the application to perform appropriate synchronization.
+ * </p>
  * @see CLDevice#createCommandQueue(com.jogamp.opencl.CLCommandQueue.Mode...)
  * @author Michael Bien
  */
@@ -103,7 +106,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingRead, CLEventList events) {
         return putWriteBuffer(writeBuffer, blockingRead, null, events);
     }
-
+    
     /**
      * Calls {@native clEnqueueWriteBuffer}.
      */
@@ -115,7 +118,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditionIDs = condition.IDs;
             conditions   = condition.size;
         }
-
+        
         int ret = cl.clEnqueueWriteBuffer(
                 ID, writeBuffer.ID, clBoolean(blockingWrite),
                 0, writeBuffer.getNIOSize(), writeBuffer.buffer,
@@ -159,7 +162,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditionIDs = condition.IDs;
             conditions   = condition.size;
         }
-
+        
         int ret = cl.clEnqueueReadBuffer(
                 ID, readBuffer.ID, clBoolean(blockingRead),
                 0, readBuffer.getNIOSize(), readBuffer.buffer,
@@ -229,10 +232,10 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueWriteBufferRect}.
      */
-    public CLCommandQueue putWriteBufferRect(CLBuffer<?> WriteBuffer,
+    public CLCommandQueue putWriteBufferRect(CLBuffer<?> writeBuffer,
             int originX, int originY, int hostX, int hostY, int rangeX, int rangeY,
             boolean blockingWrite, CLEventList condition, CLEventList events) {
-        putWriteBufferRect(WriteBuffer, originX, originY, hostX, hostY, rangeX, rangeY, 0, 0, 0, 0, blockingWrite, condition, events);
+        putWriteBufferRect(writeBuffer, originX, originY, hostX, hostY, rangeX, rangeY, 0, 0, 0, 0, blockingWrite, condition, events);
         return this;
     }
 
@@ -243,7 +246,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             int originX, int originY, int hostX, int hostY, int rangeX, int rangeY,
             long rowPitch, long slicePitch, long hostRowPitch, long hostSlicePitch,
             boolean blockingWrite, CLEventList condition, CLEventList events) {
-        // spec: if 2d: origin/hostpos=0, ragne=1
+        // spec: if 2d: origin/hostpos=0, range=1
         putWriteBufferRect( writeBuffer, originX, originY, 0,
                                          hostX, hostY, 0,
                                          rangeX, rangeY, 1,
@@ -387,7 +390,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     public CLCommandQueue putCopyBufferRect(CLBuffer<?> src, CLBuffer<?> dest,
             int srcOriginX, int srcOriginY, int destOriginX, int destOriginY, int rangeX, int rangeY,
             CLEventList condition, CLEventList events) {
-        // spec: if 2d: origin/destpos=0, ragne=1
+        // spec: if 2d: origin/destpos=0, range=1
         putCopyBufferRect(  src, dest, srcOriginX, srcOriginY, 0,
                             destOriginX, destOriginY, 0,
                             rangeX, rangeY, 1,
@@ -1731,7 +1734,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         return "\ncond.: " + condition +" events: "+events;
     }
 
-    private String toStr(int... values) {
+    private String toStr(Integer... values) {
         return Arrays.asList(values).toString();
     }
 

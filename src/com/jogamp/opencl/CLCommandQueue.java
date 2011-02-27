@@ -28,7 +28,7 @@
 
 package com.jogamp.opencl;
 
-import com.jogamp.common.nio.Buffers;
+import com.jogamp.common.nio.CachedBufferFactory;
 import com.jogamp.opencl.gl.CLGLI;
 import com.jogamp.common.nio.PointerBuffer;
 import java.nio.ByteBuffer;
@@ -74,11 +74,14 @@ public class CLCommandQueue extends CLObject implements CLResource {
         this.device = device;
         this.properties = properties;
 
-        this.ibA = PointerBuffer.allocateDirect(3);
-        this.ibB = PointerBuffer.allocateDirect(3);
-        this.ibC = PointerBuffer.allocateDirect(3);
-
-        this.pbA = Buffers.newDirectIntBuffer(1);
+        int pbsize = PointerBuffer.elementSize();
+        CachedBufferFactory factory = CachedBufferFactory.create(9*pbsize + 4, true);
+        
+        this.ibA = PointerBuffer.wrap(factory.newDirectByteBuffer(3*pbsize));
+        this.ibB = PointerBuffer.wrap(factory.newDirectByteBuffer(3*pbsize));
+        this.ibC = PointerBuffer.wrap(factory.newDirectByteBuffer(3*pbsize));
+        
+        this.pbA = factory.newDirectIntBuffer(1);
 
     }
 

@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.common.nio.CachedBufferFactory;
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.os.Platform;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -91,12 +93,24 @@ public class CLProgram extends CLObject implements CLResource {
 
     static CLProgram create(CLContext context, Map<CLDevice, byte[]> binaries) {
 
-        PointerBuffer devices = PointerBuffer.allocateDirect(binaries.size());
-        PointerBuffer codeBuffers = PointerBuffer.allocateDirect(binaries.size());
-        PointerBuffer lengths = PointerBuffer.allocateDirect(binaries.size());
+        Set<Entry<CLDevice, byte[]>> entries = binaries.entrySet();
+        
+        // calculate buffer size
+        int binarySize = 0;
+        for (Map.Entry<CLDevice, byte[]> entry : entries) {
+            binarySize += entry.getValue().length;
+        }
 
+        int pbSize = PointerBuffer.elementSize();
+        int deviceCount = binaries.size();
+        
+        CachedBufferFactory bf = CachedBufferFactory.create(binarySize + pbSize*deviceCount*3 + 4, true);
+        PointerBuffer devices     = PointerBuffer.wrap(bf.newDirectByteBuffer(deviceCount*pbSize));
+        PointerBuffer codeBuffers = PointerBuffer.wrap(bf.newDirectByteBuffer(deviceCount*pbSize));
+        PointerBuffer lengths     = PointerBuffer.wrap(bf.newDirectByteBuffer(deviceCount*pbSize));
+        
         int i = 0;
-        for (Map.Entry<CLDevice, byte[]> entry : binaries.entrySet()) {
+        for (Map.Entry<CLDevice, byte[]> entry : entries) {
 
             byte[] bytes = entry.getValue();
             CLDevice device = entry.getKey();
@@ -104,13 +118,13 @@ public class CLProgram extends CLObject implements CLResource {
             devices.put(device.ID);
             lengths.put(bytes.length);
 
-            codeBuffers.referenceBuffer(i, newDirectByteBuffer(bytes));
+            codeBuffers.referenceBuffer(i, bf.newDirectByteBuffer(bytes));
             i++;
         }
         devices.rewind();
         lengths.rewind();
 
-        IntBuffer errBuffer = newDirectIntBuffer(1);
+        IntBuffer errBuffer = bf.newDirectIntBuffer(1);
 //        IntBuffer status = newDirectByteBuffer(binaries.size()*4).asIntBuffer();
         long id = context.cl.clCreateProgramWithBinary(context.ID, devices.capacity(), devices, lengths, codeBuffers, /*status*/null, errBuffer);
 

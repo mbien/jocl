@@ -204,8 +204,8 @@
         </copy>
         
         <!-- zip/7z it -->
-        <zip        basedir="${dist.dir}/tmp/${dist.zip.name}" destfile="${dist.dir}/${dist.zip.name}.zip"/>
-        <archive.7z basedir="${dist.dir}/tmp/${dist.zip.name}" destfile="${dist.dir}/${dist.zip.name}.7z" includes="*"/>
+        <zip        basedir="${dist.dir}/tmp" destfile="${dist.dir}/${dist.zip.name}.zip"/>
+        <archive.7z basedir="${dist.dir}/tmp" destfile="${dist.dir}/${dist.zip.name}.7z"  includes="*"/>
         
         <delete dir="${dist.dir}/tmp"/>
     </target>

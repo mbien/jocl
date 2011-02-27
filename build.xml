@@ -452,7 +452,7 @@
         <zip destfile="${dist.dir}/jocl-javadoc.zip">
             <zipfileset dir="${dist.javadoc.dir}" prefix="jocl/javadoc"/>
         </zip>
-        <archive.7z basedir="${dist.dir}/javadoc" destfile="${dist.dir}/jocl-javadoc.7z" includes="*"/>
+        <archive.7z basedir="${dist.dir}/javadoc" destfile="${dist.dir}/jocl-javadoc.7z" includes="jocl/*"/>
     </target>
 
     <target name="test-file">

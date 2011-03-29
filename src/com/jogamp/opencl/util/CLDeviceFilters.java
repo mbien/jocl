@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 - 2010 JogAmp Community. All rights reserved.
+ * Copyright 2011 JogAmp Community. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -29,65 +29,62 @@
 package com.jogamp.opencl.util;
 
 import com.jogamp.opencl.CLDevice;
-import com.jogamp.opencl.CLPlatform;
-import com.jogamp.opencl.CLVersion;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 /**
  * Pre-defined filters.
  * @author Michael Bien
- * @see CLPlatform#getDefault(com.jogamp.opencl.util.Filter[])
- * @see CLPlatform#listCLPlatforms(com.jogamp.opencl.util.Filter[]) 
+ * @see com.jogamp.opencl.CLPlatform#listCLDevices(com.jogamp.opencl.util.Filter[]) 
+ * @see com.jogamp.opencl.CLPlatform#getMaxFlopsDevice(com.jogamp.opencl.util.Filter[])
  */
-public class CLPlatformFilters {
-
+public class CLDeviceFilters {
+    
     /**
-     * Accepts all platforms supporting at least the given OpenCL spec version.
+     * Accepts all devices of the given type.
      */
-    public static Filter<CLPlatform> version(final CLVersion version) {
-        return new Filter<CLPlatform>() {
-            public boolean accept(CLPlatform item) {
-                return item.isAtLeast(version);
-            }
-        };
-    }
-
-    /**
-     * Accepts all platforms containing devices of the given type.
-     */
-    public static Filter<CLPlatform> type(final CLDevice.Type type) {
-        return new Filter<CLPlatform>() {
-            public boolean accept(CLPlatform item) {
-                return item.listCLDevices(type).length > 0;
+    public static Filter<CLDevice> type(final CLDevice.Type type) {
+        return new Filter<CLDevice>() {
+            public boolean accept(CLDevice item) {
+                if(type.equals(CLDevice.Type.ALL)) {
+                    return true;
+                }
+                return item.getType().equals(type);
             }
         };
     }
     
     /**
-     * Accepts all platforms containing at least one devices of which supports OpenGL-OpenCL interoparability.
+     * Accepts all devices of the given {@link ByteOrder}.
      */
-    public static Filter<CLPlatform> glSharing() {
-        return new Filter<CLPlatform>() {
-            public boolean accept(CLPlatform item) {
-                CLDevice[] devices = item.listCLDevices();
-                for (CLDevice device : devices) {
-                    if(device.isGLMemorySharingSupported()) {
-                        return true;
-                    }
-                }
-                return false;
+    public static Filter<CLDevice> byteOrder(final ByteOrder order) {
+        return new Filter<CLDevice>() {
+            public boolean accept(CLDevice item) {
+                return item.getByteOrder().equals(order);
             }
         };
     }
-
+    
     /**
-     * Accepts all platforms supporting the given extensions.
+     * Accepts all devices which support OpenGL-OpenCL interoparability.
      */
-    public static Filter<CLPlatform> extension(final String... extensions) {
-        return new Filter<CLPlatform>() {
-            public boolean accept(CLPlatform item) {
+    public static Filter<CLDevice> glSharing() {
+        return new Filter<CLDevice>() {
+            public boolean accept(CLDevice item) {
+                return item.isGLMemorySharingSupported();
+            }
+        };
+    }
+    
+    /**
+     * Accepts all devices supporting the given extensions.
+     */
+    public static Filter<CLDevice> extension(final String... extensions) {
+        return new Filter<CLDevice>() {
+            public boolean accept(CLDevice item) {
                 return item.getExtensions().containsAll(Arrays.asList(extensions));
             }
         };
     }
+    
 }

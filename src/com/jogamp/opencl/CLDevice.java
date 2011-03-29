@@ -33,6 +33,7 @@ import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.common.os.Platform;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -653,6 +654,17 @@ public final class CLDevice extends CLObject {
         return getExtensions().contains(extension);
     }
     
+    /**
+     * Returns {@link ByteOrder#LITTLE_ENDIAN} or {@link ByteOrder#BIG_ENDIAN}.
+     */
+    public ByteOrder getByteOrder() {
+        if(isLittleEndian()) {
+            return ByteOrder.LITTLE_ENDIAN;
+        }else{
+            return ByteOrder.BIG_ENDIAN;
+        }
+    }
+
     /**
      * Returns all device extension names as unmodifiable Set.
      */

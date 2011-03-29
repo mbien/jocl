@@ -637,12 +637,12 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns {@link #isExtensionAvailable}("cl_khr_gl_sharing") || {@link #isExtensionAvailable}("cl_apple_gl_sharing").
+     * Returns {@link #isExtensionAvailable}("cl_khr_gl_sharing") || {@link #isExtensionAvailable}("cl_APPLE_gl_sharing").
      * @see #getExtensions()
      */
-    @CLProperty("cl_khr_gl_sharing | cl_apple_gl_sharing")
+    @CLProperty("cl_khr_gl_sharing | cl_APPLE_gl_sharing")
     public boolean isGLMemorySharingSupported() {
-        return isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_apple_gl_sharing");
+        return isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_APPLE_gl_sharing");
     }
 
     /**
@@ -652,7 +652,7 @@ public final class CLDevice extends CLObject {
     public boolean isExtensionAvailable(String extension) {
         return getExtensions().contains(extension);
     }
-
+    
     /**
      * Returns all device extension names as unmodifiable Set.
      */

@@ -402,15 +402,15 @@ public class CLContext extends CLObject implements CLResource {
     /**
      * Creates a CLImage3d with the specified format, dimension and flags.
      */
-    public final CLImage3d<?> createImage3d(int width, int height, CLImageFormat format, Mem... flags) {
-        return createImage3d(null, width, height, 0, format, flags);
+    public final CLImage3d<?> createImage3d(int width, int height, int depth, CLImageFormat format, Mem... flags) {
+        return createImage3d(null, width, height, depth, format, flags);
     }
 
     /**
      * Creates a CLImage3d with the specified format, dimension and flags.
      */
-    public final CLImage3d<?> createImage3d(int width, int height, int depth, int rowPitch, CLImageFormat format, Mem... flags) {
-        return createImage3d(null, width, height, rowPitch, format, flags);
+    public final CLImage3d<?> createImage3d(int width, int height, int depth, int rowPitch, int slicePitch, CLImageFormat format, Mem... flags) {
+        return createImage3d(null, width, height, depth, rowPitch, slicePitch, format, flags);
     }
 
     /**

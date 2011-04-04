@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl.util;
 
+import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLDevice;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -83,6 +84,17 @@ public class CLDeviceFilters {
         return new Filter<CLDevice>() {
             public boolean accept(CLDevice item) {
                 return item.getExtensions().containsAll(Arrays.asList(extensions));
+            }
+        };
+    }
+    
+    /**
+     * Accepts all devices supporting the specified command queue modes.
+     */
+    public static Filter<CLDevice> queueMode(final Mode... modes) {
+        return new Filter<CLDevice>() {
+            public boolean accept(CLDevice item) {
+                return item.getQueueProperties().containsAll(Arrays.asList(modes));
             }
         };
     }

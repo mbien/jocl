@@ -28,10 +28,12 @@
 
 package com.jogamp.opencl.util;
 
+import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.opencl.CLVersion;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Pre-defined filters.
@@ -87,6 +89,23 @@ public class CLPlatformFilters {
         return new Filter<CLPlatform>() {
             public boolean accept(CLPlatform item) {
                 return item.getExtensions().containsAll(Arrays.asList(extensions));
+            }
+        };
+    }
+
+    /**
+     * Accepts all platforms containing at least one devices supporting the specified command queue modes.
+     */
+    public static Filter<CLPlatform> queueMode(final Mode... modes) {
+        return new Filter<CLPlatform>() {
+            public boolean accept(CLPlatform item) {
+                List<Mode> modesList = Arrays.asList(modes);
+                for (CLDevice device : item.listCLDevices()) {
+                    if(device.getQueueProperties().containsAll(modesList)) {
+                        return true;
+                    }
+                }
+                return false;
             }
         };
     }

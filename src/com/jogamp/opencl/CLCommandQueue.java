@@ -118,7 +118,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
         
@@ -162,7 +162,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
         
@@ -211,7 +211,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -281,7 +281,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -359,7 +359,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -440,7 +440,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -508,7 +508,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -570,7 +570,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -631,7 +631,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -693,7 +693,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -757,7 +757,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -826,7 +826,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -890,7 +890,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -957,7 +957,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1021,7 +1021,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1088,7 +1088,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1146,7 +1146,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1206,7 +1206,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1272,7 +1272,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1316,7 +1316,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1348,11 +1348,11 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * Calls {@native clWaitForEvents} if blockingWait equals true otherwise {@native clEnqueueWaitForEvents}.
      */
     public CLCommandQueue putWaitForEvent(CLEventList list, int index, boolean blockingWait) {
-        int marker = list.IDs.position()-1;
-        list.IDs.position(index);
-        int ret = blockingWait ? cl.clWaitForEvents(1, list.IDs)
-                               : cl.clEnqueueWaitForEvents(ID, 1, list.IDs);
-        list.IDs.position(marker);
+
+        PointerBuffer ids = PointerBuffer.wrap(list.IDs.getBuffer()).position(index);
+        
+        int ret = blockingWait ? cl.clWaitForEvents(1, ids)
+                               : cl.clEnqueueWaitForEvents(ID, 1, ids);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for event #" + index+ " in "+list);
         }
@@ -1363,9 +1363,8 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * Calls {@native clWaitForEvents} if blockingWait equals true otherwise {@native clEnqueueWaitForEvents}.
      */
     public CLCommandQueue putWaitForEvents(CLEventList list, boolean blockingWait) {
-        list.IDs.rewind();
-        int ret = blockingWait ? cl.clWaitForEvents(list.size, list.IDs)
-                               : cl.clEnqueueWaitForEvents(ID, list.size, list.IDs);
+        int ret = blockingWait ? cl.clWaitForEvents(list.size, list.IDsView)
+                               : cl.clEnqueueWaitForEvents(ID, list.size, list.IDsView);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for events " + list);
         }
@@ -1410,7 +1409,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1537,7 +1536,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1588,7 +1587,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 
@@ -1635,7 +1634,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer conditionIDs = null;
         int conditions = 0;
         if(condition != null) {
-            conditionIDs = condition.IDs;
+            conditionIDs = condition.IDsView;
             conditions   = condition.size;
         }
 

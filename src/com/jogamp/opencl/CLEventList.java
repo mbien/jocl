@@ -40,17 +40,29 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
 
     private final CLEvent[] events;
 
+    /**
+     * stores event ids for fast access.
+     */
     final PointerBuffer IDs;
+    
+    /**
+     * Points always to the first element of the id buffer.
+     */
+    final PointerBuffer IDsView;
+    
     int size;
 
     public CLEventList(int capacity) {
         this.events = new CLEvent[capacity];
         this.IDs = PointerBuffer.allocateDirect(capacity);
+        this.IDsView = PointerBuffer.wrap(IDs.getBuffer());
     }
 
     public CLEventList(CLEvent... events) {
         this.events = events;
         this.IDs = PointerBuffer.allocateDirect(events.length);
+        this.IDsView = PointerBuffer.wrap(IDs.getBuffer());
+        
         for (CLEvent event : events) {
             IDs.put(event.ID);
         }

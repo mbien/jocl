@@ -35,8 +35,11 @@ import java.util.concurrent.CountDownLatch;
 import com.jogamp.opencl.util.MultiQueueBarrier;
 import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLMemory.Mem;
+import com.jogamp.opencl.util.CLDeviceFilters;
+import com.jogamp.opencl.util.CLPlatformFilters;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -47,6 +50,7 @@ import static com.jogamp.opencl.TestUtils.*;
 import static com.jogamp.opencl.CLEvent.*;
 import static com.jogamp.opencl.CLVersion.*;
 import static com.jogamp.common.nio.Buffers.*;
+import static com.jogamp.opencl.CLCommandQueue.Mode.*;
 
 /**
  *
@@ -62,8 +66,8 @@ public class CLCommandQueueTest {
 
         //CLCommandQueueEnums
         EnumSet<Mode> queueMode = Mode.valuesOf(CL.CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | CL.CL_QUEUE_PROFILING_ENABLE);
-        assertTrue(queueMode.contains(Mode.OUT_OF_ORDER_MODE));
-        assertTrue(queueMode.contains(Mode.PROFILING_MODE));
+        assertTrue(queueMode.contains(OUT_OF_ORDER_MODE));
+        assertTrue(queueMode.contains(PROFILING_MODE));
 
         assertNotNull(Mode.valuesOf(0));
         assertEquals(0, Mode.valuesOf(0).size());
@@ -151,6 +155,67 @@ public class CLCommandQueueTest {
             context.release();
         }
     }
+    
+    @Test
+    public void eventConditionsTest() throws IOException {
+        
+        out.println(" - - - event conditions test - - - ");
+
+        CLPlatform platform = CLPlatform.getDefault(CLPlatformFilters.queueMode(OUT_OF_ORDER_MODE));
+        
+        CLDevice device = null;
+        // we can still test this with in-order queues
+        if(platform == null) {
+            device = CLPlatform.getDefault().getMaxFlopsDevice();
+        }else{
+            device = platform.getMaxFlopsDevice(CLDeviceFilters.queueMode(OUT_OF_ORDER_MODE));
+        }
+        
+        CLContext context = CLContext.create(device);
+        
+        try{
+            
+            CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
+            
+            CLBuffer<IntBuffer> buffer = context.createBuffer(newDirectIntBuffer(new int[]{ 1,1,1, 1,1,1, 1,1,1 }));
+            
+            int elements = buffer.getNIOCapacity();
+            
+            CLCommandQueue queue;
+            if(device.getQueueProperties().contains(OUT_OF_ORDER_MODE)) {
+                queue = device.createCommandQueue(OUT_OF_ORDER_MODE);
+            }else{
+                queue = device.createCommandQueue();
+            }
+            
+            CLEventList writeEvent   = new CLEventList(1);
+            CLEventList kernelEvents = new CLEventList(2);
+            
+            // (1+1)*2 = 4; conditions enforce propper order
+            CLKernel addKernel = program.createCLKernel("add").putArg(buffer).putArg(1).putArg(elements);
+            CLKernel mulKernel = program.createCLKernel("mul").putArg(buffer).putArg(2).putArg(elements);
+            
+            queue.putWriteBuffer(buffer, false, writeEvent);
+            
+            queue.put1DRangeKernel(addKernel, 0, elements, 1, writeEvent, kernelEvents);
+            queue.put1DRangeKernel(mulKernel, 0, elements, 1, writeEvent, kernelEvents);
+            
+            queue.putReadBuffer(buffer, false, kernelEvents, null);
+            
+            queue.finish();
+            
+            writeEvent.release();
+            kernelEvents.release();
+            
+            for (int i = 0; i < elements; i++) {
+                assertEquals(4, buffer.getBuffer().get(i));
+            }
+            
+        }finally{
+            context.release();
+        }
+        
+    }
 
     @Test
     public void profilingEventsTest() throws IOException {
@@ -174,7 +239,7 @@ public class CLCommandQueueTest {
 
             CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl")).build();
             CLKernel vectorAddKernel = program.createCLKernel("VectorAddGM").setArg(3, elements);
-            CLCommandQueue queue = device.createCommandQueue(Mode.PROFILING_MODE);
+            CLCommandQueue queue = device.createCommandQueue(PROFILING_MODE);
 
             out.println(queue);
 

@@ -818,7 +818,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueCopyImage}.
      */
-    public CLCommandQueue putCopyImage(CLImage3d<?> srcImage, CLImage3d<?> dstImage,
+    public CLCommandQueue putCopyImage(CLImage<?> srcImage, CLImage<?> dstImage,
                                         int srcOriginX, int srcOriginY, int srcOriginZ,
                                         int dstOriginX, int dstOriginY, int dstOriginZ,
                                         int rangeX, int rangeY, int rangeZ, CLEventList condition, CLEventList events) {

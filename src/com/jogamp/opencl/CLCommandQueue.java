@@ -31,6 +31,7 @@ package com.jogamp.opencl;
 import com.jogamp.common.nio.CachedBufferFactory;
 import com.jogamp.opencl.gl.CLGLI;
 import com.jogamp.common.nio.PointerBuffer;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -326,7 +327,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             int originX, int originY, int hostX, int hostY, int rangeX, int rangeY,
             long rowPitch, long slicePitch, long hostRowPitch, long hostSlicePitch,
             boolean blockingRead, CLEventList condition, CLEventList events) {
-        // spec: if 2d: origin/hostpos=0, ragne=1
+        // spec: if 2d: origin/hostpos=0, range=1
         putReadBufferRect(  readBuffer, originX, originY, 0,
                             hostX, hostY, 0,
                             rangeX, rangeY, 1,
@@ -1297,21 +1298,21 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueUnmapMemObject}.
      */
-    public CLCommandQueue putUnmapMemory(CLMemory<?> memory) {
-        return putUnmapMemory(memory, null, null);
+    public CLCommandQueue putUnmapMemory(CLMemory<?> memory, Buffer mapped) {
+        return putUnmapMemory(memory, mapped, null, null);
     }
 
     /**
      * Calls {@native clEnqueueUnmapMemObject}.
      */
-    public CLCommandQueue putUnmapMemory(CLMemory<?> memory, CLEventList events) {
-        return putUnmapMemory(memory, null, events);
+    public CLCommandQueue putUnmapMemory(CLMemory<?> memory, Buffer mapped, CLEventList events) {
+        return putUnmapMemory(memory, mapped, null, events);
     }
 
     /**
      * Calls {@native clEnqueueUnmapMemObject}.
      */
-    public CLCommandQueue putUnmapMemory(CLMemory<?> memory, CLEventList condition, CLEventList events) {
+    public CLCommandQueue putUnmapMemory(CLMemory<?> memory, Buffer mapped, CLEventList condition, CLEventList events) {
 
         PointerBuffer conditionIDs = null;
         int conditions = 0;
@@ -1320,7 +1321,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        int ret = cl.clEnqueueUnmapMemObject(ID, memory.ID, memory.getBuffer(),
+        int ret = cl.clEnqueueUnmapMemObject(ID, memory.ID, mapped,
                                         conditions, conditionIDs, events==null ? null : events.IDs);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not unmap " + memory + toStr(condition, events));

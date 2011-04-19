@@ -158,10 +158,10 @@ public class CLBufferTest {
         ByteBuffer mappedBufferA = queue.putMapBuffer(clBufferA, Map.READ_WRITE, true);
         assertEquals(sizeInBytes, mappedBufferA.capacity());
 
-        fillBuffer(mappedBufferA, 12345);           // write to A
+        fillBuffer(mappedBufferA, 12345);                // write to A
 
-        queue.putUnmapMemory(clBufferA)             // unmap A
-             .putCopyBuffer(clBufferA, clBufferB);  // copy A -> B
+        queue.putUnmapMemory(clBufferA, mappedBufferA)// unmap A
+             .putCopyBuffer(clBufferA, clBufferB);    // copy A -> B
 
         // map B for read operations
         ByteBuffer mappedBufferB = queue.putMapBuffer(clBufferB, Map.READ, true);
@@ -171,7 +171,7 @@ public class CLBufferTest {
         checkIfEqual(mappedBufferA, mappedBufferB, elements); // A == B ?
         out.println("results are valid");
 
-        queue.putUnmapMemory(clBufferB);            // unmap B
+        queue.putUnmapMemory(clBufferB, mappedBufferB);     // unmap B
 
         context.release();
 

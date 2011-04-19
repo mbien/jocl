@@ -257,9 +257,6 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         if (this.context != other.context && (this.context == null || !this.context.equals(other.context))) {
             return false;
         }
-        if (this.buffer != other.buffer && (this.buffer == null || !this.buffer.equals(other.buffer))) {
-            return false;
-        }
         return true;
     }
 

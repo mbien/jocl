@@ -48,6 +48,7 @@ import java.util.Set;
 /**
  * CLProgramBuilder is a helper for building programs with more complex configurations or
  * building multiple programs with similar configurations.
+ * CLProgramBuilder is used to create {@link CLProgramConfiguration}s and {@link CLBuildConfiguration}s.
  * @see CLProgram#prepare()
  * @see #createConfiguration()
  * @see #createConfiguration(com.jogamp.opencl.CLProgram)
@@ -113,13 +114,13 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
      * The CLProgram is initialized and ready to be build after this method call.
      * This method prefers program initialization from binaries if this fails or if
      * no binaries have been found, it will try to load the program from sources. If
-     * This also fails an appropriate exception will be thrown.
+     * this also fails an appropriate exception will be thrown.
      * @param ois The ObjectInputStream for reading the object.
      * @param context The context used for program initialization.
      */
     public static CLProgramConfiguration loadConfiguration(ObjectInputStream ois, CLContext context) throws IOException, ClassNotFoundException {
         CLProgramBuilder config = (CLProgramBuilder) ois.readObject();
-        if(config.binariesMap.size() > 0 && config.binariesMap.values().iterator().next().length > 0) {
+        if(allBinariesAvailable(config)) {
             try{
                 config.program = context.createProgram(config.binariesMap);
             }catch(CLException.CLInvalidBinaryException ex) {
@@ -135,6 +136,15 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
             throw new IOException("Program configuration did not contain program sources or binaries");
         }
         return config;
+    }
+    
+    private static boolean allBinariesAvailable(CLProgramBuilder config) {
+        for (Map.Entry<CLDevice, byte[]> entry : config.binariesMap.entrySet()) {
+            if(Arrays.equals(NO_BINARIES, entry.getValue())) {
+                return false;
+            }
+        }
+        return config.binariesMap.size() > 0;
     }
 
     @Override
@@ -195,14 +205,16 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
 
     @Override
     public CLProgramBuilder forDevice(CLDevice device) {
-        binariesMap.put(device, NO_BINARIES);
+        if(!binariesMap.containsKey(device)) {
+            binariesMap.put(device, NO_BINARIES);
+        }
         return this;
     }
 
     @Override
     public CLProgramBuilder forDevices(CLDevice... devices) {
         for (CLDevice device : devices) {
-            binariesMap.put(device, NO_BINARIES);
+            forDevice(device);
         }
         return this;
     }
@@ -260,6 +272,15 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         optionSet.clear();
         return this;
     }
+    
+    private int indexOf(CLDevice device, CLDevice[] devices) {
+        for (int i = 0; i < devices.length; i++) {
+            if(device.equals(devices[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     // format: { platform_suffix, num_binaries, (device.ID, length, binaries)+ }
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -273,7 +294,13 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
 
         for (CLDevice device : devices) {
             byte[] binaries = binariesMap.get(device);
-            out.writeLong(device.ID);
+            
+            // we use the device index as identifier since there is currently no other way
+            // to distinguish identical devices via CL.
+            // it should be persistent between runs but may change on driver/hardware update. In this situations we would
+            // have to build from source anyway (build failures).
+            int index = indexOf(device, device.getPlatform().listCLDevices());
+            out.writeInt(index);
             out.writeInt(binaries.length);
             out.write(binaries);
         }
@@ -290,18 +317,26 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
                 break;
             }
         }
-
+        
         this.binariesMap = new LinkedHashMap<CLDevice, byte[]>();
+        
+        CLDevice[] devices = null;
+        if(platform != null) {
+            devices = platform.listCLDevices();
+        }
+        
         int mapSize = in.readInt();
 
         for (int i = 0; i < mapSize; i++) {
-            long deviceID = in.readLong();
+            int index = in.readInt();
             int length = in.readInt();
             byte[] binaries = new byte[length];
             in.readFully(binaries);
-
-            CLDevice device = new CLDevice(CLPlatform.getLowLevelCLInterface(), platform, deviceID);
-            binariesMap.put(device, binaries);
+            
+            // we ignore binaries we can't map to devices
+            if(devices != null && index >= 0 && index < devices.length) {
+                binariesMap.put(devices[index], binaries);
+            }
         }
     }
 

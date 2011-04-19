@@ -141,11 +141,15 @@ public class CLCommandQueueTest {
             queue.put1DRangeKernel(vectorAddKernel, 0, elements, groupSize, events);
 
             assertEquals(2, events.size());
-            queue.putWaitForEvent(events, 0, false)
+            queue.putWaitForEvent(events, 0, true)
                  .putWaitForEvent(events, 1, true);
 
-            queue.putReadBuffer(clBufferC, false)
-                 .putReadBuffer(clBufferD, true);
+            events.release();
+            
+            queue.putReadBuffer(clBufferC, false, events)
+                 .putReadBuffer(clBufferD, false, events);
+            
+            queue.putWaitForEvents(events, true);
 
             events.release();
 

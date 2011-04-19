@@ -286,20 +286,28 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
 
-        Set<CLDevice> devices = binariesMap.keySet();
-        String suffix = devices.iterator().next().getPlatform().getICDSuffix();
-        out.writeUTF(suffix);
+        CLDevice[] deviceList = null;
+        String suffix = null;
+        
+        if(!binariesMap.isEmpty()) {
+            CLPlatform platform = binariesMap.keySet().iterator().next().getPlatform();
+            deviceList = platform.listCLDevices();
 
-        out.writeInt(binariesMap.size());
+            suffix = platform.getICDSuffix();
+        }
+        
+        out.writeUTF(suffix);               // null if we have no binaries or no devices specified
+        out.writeInt(binariesMap.size());   // may be 0
 
-        for (CLDevice device : devices) {
-            byte[] binaries = binariesMap.get(device);
+        for (Map.Entry<CLDevice, byte[]> entry : binariesMap.entrySet()) {
+            CLDevice device = entry.getKey();
+            byte[] binaries = entry.getValue();
             
             // we use the device index as identifier since there is currently no other way
             // to distinguish identical devices via CL.
             // it should be persistent between runs but may change on driver/hardware update. In this situations we would
             // have to build from source anyway (build failures).
-            int index = indexOf(device, device.getPlatform().listCLDevices());
+            int index = indexOf(device, deviceList);
             out.writeInt(index);
             out.writeInt(binaries.length);
             out.write(binaries);

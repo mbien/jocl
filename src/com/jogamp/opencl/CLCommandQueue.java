@@ -1499,16 +1499,66 @@ public class CLCommandQueue extends CLObject implements CLResource {
         PointerBuffer globalWorkSize = null;
         PointerBuffer localWorkSize = null;
 
-        if(globalWorkOffsetX != 0 && globalWorkOffsetY != 0) {
+        if(globalWorkOffsetX != 0 || globalWorkOffsetY != 0) {
             globalWorkOffset = copy2NIO(ibA, globalWorkOffsetX, globalWorkOffsetY);
         }
-        if(globalWorkSizeX != 0 && globalWorkSizeY != 0) {
+        if(globalWorkSizeX != 0 || globalWorkSizeY != 0) {
             globalWorkSize = copy2NIO(ibB, globalWorkSizeX, globalWorkSizeY);
         }
-        if(localWorkSizeX != 0 && localWorkSizeY !=0) {
+        if(localWorkSizeX != 0 || localWorkSizeY != 0) {
             localWorkSize = copy2NIO(ibC, localWorkSizeX, localWorkSizeY);
         }
         this.putNDRangeKernel(kernel, 2, globalWorkOffset, globalWorkSize, localWorkSize, condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueNDRangeKernel}.
+     */
+    public CLCommandQueue put3DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY, long globalWorkOffsetZ,
+                                                            long globalWorkSizeX, long globalWorkSizeY, long globalWorkSizeZ,
+                                                            long localWorkSizeX, long localWorkSizeY, long localWorkSizeZ) {
+        this.put3DRangeKernel(kernel,
+                globalWorkOffsetX, globalWorkOffsetY, globalWorkOffsetZ,
+                globalWorkSizeX, globalWorkSizeY, globalWorkSizeZ,
+                localWorkSizeX, localWorkSizeY, localWorkSizeZ, null, null);
+
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueNDRangeKernel}.
+     */
+    public CLCommandQueue put3DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY, long globalWorkOffsetZ,
+                                                            long globalWorkSizeX, long globalWorkSizeY, long globalWorkSizeZ,
+                                                            long localWorkSizeX, long localWorkSizeY, long localWorkSizeZ, CLEventList events) {
+        this.put3DRangeKernel(kernel,
+                globalWorkOffsetX, globalWorkOffsetY, globalWorkOffsetZ,
+                globalWorkSizeX, globalWorkSizeY, globalWorkSizeZ,
+                localWorkSizeX, localWorkSizeY, localWorkSizeZ, null, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueNDRangeKernel}.
+     */
+    public CLCommandQueue put3DRangeKernel(CLKernel kernel, long globalWorkOffsetX, long globalWorkOffsetY, long globalWorkOffsetZ,
+                                                            long globalWorkSizeX, long globalWorkSizeY, long globalWorkSizeZ,
+                                                            long localWorkSizeX, long localWorkSizeY, long localWorkSizeZ, CLEventList condition, CLEventList events) {
+        PointerBuffer globalWorkOffset = null;
+        PointerBuffer globalWorkSize = null;
+        PointerBuffer localWorkSize = null;
+
+        if(globalWorkOffsetX != 0 || globalWorkOffsetY != 0 || globalWorkOffsetZ != 0) {
+            globalWorkOffset = copy2NIO(ibA, globalWorkOffsetX, globalWorkOffsetY, globalWorkOffsetZ);
+        }
+        if(globalWorkSizeX != 0 || globalWorkSizeY != 0 || globalWorkSizeZ != 0) {
+            globalWorkSize = copy2NIO(ibB, globalWorkSizeX, globalWorkSizeY, globalWorkSizeZ);
+        }
+        if(localWorkSizeX != 0 || localWorkSizeY != 0 || localWorkSizeZ != 0) {
+            localWorkSize = copy2NIO(ibC, localWorkSizeX, localWorkSizeY, localWorkSizeZ);
+        }
+        this.putNDRangeKernel(kernel, 3, globalWorkOffset, globalWorkSize, localWorkSize, condition, events);
         return this;
     }
 
@@ -1701,14 +1751,6 @@ public class CLCommandQueue extends CLObject implements CLResource {
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a) {
         return buffer.put(2, a).position(2);
     }
-
-//    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
-//        return buffer.position(1).put(a).put(b).position(1);
-//    }
-//
-//    private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b, long c) {
-//        return buffer.rewind().put(a).put(b).put(c).rewind();
-//    }
 
     private static PointerBuffer copy2NIO(PointerBuffer buffer, long a, long b) {
         return buffer.position(1).put(a).put(b).position(1);

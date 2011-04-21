@@ -3,14 +3,14 @@
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
- * 
+ *
  *    1. Redistributions of source code must retain the above copyright notice, this list of
  *       conditions and the following disclaimer.
- * 
+ *
  *    2. Redistributions in binary form must reproduce the above copyright notice, this list
  *       of conditions and the following disclaimer in the documentation and/or other materials
  *       provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY JogAmp Community ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JogAmp Community OR
@@ -20,7 +20,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied, of JogAmp Community.
@@ -31,8 +31,14 @@ package com.jogamp.opencl;
 import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLMemory.Map;
 import com.jogamp.common.nio.Buffers;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
@@ -41,12 +47,70 @@ import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.jogamp.opencl.TestUtils.*;
 import static com.jogamp.common.nio.Buffers.*;
+import static com.jogamp.opencl.util.CLPlatformFilters.*;
+import static com.jogamp.opencl.CLVersion.*;
 
 /**
  *
  * @author Michael Bien
  */
 public class CLBufferTest {
+
+
+    @Test
+    public void createBufferTest() {
+
+        out.println(" - - - highLevelTest; create buffer test - - - ");
+
+        CLContext context = CLContext.create();
+        try{
+            int size = 6;
+
+            CLBuffer<ByteBuffer> bb = context.createByteBuffer(size);
+            CLBuffer<ShortBuffer> sb = context.createShortBuffer(size);
+            CLBuffer<IntBuffer> ib = context.createIntBuffer(size);
+            CLBuffer<LongBuffer> lb = context.createLongBuffer(size);
+            CLBuffer<FloatBuffer> fb = context.createFloatBuffer(size);
+            CLBuffer<DoubleBuffer> db = context.createDoubleBuffer(size);
+
+            List<CLMemory<? extends Buffer>> buffers = context.getMemoryObjects();
+            assertEquals(6, buffers.size());
+
+            assertEquals(1, bb.getElementSize());
+            assertEquals(2, sb.getElementSize());
+            assertEquals(4, ib.getElementSize());
+            assertEquals(8, lb.getElementSize());
+            assertEquals(4, fb.getElementSize());
+            assertEquals(8, db.getElementSize());
+
+            ByteBuffer anotherNIO = newDirectByteBuffer(2);
+
+            for (CLMemory<? extends Buffer> memory : buffers) {
+
+                CLBuffer<? extends Buffer> buffer = (CLBuffer<? extends Buffer>) memory;
+                Buffer nio = buffer.getBuffer();
+
+                assertEquals(nio.capacity(), buffer.getCLCapacity());
+                assertEquals(buffer.getNIOSize(), buffer.getCLSize());
+                assertEquals(sizeOfBufferElem(nio), buffer.getElementSize());
+                assertEquals(nio.capacity() * sizeOfBufferElem(nio), buffer.getCLSize());
+                
+                CLBuffer<ByteBuffer> clone = buffer.cloneWith(anotherNIO);
+
+                assertEquals(buffer.ID, clone.ID);
+                assertTrue(clone.equals(buffer));
+                assertTrue(buffer.equals(clone));
+
+                assertEquals(buffer.getCLSize(), clone.getCLCapacity());
+                assertEquals(buffer.getCLSize(), clone.getCLSize());
+                assertEquals(anotherNIO.capacity(), clone.getNIOCapacity());
+            }
+
+        }finally{
+            context.release();
+        }
+
+    }
 
     @Test
     public void writeCopyReadBufferTest() {
@@ -123,7 +187,7 @@ public class CLBufferTest {
 
         context.release();
     }
-    
+
     @Test
     public void mapBufferTest() {
 
@@ -153,9 +217,9 @@ public class CLBufferTest {
         }
 
         CLCommandQueue queue = context.getDevices()[0].createCommandQueue();
-        
+
         // fill only first buffer -> we will copy the payload to the second later.
-        ByteBuffer mappedBufferA = queue.putMapBuffer(clBufferA, Map.READ_WRITE, true);
+        ByteBuffer mappedBufferA = queue.putMapBuffer(clBufferA, Map.WRITE, true);
         assertEquals(sizeInBytes, mappedBufferA.capacity());
 
         fillBuffer(mappedBufferA, 12345);                // write to A
@@ -182,21 +246,13 @@ public class CLBufferTest {
 
         out.println(" - - - subBufferTest - - - ");
 
-        CLPlatform[] platforms = CLPlatform.listCLPlatforms();
-        CLPlatform theChosenOne = null;
-        for (CLPlatform platform : platforms) {
-            if(platform.isAtLeast(CLVersion.CL_1_1)) {
-                theChosenOne = platform;
-                break;
-            }
-        }
-
-        if(theChosenOne == null) {
+        CLPlatform platform = CLPlatform.getDefault(version(CL_1_1));
+        if(platform == null) {
             out.println("aborting subBufferTest");
             return;
         }
 
-        CLContext context = CLContext.create(theChosenOne);
+        CLContext context = CLContext.create(platform);
         try{
             final int subelements = 5;
             // device only
@@ -253,8 +309,8 @@ public class CLBufferTest {
 
         out.println(" - - - destructorCallbackTest - - - ");
 
-        CLPlatform platform = CLPlatform.getDefault();
-        if(!platform.isAtLeast(CLVersion.CL_1_1)) {
+        CLPlatform platform = CLPlatform.getDefault(version(CL_1_1));
+        if(platform == null) {
             out.println("aborting destructorCallbackTest");
             return;
         }

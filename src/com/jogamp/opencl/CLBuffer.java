@@ -30,7 +30,7 @@ package com.jogamp.opencl;
 
 import com.jogamp.common.nio.Buffers;
 import java.util.List;
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.CLMemory.Mem;
 import java.nio.Buffer;
 import java.util.ArrayList;
@@ -108,7 +108,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
             size *= elemSize;
         }
 
-        PointerBuffer info = PointerBuffer.allocateDirect(2);
+        NativeSizeBuffer info = NativeSizeBuffer.allocateDirect(2);
         info.put(offset).put(size).rewind();
         int bitset = Mem.flagsToInt(flags);
         

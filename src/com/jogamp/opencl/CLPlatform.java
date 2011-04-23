@@ -33,7 +33,7 @@ import com.jogamp.common.os.DynamicLookupHelper;
 import java.security.PrivilegedAction;
 import com.jogamp.common.JogampRuntimeException;
 import com.jogamp.common.os.NativeLibrary;
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.gluegen.runtime.FunctionAddressResolver;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.impl.CLImpl;
@@ -226,7 +226,7 @@ public final class CLPlatform {
         checkForError(ret, "can not enumerate platforms");
 
         // receive platform ids
-        PointerBuffer platformId = PointerBuffer.allocateDirect(ib.get(0));
+        NativeSizeBuffer platformId = NativeSizeBuffer.allocateDirect(ib.get(0));
         ret = cl.clGetPlatformIDs(platformId.capacity(), platformId, null);
         checkForError(ret, "can not enumerate platforms");
 
@@ -276,7 +276,7 @@ public final class CLPlatform {
         for(int t = 0; t < types.length; t++) {
             CLDevice.Type type = types[t];
 
-            PointerBuffer deviceIDs = getDeviceIDs(type.TYPE); 
+            NativeSizeBuffer deviceIDs = getDeviceIDs(type.TYPE);
 
             //add device to list
             for (int n = 0; n < deviceIDs.capacity(); n++) {
@@ -296,7 +296,7 @@ public final class CLPlatform {
 
         List<CLDevice> list = new ArrayList<CLDevice>();
         
-        PointerBuffer deviceIDs = getDeviceIDs(CL_DEVICE_TYPE_ALL);
+        NativeSizeBuffer deviceIDs = getDeviceIDs(CL_DEVICE_TYPE_ALL);
 
         //add device to list
         for (int n = 0; n < deviceIDs.capacity(); n++) {
@@ -308,20 +308,20 @@ public final class CLPlatform {
 
     }
 
-    private PointerBuffer getDeviceIDs(long type) {
+    private NativeSizeBuffer getDeviceIDs(long type) {
         
         IntBuffer ib = Buffers.newDirectIntBuffer(1);
         
         //find all devices
         int ret = cl.clGetDeviceIDs(ID, type, 0, null, ib);
         
-        PointerBuffer deviceIDs = null;
+        NativeSizeBuffer deviceIDs = null;
         
         // return null rather than throwing an exception
         if(ret == CL.CL_DEVICE_NOT_FOUND || ib.get(0) == 0) {
-            deviceIDs = PointerBuffer.allocate(0);
+            deviceIDs = NativeSizeBuffer.allocate(0);
         }else{
-            deviceIDs = PointerBuffer.allocateDirect(ib.get(0));
+            deviceIDs = NativeSizeBuffer.allocateDirect(ib.get(0));
             
             checkForError(ret, "error while enumerating devices");
 
@@ -510,7 +510,7 @@ public final class CLPlatform {
      * Returns a info string in exchange for a key (CL_PLATFORM_*).
      */
     public String getInfoString(int key) {
-        PointerBuffer size = PointerBuffer.allocateDirect(1);
+        NativeSizeBuffer size = NativeSizeBuffer.allocateDirect(1);
         // TODO use cache/query size
         ByteBuffer bb = ByteBuffer.allocateDirect(512);
 

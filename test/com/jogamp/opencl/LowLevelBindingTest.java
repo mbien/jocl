@@ -30,7 +30,7 @@ package com.jogamp.opencl;
 
 import java.util.Random;
 import com.jogamp.opencl.impl.BuildProgramCallback;
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -109,12 +109,12 @@ public class LowLevelBindingTest {
         checkForError(ret);
         out.println("#platforms: "+intBuffer.get(0));
 
-        PointerBuffer platformId = PointerBuffer.allocateDirect(intBuffer.get(0));
+        NativeSizeBuffer platformId = NativeSizeBuffer.allocateDirect(intBuffer.get(0));
         ret = cl.clGetPlatformIDs(platformId.capacity(), platformId, null);
         checkForError(ret);
 
         // print platform info
-        PointerBuffer longBuffer = PointerBuffer.allocateDirect(1);
+        NativeSizeBuffer longBuffer = NativeSizeBuffer.allocateDirect(1);
         ByteBuffer bb = newDirectByteBuffer(128);
 
         for (int i = 0; i < platformId.capacity(); i++)  {
@@ -143,7 +143,7 @@ public class LowLevelBindingTest {
             checkForError(ret);
             out.println("#devices: "+intBuffer.get(0));
 
-            PointerBuffer devices = PointerBuffer.allocateDirect(intBuffer.get(0));
+            NativeSizeBuffer devices = NativeSizeBuffer.allocateDirect(intBuffer.get(0));
             ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.capacity(), devices, null);
 
             //print device info
@@ -176,7 +176,7 @@ public class LowLevelBindingTest {
         checkForError(ret);
         out.println("#platforms: "+intBuffer.get(0));
 
-        PointerBuffer pb = PointerBuffer.allocateDirect(intBuffer.get(0));
+        NativeSizeBuffer pb = NativeSizeBuffer.allocateDirect(intBuffer.get(0));
         ret = cl.clGetPlatformIDs(pb.capacity(), pb, null);
         checkForError(ret);
 
@@ -187,14 +187,14 @@ public class LowLevelBindingTest {
         checkForError(ret);
         out.println("#devices: "+intBuffer.get(0));
 
-        PointerBuffer devices = PointerBuffer.allocateDirect(intBuffer.get(0));
+        NativeSizeBuffer devices = NativeSizeBuffer.allocateDirect(intBuffer.get(0));
         ret = cl.clGetDeviceIDs(platform, CL.CL_DEVICE_TYPE_ALL, devices.capacity(), devices, null);
 
         long context = cl.clCreateContext(null, devices, null, intBuffer);
         checkError("on clCreateContext", intBuffer.get());
 
         //get number of devices
-        PointerBuffer longBuffer = PointerBuffer.allocateDirect(1);
+        NativeSizeBuffer longBuffer = NativeSizeBuffer.allocateDirect(1);
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
         checkError("on clGetContextInfo", ret);
 
@@ -223,19 +223,19 @@ public class LowLevelBindingTest {
         checkForError(ret);
         assertTrue(intBuffer.get(0) > 0);
 
-        PointerBuffer pb = PointerBuffer.allocateDirect(intBuffer.get(0));
+        NativeSizeBuffer pb = NativeSizeBuffer.allocateDirect(intBuffer.get(0));
         ret = cl.clGetPlatformIDs(pb.capacity(), pb, null);
         checkForError(ret);
 
         long platform = pb.get(0);
-        PointerBuffer properties = PointerBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
+        NativeSizeBuffer properties = NativeSizeBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
                                               .put(platform).put(0) // 0 terminated array
                                               .rewind();
         long context = cl.clCreateContextFromType(properties, CL.CL_DEVICE_TYPE_ALL, null, null);
         out.println("context handle: "+context);
         checkError("on clCreateContextFromType", ret);
 
-        PointerBuffer longBuffer = PointerBuffer.allocateDirect(1);
+        NativeSizeBuffer longBuffer = NativeSizeBuffer.allocateDirect(1);
         ret = cl.clGetContextInfo(context, CL.CL_CONTEXT_DEVICES, 0, null, longBuffer);
         checkError("on clGetContextInfo", ret);
 
@@ -284,7 +284,7 @@ public class LowLevelBindingTest {
 
 
         // Create the program
-        PointerBuffer lengths = PointerBuffer.allocateDirect(1).put(programSource.length()).rewind();
+        NativeSizeBuffer lengths = NativeSizeBuffer.allocateDirect(1).put(programSource.length()).rewind();
         final long program = cl.clCreateProgramWithSource(context, 1, new String[] {programSource}, lengths, intBuffer);
         out.println("program id: "+program);
         checkError("on clCreateProgramWithSource", intBuffer.get(0));
@@ -370,8 +370,8 @@ public class LowLevelBindingTest {
         checkError("on clEnqueueWriteBuffer", ret);
 
         // Launch kernel
-        PointerBuffer gWS = PointerBuffer.allocateDirect(1).put(globalWorkSize).rewind();
-        PointerBuffer lWS = PointerBuffer.allocateDirect(1).put(localWorkSize).rewind();
+        NativeSizeBuffer gWS = NativeSizeBuffer.allocateDirect(1).put(globalWorkSize).rewind();
+        NativeSizeBuffer lWS = NativeSizeBuffer.allocateDirect(1).put(localWorkSize).rewind();
         ret = cl.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null, gWS, lWS, 0, null, null);
         checkError("on clEnqueueNDRangeKernel", ret);
 

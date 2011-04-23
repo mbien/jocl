@@ -33,7 +33,7 @@ import com.jogamp.opencl.CLDevice;
 import java.nio.Buffer;
 import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLPlatform;
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 import jogamp.opengl.GLContextImpl;
 import jogamp.opengl.egl.EGLContext;
 import jogamp.opengl.macosx.cgl.MacOSXCGLContext;
@@ -95,7 +95,7 @@ public final class CLGLContext extends CLContext {
         }
 
         long[] glID = new long[1];
-        PointerBuffer properties = setupContextProperties(platform, glContext, glID);
+        NativeSizeBuffer properties = setupContextProperties(platform, glContext, glID);
         ErrorDispatcher dispatcher = createErrorHandler();
         long clID = createContextFromType(dispatcher, properties, toDeviceBitmap(deviceTypes));
 
@@ -119,7 +119,7 @@ public final class CLGLContext extends CLContext {
         CLPlatform platform = devices[0].getPlatform();
 
         long[] glID = new long[1];
-        PointerBuffer properties = setupContextProperties(platform, glContext, glID);
+        NativeSizeBuffer properties = setupContextProperties(platform, glContext, glID);
         ErrorDispatcher dispatcher = createErrorHandler();
         long clID = createContext(dispatcher, properties, devices);
 
@@ -133,7 +133,7 @@ public final class CLGLContext extends CLContext {
     }
 
 
-    private static PointerBuffer setupContextProperties(CLPlatform platform, GLContext glContext, long[] glID) {
+    private static NativeSizeBuffer setupContextProperties(CLPlatform platform, GLContext glContext, long[] glID) {
 
         if(platform == null) {
             throw new RuntimeException("no OpenCL installation found");
@@ -151,14 +151,14 @@ public final class CLGLContext extends CLContext {
         GLContextImpl ctxImpl = (GLContextImpl)glContext;
         glID[0] = glContext.getHandle();
 
-        PointerBuffer properties;
+        NativeSizeBuffer properties;
         if(glContext instanceof X11GLXContext) {
 //          spec: "When the GLX binding API is supported, the attribute
 //          CL_GL_CONTEXT_KHR should be set to a GLXContext handle to an
 //          OpenGL context, and the attribute CL_GLX_DISPLAY_KHR should be
 //          set to the Display handle of the X Window System display used to
 //          create the OpenGL context."
-            properties = PointerBuffer.allocateDirect(7);
+            properties = NativeSizeBuffer.allocateDirect(7);
             long displayHandle = ctxImpl.getDrawableImpl().getNativeSurface().getDisplayHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_GLX_DISPLAY_KHR).put(displayHandle)
@@ -168,7 +168,7 @@ public final class CLGLContext extends CLContext {
 //          CL_GL_CONTEXT_KHR should be set to an HGLRC handle to an OpenGL
 //          context, and the attribute CL_WGL_HDC_KHR should be set to the
 //          HDC handle of the display used to create the OpenGL context."
-            properties = PointerBuffer.allocateDirect(7);
+            properties = NativeSizeBuffer.allocateDirect(7);
             long surfaceHandle = ctxImpl.getDrawableImpl().getNativeSurface().getSurfaceHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_WGL_HDC_KHR).put(surfaceHandle)
@@ -178,7 +178,7 @@ public final class CLGLContext extends CLContext {
 //          spec: "When the CGL binding API is supported, the attribute
 //          CL_CGL_SHAREGROUP_KHR should be set to a CGLShareGroup handle to
 //          a CGL share group object."
-            properties = PointerBuffer.allocateDirect(5);
+            properties = NativeSizeBuffer.allocateDirect(5);
             properties.put(CL_CGL_SHAREGROUP_KHR).put(glID[0])
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof EGLContext) {
@@ -188,7 +188,7 @@ public final class CLGLContext extends CLContext {
 //          OpenGL ES or OpenGL context, and the attribute
 //          CL_EGL_DISPLAY_KHR should be set to the EGLDisplay handle of the
 //          display used to create the OpenGL ES or OpenGL context."
-            properties = PointerBuffer.allocateDirect(7);
+            properties = NativeSizeBuffer.allocateDirect(7);
             long displayHandle = ctxImpl.getDrawableImpl().getNativeSurface().getDisplayHandle();
             properties.put(CL_GL_CONTEXT_KHR).put(glID[0])
                       .put(CL_EGL_DISPLAY_KHR).put(displayHandle)

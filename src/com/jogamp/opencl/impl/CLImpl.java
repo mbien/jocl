@@ -31,7 +31,7 @@
  */
 package com.jogamp.opencl.impl;
 
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.common.os.Platform;
 import com.jogamp.common.util.LongLongHashMap;
 import com.jogamp.opencl.CLErrorHandler;
@@ -56,7 +56,7 @@ public class CLImpl extends CLAbstractImpl {
         this.contextCallbackMap.setKeyNotFoundValue(0);
     }
 
-    public long clCreateContext(PointerBuffer properties, PointerBuffer devices, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
+    public long clCreateContext(NativeSizeBuffer properties, NativeSizeBuffer devices, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
 
         if (properties != null && !properties.isDirect()) {
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
@@ -87,7 +87,7 @@ public class CLImpl extends CLAbstractImpl {
 
     private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, Object pfn_notify, long[] global, Object errcode_ret, int err_offset, long address);
 
-    public long clCreateContextFromType(PointerBuffer properties, long device_type, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
+    public long clCreateContextFromType(NativeSizeBuffer properties, long device_type, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
 
         if (properties != null && !properties.isDirect()) {
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
@@ -134,7 +134,7 @@ public class CLImpl extends CLAbstractImpl {
     public native int clReleaseContextImpl(long context, long global, long address);
 
     /** Interface to C language function: <br> <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
-    public int clBuildProgram(long program, int deviceCount, PointerBuffer deviceList, String options, BuildProgramCallback cb) {
+    public int clBuildProgram(long program, int deviceCount, NativeSizeBuffer deviceList, String options, BuildProgramCallback cb) {
 
         if (deviceList != null && !deviceList.isDirect()) {
             throw new RuntimeException("Argument \"properties\" was not a direct buffer");
@@ -175,38 +175,38 @@ public class CLImpl extends CLAbstractImpl {
 
 
     /** Interface to C language function: <br> <code> void *  {@native clEnqueueMapImage}(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret); </code>
-    @param origin a direct {@link com.jogamp.common.nio.PointerBuffer}
-    @param range a direct {@link com.jogamp.common.nio.PointerBuffer}
-    @param image_row_pitch a direct {@link com.jogamp.common.nio.PointerBuffer}
-    @param image_slice_pitch a direct {@link com.jogamp.common.nio.PointerBuffer}
-    @param event_wait_list a direct {@link com.jogamp.common.nio.PointerBuffer}
-    @param event a direct {@link com.jogamp.common.nio.PointerBuffer}
+    @param origin a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param range a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param image_row_pitch a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param image_slice_pitch a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param event_wait_list a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param event a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
     @param errcode_ret a direct {@link java.nio.IntBuffer}   */
-    public java.nio.ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags,
-            PointerBuffer origin, PointerBuffer range,
-            PointerBuffer image_row_pitch, PointerBuffer image_slice_pitch,
+    public ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags,
+            NativeSizeBuffer origin, NativeSizeBuffer range,
+            NativeSizeBuffer image_row_pitch, NativeSizeBuffer image_slice_pitch,
             int num_events_in_wait_list,
-            PointerBuffer event_wait_list, PointerBuffer event, java.nio.IntBuffer errcode_ret) {
+            NativeSizeBuffer event_wait_list, NativeSizeBuffer event, IntBuffer errcode_ret) {
 
-        if (!isDirect(origin)) {
+        if (origin != null && !origin.isDirect()) {
             throw new CLException("Argument \"origin\" was not a direct buffer");
         }
-        if (!isDirect(range)) {
+        if (range != null && !range.isDirect()) {
             throw new CLException("Argument \"range\" was not a direct buffer");
         }
-        if (!isDirect(image_row_pitch)) {
+        if (image_row_pitch != null && !image_row_pitch.isDirect()) {
             throw new CLException("Argument \"image_row_pitch\" was not a direct buffer");
         }
-        if (!isDirect(image_slice_pitch)) {
+        if (image_slice_pitch != null && !image_slice_pitch.isDirect()) {
             throw new CLException("Argument \"image_slice_pitch\" was not a direct buffer");
         }
-        if (!isDirect(event_wait_list)) {
+        if (event_wait_list != null && !event_wait_list.isDirect()) {
             throw new CLException("Argument \"event_wait_list\" was not a direct buffer");
         }
-        if (!isDirect(event)) {
+        if (event != null && !event.isDirect()) {
             throw new CLException("Argument \"event\" was not a direct buffer");
         }
-        if (!isDirect(errcode_ret)) {
+        if (errcode_ret != null && !errcode_ret.isDirect()) {
             throw new CLException("Argument \"errcode_ret\" was not a direct buffer");
         }
 
@@ -218,7 +218,7 @@ public class CLImpl extends CLAbstractImpl {
         if (getImageInfoAddress == 0) {
             throw new UnsupportedOperationException("Method not available");
         }
-        java.nio.ByteBuffer _res;
+        ByteBuffer _res;
         _res = clEnqueueMapImage0(command_queue, image, blocking_map, map_flags, origin != null ? origin.getBuffer() : null,
                 getDirectBufferByteOffset(origin), range != null ? range.getBuffer() : null,
                 getDirectBufferByteOffset(range), image_row_pitch != null ? image_row_pitch.getBuffer() : null,
@@ -235,12 +235,12 @@ public class CLImpl extends CLAbstractImpl {
     }
 
     /** Entry point to C language function: <code> void *  {@native clEnqueueMapImage}(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret); </code>
-    @param origin a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-    @param range a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-    @param image_row_pitch a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-    @param image_slice_pitch a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-    @param event_wait_list a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
-    @param event a direct {@link com.jogamp.gluegen.runtime.PointerBuffer}
+    @param origin a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param range a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param image_row_pitch a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param image_slice_pitch a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param event_wait_list a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
+    @param event a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
     @param errcode_ret a direct {@link java.nio.IntBuffer}   */
     private native ByteBuffer clEnqueueMapImage0(long command_queue, long image, int blocking_map, long map_flags,
             Object origin, int origin_byte_offset, Object range, int range_byte_offset, Object image_row_pitch,

@@ -28,7 +28,7 @@
 
 package com.jogamp.opencl;
 
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 
 import java.nio.Buffer;
 
@@ -84,7 +84,7 @@ public class CLSampler extends CLObject implements CLResource {
     private class CLSamplerInfoAccessor extends CLInfoAccessor {
 
         @Override
-        protected int getInfo(int name, long valueSize, Buffer value, PointerBuffer valueSizeRet) {
+        protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {
             return cl.clGetSamplerInfo(ID, name, valueSize, value, valueSizeRet);
         }
 

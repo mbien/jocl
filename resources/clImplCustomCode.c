@@ -299,7 +299,7 @@ Java_com_jogamp_opencl_impl_CLImpl_clBuildProgram0(JNIEnv *env, jobject _unused,
 
 /*   Java->C glue code:
  *   Java package: com.jogamp.opencl.impl.CLImpl
- *    Java method: java.nio.ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags, com.jogamp.gluegen.runtime.PointerBuffer origin, com.jogamp.gluegen.runtime.PointerBuffer range, com.jogamp.gluegen.runtime.PointerBuffer image_row_pitch, com.jogamp.gluegen.runtime.PointerBuffer image_slice_pitch, int num_events_in_wait_list, com.jogamp.gluegen.runtime.PointerBuffer event_wait_list, com.jogamp.gluegen.runtime.PointerBuffer event, java.nio.IntBuffer errcode_ret)
+ *    Java method: java.nio.ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags, com.jogamp.gluegen.common.nio.NativeSizeBuffer origin, com.jogamp.gluegen.common.nio.NativeSizeBuffer range, com.jogamp.gluegen.common.nio.NativeSizeBuffer image_row_pitch, com.jogamp.gluegen.common.nio.NativeSizeBuffer image_slice_pitch, int num_events_in_wait_list, com.jogamp.gluegen.common.nio.NativeSizeBuffer event_wait_list, com.jogamp.gluegen.common.nio.NativeSizeBuffer event, java.nio.IntBuffer errcode_ret)
  *     C function: void *  clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, uint32_t blocking_map, uint64_t map_flags, const size_t * , const size_t * , size_t *  image_row_pitch, size_t *  image_slice_pitch, uint32_t num_events_in_wait_list, cl_event *  event_wait_list, cl_event *  event, int32_t *  errcode_ret);
  */
 JNIEXPORT jobject JNICALL

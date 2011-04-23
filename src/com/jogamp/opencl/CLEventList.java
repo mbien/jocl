@@ -30,7 +30,7 @@ package com.jogamp.opencl;
 
 import com.jogamp.common.AutoCloseable;
 import com.jogamp.common.nio.CachedBufferFactory;
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 import java.util.Iterator;
 
 /**
@@ -44,12 +44,12 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     /**
      * stores event ids for fast access.
      */
-    final PointerBuffer IDs;
+    final NativeSizeBuffer IDs;
     
     /**
      * Points always to the first element of the id buffer.
      */
-    final PointerBuffer IDsView;
+    final NativeSizeBuffer IDsView;
     
     int size;
     
@@ -64,13 +64,13 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     public CLEventList(CachedBufferFactory factory, int capacity) {
         this.events = new CLEvent[capacity];
         this.IDs = initIDBuffer(factory, capacity);
-        this.IDsView = PointerBuffer.wrap(IDs.getBuffer().duplicate());
+        this.IDsView = NativeSizeBuffer.wrap(IDs.getBuffer().duplicate());
     }
 
     public CLEventList(CachedBufferFactory factory, CLEvent... events) {
         this.events = events;
         this.IDs = initIDBuffer(factory, events.length);
-        this.IDsView = PointerBuffer.wrap(IDs.getBuffer().duplicate());
+        this.IDsView = NativeSizeBuffer.wrap(IDs.getBuffer().duplicate());
         
         for (CLEvent event : events) {
             if(event == null) {
@@ -82,11 +82,11 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         size = events.length;
     }
     
-    private PointerBuffer initIDBuffer(CachedBufferFactory factory, int size) {
+    private NativeSizeBuffer initIDBuffer(CachedBufferFactory factory, int size) {
         if(factory == null) {
-            return PointerBuffer.allocateDirect(size);
+            return NativeSizeBuffer.allocateDirect(size);
         }else{
-            return PointerBuffer.wrap(factory.newDirectByteBuffer(size*PointerBuffer.elementSize()));
+            return NativeSizeBuffer.wrap(factory.newDirectByteBuffer(size*NativeSizeBuffer.elementSize()));
         }
     }
 

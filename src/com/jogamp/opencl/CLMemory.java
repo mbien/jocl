@@ -30,7 +30,7 @@ package com.jogamp.opencl;
 
 import com.jogamp.opencl.gl.CLGLI;
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.impl.CLMemObjectDestructorCallback;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
@@ -82,8 +82,8 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     }
 
     protected static long getSizeImpl(CL cl, long id) {
-        PointerBuffer pb = PointerBuffer.allocateDirect(1);
-        int ret = cl.clGetMemObjectInfo(id, CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
+        NativeSizeBuffer pb = NativeSizeBuffer.allocateDirect(1);
+        int ret = cl.clGetMemObjectInfo(id, CL_MEM_SIZE, NativeSizeBuffer.elementSize(), pb.getBuffer(), null);
         checkForError(ret, "can not obtain buffer info");
         return pb.get();
     }

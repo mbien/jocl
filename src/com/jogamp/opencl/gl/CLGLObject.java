@@ -38,12 +38,17 @@ import javax.media.opengl.GLContext;
  *
  * @author Michael Bien
  */
-interface CLGLObject {
+public interface CLGLObject {
 
     /**
      * Returns the OpenGL object id of this shared object.
      */
     public int getGLObjectID();
+
+    /**
+     * Returns the OpenCL object handle
+     */
+    public long getID();
 
     /**
      * Returns the OpenGL buffer type of this shared object.

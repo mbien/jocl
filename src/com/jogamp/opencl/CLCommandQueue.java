@@ -31,6 +31,7 @@ package com.jogamp.opencl;
 import com.jogamp.common.nio.CachedBufferFactory;
 import com.jogamp.opencl.gl.CLGLI;
 import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.gl.CLGLObject;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -1617,7 +1618,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueAcquireGLObjects}.
      */
-    public CLCommandQueue putAcquireGLObject(long glObject) {
+    public CLCommandQueue putAcquireGLObject(CLGLObject glObject) {
         this.putAcquireGLObject(glObject, null, null);
         return this;
     }
@@ -1625,7 +1626,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueAcquireGLObjects}.
      */
-    public CLCommandQueue putAcquireGLObject(long glObject, CLEventList events) {
+    public CLCommandQueue putAcquireGLObject(CLGLObject glObject, CLEventList events) {
         this.putAcquireGLObject(glObject, null, events);
         return this;
     }
@@ -1633,7 +1634,31 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueAcquireGLObjects}.
      */
-    public CLCommandQueue putAcquireGLObject(long glObject, CLEventList condition, CLEventList events) {
+    public CLCommandQueue putAcquireGLObject(CLGLObject glObject, CLEventList condition, CLEventList events) {
+        this.putAcquireGLObjects(copy2NIO(ibA, glObject.getID()), condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueAcquireGLObjects}.
+     */
+    public CLCommandQueue putAcquireGLObjects(CLGLObject glObject1, CLGLObject glObject2, CLEventList condition, CLEventList events) {
+        this.putAcquireGLObjects(copy2NIO(ibA, glObject1.getID(), glObject2.getID()), condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueAcquireGLObjects}.
+     */
+    public CLCommandQueue putAcquireGLObjects(CLGLObject glObject1, CLGLObject glObject2, CLGLObject glObject3, CLEventList condition, CLEventList events) {
+        this.putAcquireGLObjects(copy2NIO(ibA, glObject1.getID(), glObject2.getID(), glObject3.getID()), condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueAcquireGLObjects}.
+     */
+    public CLCommandQueue putAcquireGLObjects(NativeSizeBuffer glObjectIDs, CLEventList condition, CLEventList events) {
 
         NativeSizeBuffer conditionIDs = null;
         int conditions = 0;
@@ -1644,14 +1669,12 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         CLGLI xl = (CLGLI) cl;
 
-        NativeSizeBuffer glObj = copy2NIO(ibA, glObject);
-        
-        int ret = xl.clEnqueueAcquireGLObjects(ID, 1, glObj,
+        int ret = xl.clEnqueueAcquireGLObjects(ID, glObjectIDs.remaining(), glObjectIDs,
                     conditions, conditionIDs,
                     events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS) {
-            throw newException(ret, "can not aquire GLObject: " + glObject + " with " + toStr(condition, events));
+            throw newException(ret, "can not aquire " + glObjectIDs + " with " + toStr(condition, events));
         }
 
         if(events != null) {
@@ -1664,7 +1687,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueReleaseGLObjects}.
      */
-    public CLCommandQueue putReleaseGLObject(long glObject) {
+    public CLCommandQueue putReleaseGLObject(CLGLObject glObject) {
         this.putReleaseGLObject(glObject, null);
         return this;
     }
@@ -1672,7 +1695,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueReleaseGLObjects}.
      */
-    public CLCommandQueue putReleaseGLObject(long glObject, CLEventList events) {
+    public CLCommandQueue putReleaseGLObject(CLGLObject glObject, CLEventList events) {
         this.putReleaseGLObject(glObject, null, events);
         return this;
     }
@@ -1680,7 +1703,31 @@ public class CLCommandQueue extends CLObject implements CLResource {
     /**
      * Calls {@native clEnqueueReleaseGLObjects}.
      */
-    public CLCommandQueue putReleaseGLObject(long glObject, CLEventList condition, CLEventList events) {
+    public CLCommandQueue putReleaseGLObject(CLGLObject glObject, CLEventList condition, CLEventList events) {
+        this.putReleaseGLObjects(copy2NIO(ibA, glObject.getID()), condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueAcquireGLObjects}.
+     */
+    public CLCommandQueue putReleaseGLObjects(CLGLObject glObject1, CLGLObject glObject2, CLEventList condition, CLEventList events) {
+        this.putReleaseGLObjects(copy2NIO(ibA, glObject1.getID(), glObject2.getID()), condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueAcquireGLObjects}.
+     */
+    public CLCommandQueue putReleaseGLObjects(CLGLObject glObject1, CLGLObject glObject2, CLGLObject glObject3, CLEventList condition, CLEventList events) {
+        this.putReleaseGLObjects(copy2NIO(ibA, glObject1.getID(), glObject2.getID(), glObject3.getID()), condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueReleaseGLObjects}.
+     */
+    public CLCommandQueue putReleaseGLObjects(NativeSizeBuffer glObjectIDs, CLEventList condition, CLEventList events) {
 
         NativeSizeBuffer conditionIDs = null;
         int conditions = 0;
@@ -1691,14 +1738,12 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         CLGLI xl = (CLGLI) cl;
 
-        NativeSizeBuffer glObj = copy2NIO(ibA, glObject);
-
-        int ret = xl.clEnqueueReleaseGLObjects(ID, 1, glObj,
+        int ret = xl.clEnqueueReleaseGLObjects(ID, glObjectIDs.remaining(), glObjectIDs,
                 conditions, conditionIDs,
                 events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS) {
-            throw newException(ret, "can not release GLObject: " + glObject + "with " + toStr(condition, events));
+            throw newException(ret, "can not release " + glObjectIDs + "with " + toStr(condition, events));
         }
 
         if(events != null) {

@@ -32,6 +32,7 @@ import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLDevice;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Pre-defined filters.
@@ -82,8 +83,9 @@ public class CLDeviceFilters {
      */
     public static Filter<CLDevice> extension(final String... extensions) {
         return new Filter<CLDevice>() {
+            private final List<String> extensionList = Arrays.asList(extensions);
             public boolean accept(CLDevice item) {
-                return item.getExtensions().containsAll(Arrays.asList(extensions));
+                return item.getExtensions().containsAll(extensionList);
             }
         };
     }
@@ -93,8 +95,9 @@ public class CLDeviceFilters {
      */
     public static Filter<CLDevice> queueMode(final Mode... modes) {
         return new Filter<CLDevice>() {
+            private final List<Mode> modeList = Arrays.asList(modes);
             public boolean accept(CLDevice item) {
-                return item.getQueueProperties().containsAll(Arrays.asList(modes));
+                return item.getQueueProperties().containsAll(modeList);
             }
         };
     }

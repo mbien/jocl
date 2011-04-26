@@ -33,7 +33,8 @@ import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.opencl.CLVersion;
 import java.util.Arrays;
-import java.util.List;
+import javax.media.opengl.GL;
+import javax.media.opengl.GLContext;
 
 /**
  * Pre-defined filters.
@@ -70,14 +71,30 @@ public class CLPlatformFilters {
      */
     public static Filter<CLPlatform> glSharing() {
         return new Filter<CLPlatform>() {
+            private final Filter<CLDevice> glFilter = CLDeviceFilters.glSharing();
             public boolean accept(CLPlatform item) {
                 CLDevice[] devices = item.listCLDevices();
                 for (CLDevice device : devices) {
-                    if(device.isGLMemorySharingSupported()) {
+                    if(glFilter.accept(device)) {
                         return true;
                     }
                 }
                 return false;
+            }
+        };
+    }
+
+    /**
+     * Accepts all with the given OpenGL context compatible platforms containing at least one
+     * devices of which supports OpenGL-OpenCL interoparability.
+     */
+    public static Filter<CLPlatform> glSharing(final GLContext context) {
+        return new Filter<CLPlatform>() {
+            private final Filter<CLPlatform> glFilter = glSharing();
+            public boolean accept(CLPlatform item) {
+                String glVendor = context.getGL().glGetString(GL.GL_VENDOR);
+                String clVendor = item.getVendor();
+                return clVendor.equals(glVendor) && glFilter.accept(item);
             }
         };
     }
@@ -98,10 +115,10 @@ public class CLPlatformFilters {
      */
     public static Filter<CLPlatform> queueMode(final Mode... modes) {
         return new Filter<CLPlatform>() {
+            private final Filter<CLDevice> queueModeFilter = CLDeviceFilters.queueMode(modes);
             public boolean accept(CLPlatform item) {
-                List<Mode> modesList = Arrays.asList(modes);
                 for (CLDevice device : item.listCLDevices()) {
-                    if(device.getQueueProperties().containsAll(modesList)) {
+                    if(queueModeFilter.accept(device)) {
                         return true;
                     }
                 }

@@ -50,7 +50,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     
     B buffer;
     protected final int FLAGS;
-    protected final long size;
+    protected long size;
     
     // depends on the nio buffer type
     protected int elementSize;
@@ -65,11 +65,15 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         this.buffer = directBuffer;
         this.FLAGS = flags;
         this.size = size;
-        initElementSizes();
+        initElementSize();
+        initCLCapacity();
     }
 
-    private void initElementSizes() {
+    private void initElementSize() {
         this.elementSize = (buffer==null) ? 1 : Buffers.sizeOfBufferElem(buffer);
+    }
+
+    protected final void initCLCapacity() {
         this.clCapacity  = (int) (size / elementSize);
     }
 
@@ -118,7 +122,8 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
                     +" but got " + buffer.getClass());
         }
         this.buffer = buffer;
-        initElementSizes();
+        initElementSize();
+        initCLCapacity();
         return this;
     }
 

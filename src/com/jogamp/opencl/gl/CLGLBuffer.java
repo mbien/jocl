@@ -28,9 +28,10 @@
 
 package com.jogamp.opencl.gl;
 
-import com.jogamp.opencl.CL;
 import com.jogamp.opencl.CLBuffer;
+import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLContext;
+import com.jogamp.opencl.CLException;
 
 import java.nio.Buffer;
 import javax.media.opengl.GLContext;
@@ -48,22 +49,22 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
      */
     public final int GLID;
 
-    private CLGLBuffer(CLContext context, B directBuffer, long id, int glObject, int flags) {
-        super(context, directBuffer, getSizeImpl(context.getCL(), id), id, flags);
+    private CLGLBuffer(CLContext context, B directBuffer, long id, int glObject, long size, int flags) {
+        super(context, directBuffer, size, id, flags);
         this.GLID = glObject;
     }
 
 
-    static <B extends Buffer> CLGLBuffer<B> create(CLContext context, B directBuffer, int flags, int glObject) {
+    static <B extends Buffer> CLGLBuffer<B> create(CLContext context, B directBuffer, long size, int flags, int glObject) {
         checkBuffer(directBuffer, flags);
         
-        CL cl = getCL(context);
-        int[] result = new int[1];
-        CLGLI clgli = (CLGLI)cl;
+        CLGLI clgli = (CLGLI)getCL(context);
         
+        int[] result = new int[1];
         long id = clgli.clCreateFromGLBuffer(context.ID, flags, glObject, result, 0);
+        CLException.checkForError(result[0], "can not create CLGLObject from #"+glObject);
 
-        return new CLGLBuffer<B>(context, directBuffer, id, glObject, flags);
+        return new CLGLBuffer<B>(context, directBuffer, id, glObject, size, flags);
     }
 
     static <B extends Buffer> void checkBuffer(B directBuffer, int flags) throws IllegalArgumentException {
@@ -73,6 +74,16 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
         if (isHostPointerFlag(flags)) {
             throw new IllegalArgumentException("CL_MEM_COPY_HOST_PTR or CL_MEM_USE_HOST_PTR can not be used with OpenGL Buffers.");
         }
+    }
+
+    /**
+     * Updates the size of this CLGLBuffer by querying OpenGL.
+     * This method may only be called if this memory object has been acquired by calling
+     * {@link CLCommandQueue#putAcquireGLObject(com.jogamp.opencl.gl.CLGLObject)}.
+     */
+    public void updateSize() {
+        size = getSizeImpl(cl, ID);
+        initCLCapacity();
     }
 
     public int getGLObjectID() {
@@ -94,7 +105,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
 
     @Override
     public <T extends Buffer> CLGLBuffer<T> cloneWith(T directBuffer) {
-        return new CLGLBuffer<T>(context, directBuffer, ID, GLID, FLAGS);
+        return new CLGLBuffer<T>(context, directBuffer, ID, GLID, size, FLAGS);
     }
 
     @Override

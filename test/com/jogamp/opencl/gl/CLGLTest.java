@@ -32,10 +32,11 @@
 
 package com.jogamp.opencl.gl;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.os.Platform;
-import org.junit.Rule;
-import org.junit.rules.MethodRule;
-import org.junit.rules.Timeout;
+import com.jogamp.opencl.CLCommandQueue;
+import javax.media.opengl.GL2;
+import javax.media.opengl.GLException;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
@@ -43,12 +44,20 @@ import com.jogamp.newt.Screen;
 import com.jogamp.newt.Window;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opencl.CLContext;
+import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLPlatform;
+import com.jogamp.opencl.util.CLDeviceFilters;
+import com.jogamp.opencl.util.CLPlatformFilters;
+import java.nio.IntBuffer;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.GLContext;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.MethodRule;
+import org.junit.rules.Timeout;
 
+import static com.jogamp.opencl.util.CLPlatformFilters.*;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 
@@ -65,8 +74,7 @@ public class CLGLTest {
     private static GLWindow glWindow;
     private static Window window;
 
-//    @BeforeClass
-    public static void init() {
+    public static void initGL() {
         GLProfile.initSingleton(true);
 
         // FIXME remove when JOCL is stabelized on mac
@@ -92,25 +100,30 @@ public class CLGLTest {
 
         glcontext = glWindow.getContext();
 //        glcontext.makeCurrent();
-        out.println("useing glcontext:");
-        out.println(glcontext);
+//        out.println(" - - - - glcontext - - - - ");
+//        out.println(glcontext);
+//        out.println(" - - - - - - - - - - - - - ");
+    }
+
+    private void deinitGL() throws GLException {
+        glcontext.release();
+        glWindow.destroy();
+        window.destroy();
+        
+        glcontext = null;
+        glWindow = null;
+        window = null;
     }
 
     @Test
     public void createContextTest() {
 
-        init();
+        initGL();
 
         out.println(" - - - glcl; createContextTest - - - ");
 
-        CLDevice[] devices = CLPlatform.getDefault().listCLDevices();
-        CLDevice device = null;
-        for (CLDevice d : devices) {
-            if(d.isGLMemorySharingSupported()) {
-                device = d;
-                break;
-            }
-        }
+        CLPlatform platform = CLPlatform.getDefault(CLPlatformFilters.glSharing());
+        CLDevice device = platform.getMaxFlopsDevice(CLDeviceFilters.glSharing());
 
         if(device == null) {
             out.println("Aborting test: no GLCL capable devices found.");
@@ -122,7 +135,7 @@ public class CLGLTest {
         out.println(device.getPlatform());
         
         assertNotNull(glcontext);
-        glcontext.makeCurrent();
+        makeGLCurrent();
         assertTrue(glcontext.isCurrent());
         
         CLContext context = CLGLContext.create(glcontext, device);
@@ -139,10 +152,96 @@ public class CLGLTest {
             // destroy cl context, gl context still current
             context.release();
             
-            glcontext.release();
-            glWindow.destroy();
+            deinitGL();
         }
 
+    }
+    
+    @Test
+    public void vboSharing() {
+        
+        out.println(" - - - glcl; vboSharing - - - ");
+        
+        initGL();
+        makeGLCurrent();
+        assertTrue(glcontext.isCurrent());
+        
+        CLPlatform platform = CLPlatform.getDefault(glSharing(glcontext));
+        if(platform == null) {
+            out.println("test aborted");
+            return;
+        }
+        
+        CLDevice theChosenOne = platform.getMaxFlopsDevice(CLDeviceFilters.glSharing());
+        out.println(theChosenOne);
+        
+        CLGLContext context = CLGLContext.create(glcontext, theChosenOne);
+        
+        try{
+            out.println(context);
+            
+            GL2 gl = glcontext.getGL().getGL2();
+            
+            int[] id = new int[1];
+            gl.glGenBuffers(id.length, id, 0);
+            
+            IntBuffer glData = Buffers.newDirectIntBuffer(new int[] {0,1,2,3,4,5,6,7,8});
+            glData.rewind();
+
+            // create and write GL buffer
+            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+                gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, id[0]);
+                gl.glBufferData(GL2.GL_ARRAY_BUFFER, glData.capacity()*4, glData, GL2.GL_STATIC_DRAW);
+                gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+            gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+            gl.glFinish();
+            
+
+            // create CLGL buffer
+            IntBuffer clData = Buffers.newDirectIntBuffer(9);
+            CLGLBuffer<IntBuffer> clBuffer = context.createFromGLBuffer(clData, id[0], glData.capacity()*4, Mem.READ_ONLY);
+            
+            assertEquals(glData.capacity(), clBuffer.getCLCapacity());
+            assertEquals(glData.capacity()*4, clBuffer.getCLSize());
+                
+            
+            CLCommandQueue queue = theChosenOne.createCommandQueue();
+
+            // read gl buffer into cl nio buffer
+            queue.putAcquireGLObject(clBuffer)
+                 .putReadBuffer(clBuffer, true)
+                 .putReleaseGLObject(clBuffer);
+
+            while(clData.hasRemaining()) {
+                assertEquals(glData.get(), clData.get());
+            }
+            
+            out.println(clBuffer);
+
+            clBuffer.release();
+            
+            gl.glDeleteBuffers(1, id, 0);
+            
+        }finally{
+            context.release();
+            deinitGL();
+        }
+        
+    }
+
+    private void makeGLCurrent() {
+        // we are patient...
+        while(true) {
+            try{
+                glcontext.makeCurrent();
+                break;
+            }catch(RuntimeException ex) {
+                try {
+                    Thread.sleep(200);
+                    // I don't give up yet!
+                } catch (InterruptedException ignore) { }
+            }
+        }
     }
 
 

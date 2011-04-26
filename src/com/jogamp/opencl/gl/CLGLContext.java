@@ -201,20 +201,46 @@ public final class CLGLContext extends CLContext {
     }
 
     // Buffers
-    public final CLGLBuffer<?> createFromGLBuffer(int glBuffer, Mem... flags) {
-        return createFromGLBuffer(null, glBuffer, Mem.flagsToInt(flags));
+    /**
+     * Creates a CLGLBuffer for memory sharing with the specified OpenGL buffer.
+     * @param glBuffer The OpenGL buffer handle like a vertex buffer or pixel buffer object.
+     * @param glBufferSize The size of the OpenGL buffer in bytes
+     * @param flags optional flags.
+     */
+    public final CLGLBuffer<?> createFromGLBuffer(int glBuffer, long glBufferSize, Mem... flags) {
+        return createFromGLBuffer(null, glBuffer, glBufferSize, Mem.flagsToInt(flags));
     }
 
-    public final CLGLBuffer<?> createFromGLBuffer(int glBuffer, int flags) {
-        return createFromGLBuffer(null, glBuffer, flags);
+    /**
+     * Creates a CLGLBuffer for memory sharing with the specified OpenGL buffer.
+     * @param glBuffer The OpenGL buffer handle like a vertex buffer or pixel buffer object.
+     * @param glBufferSize The size of the OpenGL buffer in bytes
+     * @param flags optional flags.
+     */
+    public final CLGLBuffer<?> createFromGLBuffer(int glBuffer, long glBufferSize, int flags) {
+        return createFromGLBuffer(null, glBuffer, glBufferSize, flags);
     }
 
-    public final <B extends Buffer> CLGLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, Mem... flags) {
-        return createFromGLBuffer(directBuffer, glBuffer, Mem.flagsToInt(flags));
+    /**
+     * Creates a CLGLBuffer for memory sharing with the specified OpenGL buffer.
+     * @param directBuffer A direct allocated NIO buffer for data transfers between java and OpenCL.
+     * @param glBuffer The OpenGL buffer handle like a vertex buffer or pixel buffer object.
+     * @param glBufferSize The size of the OpenGL buffer in bytes
+     * @param flags optional flags.
+     */
+    public final <B extends Buffer> CLGLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, long glBufferSize, Mem... flags) {
+        return createFromGLBuffer(directBuffer, glBuffer, glBufferSize, Mem.flagsToInt(flags));
     }
 
-    public final <B extends Buffer> CLGLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, int flags) {
-        CLGLBuffer<B> buffer = CLGLBuffer.create(this, directBuffer, flags, glBuffer);
+    /**
+     * Creates a CLGLBuffer for memory sharing with the specified OpenGL buffer.
+     * @param directBuffer A direct allocated NIO buffer for data transfers between java and OpenCL.
+     * @param glBuffer The OpenGL buffer handle like a vertex buffer or pixel buffer object.
+     * @param glBufferSize The size of the OpenGL buffer in bytes
+     * @param flags optional flags.
+     */
+    public final <B extends Buffer> CLGLBuffer<B> createFromGLBuffer(B directBuffer, int glBuffer, long glBufferSize, int flags) {
+        CLGLBuffer<B> buffer = CLGLBuffer.create(this, directBuffer, glBufferSize, flags, glBuffer);
         memoryObjects.add(buffer);
         return buffer;
     }

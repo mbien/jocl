@@ -33,7 +33,6 @@
 package com.jogamp.opencl.gl;
 
 import com.jogamp.common.nio.Buffers;
-import com.jogamp.common.os.Platform;
 import com.jogamp.opencl.CLCommandQueue;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLException;
@@ -76,11 +75,6 @@ public class CLGLTest {
 
     public static void initGL() {
         GLProfile.initSingleton(true);
-
-        // FIXME remove when JOCL is stabelized on mac
-        if(Platform.getOS().toLowerCase().contains("mac")) {
-            fail("quick exit to prevent deadlock");
-        }
 
         Display display = NewtFactory.createDisplay(null); // local display
         assertNotNull(display);
@@ -215,7 +209,7 @@ public class CLGLTest {
             while(clData.hasRemaining()) {
                 assertEquals(glData.get(), clData.get());
             }
-            
+
             out.println(clBuffer);
 
             clBuffer.release();

@@ -37,6 +37,7 @@ import com.jogamp.common.nio.NativeSizeBuffer;
 import jogamp.opengl.GLContextImpl;
 import jogamp.opengl.egl.EGLContext;
 import jogamp.opengl.macosx.cgl.MacOSXCGLContext;
+import jogamp.opengl.macosx.cgl.CGL;
 import jogamp.opengl.windows.wgl.WindowsWGLContext;
 import jogamp.opengl.x11.glx.X11GLXContext;
 import javax.media.opengl.GLContext;
@@ -174,12 +175,13 @@ public final class CLGLContext extends CLContext {
                       .put(CL_WGL_HDC_KHR).put(surfaceHandle)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof MacOSXCGLContext) {
-//            TODO test on mac
 //          spec: "When the CGL binding API is supported, the attribute
 //          CL_CGL_SHAREGROUP_KHR should be set to a CGLShareGroup handle to
 //          a CGL share group object."
+            long cgl = CGL.getCGLContext(glID[0]);
+            long group = CGL.CGLGetShareGroup(cgl);
             properties = NativeSizeBuffer.allocateDirect(5);
-            properties.put(CL_CGL_SHAREGROUP_KHR).put(glID[0])
+            properties.put(CL_CGL_SHAREGROUP_KHR).put(group)
                       .put(CL_CONTEXT_PLATFORM).put(platform.ID);
         }else if(glContext instanceof EGLContext) {
 //            TODO test EGL

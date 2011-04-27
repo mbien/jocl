@@ -626,6 +626,7 @@ public class CLProgram extends CLObject implements CLResource {
             addresses.put(address);
             address += sizes.get();
         }
+        addresses.rewind();
         
         ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity()*NativeSizeBuffer.elementSize(), addresses.getBuffer(), null);
         if(ret != CL_SUCCESS) {

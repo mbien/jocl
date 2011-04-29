@@ -37,6 +37,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -167,9 +168,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
 
     @Override
     public CLProgramBuilder withOptions(String... options) {
-        for (String option : options) {
-            optionSet.add(option);
-        }
+        optionSet.addAll(Arrays.asList(options));
         return this;
     }
 
@@ -272,27 +271,15 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         optionSet.clear();
         return this;
     }
-    
-    private int indexOf(CLDevice device, CLDevice[] devices) {
-        for (int i = 0; i < devices.length; i++) {
-            if(device.equals(devices[i])) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
-    // format: { platform_suffix, num_binaries, (device.ID, length, binaries)+ }
+    // format: { platform_suffix, num_binaries, (device_name, length, binaries)+ }
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
 
-        CLDevice[] deviceList = null;
         String suffix = null;
-        
+
         if(!binariesMap.isEmpty()) {
             CLPlatform platform = binariesMap.keySet().iterator().next().getPlatform();
-            deviceList = platform.listCLDevices();
-
             suffix = platform.getICDSuffix();
         }
         
@@ -303,12 +290,7 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
             CLDevice device = entry.getKey();
             byte[] binaries = entry.getValue();
             
-            // we use the device index as identifier since there is currently no other way
-            // to distinguish identical devices via CL.
-            // it should be persistent between runs but may change on driver/hardware update. In this situations we would
-            // have to build from source anyway (build failures).
-            int index = indexOf(device, deviceList);
-            out.writeInt(index);
+            out.writeUTF(device.getName());
             out.writeInt(binaries.length);
             out.write(binaries);
         }
@@ -328,22 +310,28 @@ public final class CLProgramBuilder implements CLProgramConfiguration, Serializa
         
         this.binariesMap = new LinkedHashMap<CLDevice, byte[]>();
         
-        CLDevice[] devices = null;
+        List<CLDevice> devices;
         if(platform != null) {
-            devices = platform.listCLDevices();
+            devices = new ArrayList(Arrays.asList(platform.listCLDevices()));
+        }else{
+            devices = Collections.EMPTY_LIST;
         }
         
         int mapSize = in.readInt();
 
         for (int i = 0; i < mapSize; i++) {
-            int index = in.readInt();
+            String name = in.readUTF();
             int length = in.readInt();
             byte[] binaries = new byte[length];
             in.readFully(binaries);
             
-            // we ignore binaries we can't map to devices
-            if(devices != null && index >= 0 && index < devices.length) {
-                binariesMap.put(devices[index], binaries);
+            for (int d = 0; d < devices.size(); d++) {
+                CLDevice device = devices.get(d);
+                if(device.getName().equals(name)) {
+                    binariesMap.put(device, binaries);
+                    devices.remove(d);
+                    break;
+                }
             }
         }
     }

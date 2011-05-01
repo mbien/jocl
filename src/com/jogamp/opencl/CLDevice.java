@@ -33,6 +33,7 @@ import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.common.os.Platform;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -637,12 +638,12 @@ public final class CLDevice extends CLObject {
     }
 
     /**
-     * Returns {@link #isExtensionAvailable}("cl_khr_gl_sharing") || {@link #isExtensionAvailable}("cl_apple_gl_sharing").
+     * Returns {@link #isExtensionAvailable}("cl_khr_gl_sharing") || {@link #isExtensionAvailable}("cl_APPLE_gl_sharing").
      * @see #getExtensions()
      */
-    @CLProperty("cl_khr_gl_sharing | cl_apple_gl_sharing")
+    @CLProperty("cl_khr_gl_sharing | cl_APPLE_gl_sharing")
     public boolean isGLMemorySharingSupported() {
-        return isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_apple_gl_sharing");
+        return isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_APPLE_gl_sharing");
     }
 
     /**
@@ -651,6 +652,17 @@ public final class CLDevice extends CLObject {
      */
     public boolean isExtensionAvailable(String extension) {
         return getExtensions().contains(extension);
+    }
+    
+    /**
+     * Returns {@link ByteOrder#LITTLE_ENDIAN} or {@link ByteOrder#BIG_ENDIAN}.
+     */
+    public ByteOrder getByteOrder() {
+        if(isLittleEndian()) {
+            return ByteOrder.LITTLE_ENDIAN;
+        }else{
+            return ByteOrder.BIG_ENDIAN;
+        }
     }
 
     /**

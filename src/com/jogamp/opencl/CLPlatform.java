@@ -234,20 +234,7 @@ public final class CLPlatform {
 
         for (int i = 0; i < platformId.capacity(); i++) {
             CLPlatform platform = new CLPlatform(platformId.get(i));
-            if(filter == null) {
-                platforms.add(platform);
-            }else{
-                boolean accepted = true;
-                for (Filter<CLPlatform> f : filter) {
-                    if(!f.accept(platform)) {
-                        accepted = false;
-                        break;
-                    }
-                }
-                if(accepted) {
-                    platforms.add(platform);
-                }
-            }
+            addIfAccepted(platform, platforms, filter);
         }
 
         return platforms.toArray(new CLPlatform[platforms.size()]);
@@ -285,38 +272,81 @@ public final class CLPlatform {
     public CLDevice[] listCLDevices(CLDevice.Type... types) {
         initialize();
 
-        IntBuffer ib = Buffers.newDirectIntBuffer(1);
-
         List<CLDevice> list = new ArrayList<CLDevice>();
         for(int t = 0; t < types.length; t++) {
             CLDevice.Type type = types[t];
 
-            //find all devices
-            int ret = cl.clGetDeviceIDs(ID, type.TYPE, 0, null, ib);
-
-            // return an empty array rather than throwing an exception
-            if(ret == CL.CL_DEVICE_NOT_FOUND || ib.get(0) == 0) {
-                continue;
-            }
-
-            checkForError(ret, "error while enumerating devices");
-
-            PointerBuffer deviceIDs = PointerBuffer.allocateDirect(ib.get(0));
-            ret = cl.clGetDeviceIDs(ID, type.TYPE, deviceIDs.capacity(), deviceIDs, null);
-            checkForError(ret, "error while enumerating devices");
+            PointerBuffer deviceIDs = getDeviceIDs(type.TYPE); 
 
             //add device to list
-            for (int n = 0; n < deviceIDs.capacity(); n++)
+            for (int n = 0; n < deviceIDs.capacity(); n++) {
                 list.add(new CLDevice(cl, this, deviceIDs.get(n)));
+            }
         }
 
-        CLDevice[] devices = new CLDevice[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            devices[i] = list.get(i);
+        return list.toArray(new CLDevice[list.size()]);
+
+    }
+
+    /**
+     * Lists all physical devices available on this platform matching the given {@link Filter}.
+     */
+    public CLDevice[] listCLDevices(Filter<CLDevice>... filters) {
+        initialize();
+
+        List<CLDevice> list = new ArrayList<CLDevice>();
+        
+        PointerBuffer deviceIDs = getDeviceIDs(CL_DEVICE_TYPE_ALL);
+
+        //add device to list
+        for (int n = 0; n < deviceIDs.capacity(); n++) {
+            CLDevice device = new CLDevice(cl, this, deviceIDs.get(n));
+            addIfAccepted(device, list, filters);
         }
 
-        return devices;
+        return list.toArray(new CLDevice[list.size()]);
 
+    }
+
+    private PointerBuffer getDeviceIDs(long type) {
+        
+        IntBuffer ib = Buffers.newDirectIntBuffer(1);
+        
+        //find all devices
+        int ret = cl.clGetDeviceIDs(ID, type, 0, null, ib);
+        
+        PointerBuffer deviceIDs = null;
+        
+        // return null rather than throwing an exception
+        if(ret == CL.CL_DEVICE_NOT_FOUND || ib.get(0) == 0) {
+            deviceIDs = PointerBuffer.allocate(0);
+        }else{
+            deviceIDs = PointerBuffer.allocateDirect(ib.get(0));
+            
+            checkForError(ret, "error while enumerating devices");
+
+            ret = cl.clGetDeviceIDs(ID, type, deviceIDs.capacity(), deviceIDs, null);
+            checkForError(ret, "error while enumerating devices");
+        }
+        
+        return deviceIDs;
+    }
+    
+    private static <I> void addIfAccepted(I item, List<I> list, Filter<I>[] filters) {
+        if(filters == null) {
+            list.add(item);
+        }else{
+            boolean accepted = true;
+            for (Filter<I> filter : filters) {
+                if(!filter.accept(item)) {
+                    accepted = false;
+                    break;
+                }
+            }
+            if(accepted) {
+                list.add(item);
+            }
+        }
     }
 
     static CLDevice findMaxFlopsDevice(CLDevice[] devices) {
@@ -369,6 +399,15 @@ public final class CLPlatform {
      */
     public CLDevice getMaxFlopsDevice(CLDevice.Type... types) {
         return findMaxFlopsDevice(listCLDevices(types));
+    }
+
+    /**
+     * Returns the device with maximal FLOPS and the specified type from this platform.
+     * The device speed is estimated by calculating the product of
+     * MAX_COMPUTE_UNITS and MAX_CLOCK_FREQUENCY.
+     */
+    public CLDevice getMaxFlopsDevice(Filter<CLDevice>... filter) {
+        return findMaxFlopsDevice(listCLDevices(filter));
     }
 
     /**

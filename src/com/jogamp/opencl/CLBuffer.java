@@ -82,7 +82,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
         if(isHostPointerFlag(flags)) {
             host_ptr = directBuffer;
         }
-        int size = sizeOfBufferElem(directBuffer) * directBuffer.capacity();
+        int size = Buffers.sizeOfBufferElem(directBuffer) * directBuffer.capacity();
         long id = cl.clCreateBuffer(context.ID, flags, size, host_ptr, result, 0);
         checkForError(result[0], "can not create cl buffer");
         

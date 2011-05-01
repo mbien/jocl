@@ -36,6 +36,14 @@ import java.util.Map;
 
 /**
  * Configuration representing everything needed to build an OpenCL program.
+ * <p>
+ * If you use {@link #save(java.io.ObjectOutputStream)} to persist build configurations between
+ * JVM sessions it is highly recommended to call {@link #forDevice(com.jogamp.opencl.CLDevice) }
+ * or {@link #forDevices(com.jogamp.opencl.CLDevice[]) } before building the program.
+ * Driver updates or HW changes can make exact device-to-binary mapping hard, the
+ * builder will drop all unmappable binaries silently. Setting the devices explicitly will
+ * force automatic rebuilds from source in this situation.
+ * </p>
  * @author Michael Bien
  * @see com.jogamp.opencl.CLProgramBuilder#createConfiguration()
  * @see com.jogamp.opencl.CLProgramBuilder#loadConfiguration(java.io.ObjectInputStream)

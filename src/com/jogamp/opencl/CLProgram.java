@@ -584,7 +584,12 @@ public class CLProgram extends CLObject implements CLResource {
      * each call of this method calls into Open
      */
     public String getSource() {
-        return getProgramInfoString(CL_PROGRAM_SOURCE);
+        // some drivers return IVE codes if the program haven't been built from source.
+        try{
+            return getProgramInfoString(CL_PROGRAM_SOURCE);
+        }catch(CLException.CLInvalidValueException ingore) {
+            return "";
+        }
     }
 
     /**

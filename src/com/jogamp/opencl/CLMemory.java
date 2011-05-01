@@ -33,11 +33,7 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.nio.PointerBuffer;
 import com.jogamp.opencl.impl.CLMemObjectDestructorCallback;
 import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -73,7 +69,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     }
 
     private void initElementSizes() {
-        this.elementSize = (buffer==null) ? 1 : sizeOfBufferElem(buffer);
+        this.elementSize = (buffer==null) ? 1 : Buffers.sizeOfBufferElem(buffer);
         this.clCapacity  = (int) (size / elementSize);
     }
 
@@ -83,21 +79,6 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     protected static boolean isHostPointerFlag(int flags) {
         return (flags & CL_MEM_COPY_HOST_PTR) != 0
             || (flags & CL_MEM_USE_HOST_PTR)  != 0;
-    }
-
-    static int sizeOfBufferElem(Buffer buffer) {
-        if (buffer instanceof ByteBuffer) {
-            return Buffers.SIZEOF_BYTE;
-        } else if (buffer instanceof IntBuffer) {
-            return Buffers.SIZEOF_INT;
-        } else if (buffer instanceof ShortBuffer) {
-            return Buffers.SIZEOF_SHORT;
-        } else if (buffer instanceof FloatBuffer) {
-            return Buffers.SIZEOF_FLOAT;
-        } else if (buffer instanceof DoubleBuffer) {
-            return Buffers.SIZEOF_DOUBLE;
-        }
-        throw new RuntimeException("Unexpected buffer type " + buffer.getClass().getName());
     }
 
     protected static long getSizeImpl(CL cl, long id) {

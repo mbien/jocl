@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.CLMemory.Mem;
 import java.nio.Buffer;
 
@@ -72,7 +73,7 @@ public class CLSubBuffer<B extends Buffer> extends CLBuffer<B> {
      * Returns the offset of this sub buffer to its parent in buffer elements.
      */
     public int getOffset() {
-        int elemSize = buffer==null ? 1 : sizeOfBufferElem(buffer);
+        int elemSize = buffer==null ? 1 : Buffers.sizeOfBufferElem(buffer);
         return offset/elemSize;
     }
 

@@ -29,6 +29,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.AutoCloseable;
+import com.jogamp.common.nio.CachedBufferFactory;
 import com.jogamp.common.nio.PointerBuffer;
 import java.util.Iterator;
 
@@ -40,22 +41,53 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
 
     private final CLEvent[] events;
 
+    /**
+     * stores event ids for fast access.
+     */
     final PointerBuffer IDs;
+    
+    /**
+     * Points always to the first element of the id buffer.
+     */
+    final PointerBuffer IDsView;
+    
     int size;
-
+    
     public CLEventList(int capacity) {
-        this.events = new CLEvent[capacity];
-        this.IDs = PointerBuffer.allocateDirect(capacity);
+        this(null, capacity);
     }
 
     public CLEventList(CLEvent... events) {
+        this(null, events);
+    }
+
+    public CLEventList(CachedBufferFactory factory, int capacity) {
+        this.events = new CLEvent[capacity];
+        this.IDs = initIDBuffer(factory, capacity);
+        this.IDsView = PointerBuffer.wrap(IDs.getBuffer().duplicate());
+    }
+
+    public CLEventList(CachedBufferFactory factory, CLEvent... events) {
         this.events = events;
-        this.IDs = PointerBuffer.allocateDirect(events.length);
+        this.IDs = initIDBuffer(factory, events.length);
+        this.IDsView = PointerBuffer.wrap(IDs.getBuffer().duplicate());
+        
         for (CLEvent event : events) {
+            if(event == null) {
+                throw new IllegalArgumentException("event list containes null element.");
+            }
             IDs.put(event.ID);
         }
         IDs.rewind();
         size = events.length;
+    }
+    
+    private PointerBuffer initIDBuffer(CachedBufferFactory factory, int size) {
+        if(factory == null) {
+            return PointerBuffer.allocateDirect(size);
+        }else{
+            return PointerBuffer.wrap(factory.newDirectByteBuffer(size*PointerBuffer.elementSize()));
+        }
     }
 
     void createEvent(CLContext context) {
@@ -86,7 +118,7 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     public final void close() throws Exception {
         release();
     }
-
+ 
     public CLEvent getEvent(int index) {
         if(index >= size)
             throw new IndexOutOfBoundsException("list contains "+size+" events, can not return event with index "+index);

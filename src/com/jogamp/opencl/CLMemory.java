@@ -102,7 +102,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     protected static long getSizeImpl(CL cl, long id) {
         PointerBuffer pb = PointerBuffer.allocateDirect(1);
-        int ret = cl.clGetMemObjectInfo(id, CL_MEM_SIZE, PointerBuffer.elementSize(), pb.getBuffer(), null);
+        int ret = cl.clGetMemObjectInfo(id, CL_MEM_SIZE, pb.elementSize(), pb.getBuffer(), null);
         checkForError(ret, "can not obtain buffer info");
         return pb.get();
     }

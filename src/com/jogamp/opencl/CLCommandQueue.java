@@ -74,7 +74,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
         this.device = device;
         this.properties = properties;
 
-        int pbsize = PointerBuffer.elementSize();
+        int pbsize = PointerBuffer.ELEMENT_SIZE;
         CachedBufferFactory factory = CachedBufferFactory.create(9*pbsize + 4, true);
         
         this.ibA = PointerBuffer.wrap(factory.newDirectByteBuffer(3*pbsize));

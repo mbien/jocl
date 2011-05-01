@@ -1350,7 +1350,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
      */
     public CLCommandQueue putWaitForEvent(CLEventList list, int index, boolean blockingWait) {
 
-        PointerBuffer ids = PointerBuffer.wrap(list.IDs.getBuffer().duplicate()).position(index);
+        PointerBuffer ids = list.IDs.duplicate().position(index);
         
         int ret = blockingWait ? cl.clWaitForEvents(1, ids)
                                : cl.clEnqueueWaitForEvents(ID, 1, ids);

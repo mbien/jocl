@@ -101,7 +101,7 @@ public class CLProgram extends CLObject implements CLResource {
             binarySize += entry.getValue().length;
         }
 
-        int pbSize = PointerBuffer.elementSize();
+        int pbSize = PointerBuffer.ELEMENT_SIZE;
         int deviceCount = binaries.size();
         
         CachedBufferFactory bf = CachedBufferFactory.create(binarySize + pbSize*deviceCount*3 + 4, true);
@@ -605,7 +605,7 @@ public class CLProgram extends CLObject implements CLResource {
         CLDevice[] devices = getCLDevices();
 
         PointerBuffer sizes = PointerBuffer.allocateDirect(devices.length);
-        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity()*PointerBuffer.elementSize(), sizes.getBuffer(), null);
+        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity()*sizes.elementSize(), sizes.getBuffer(), null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo(CL_PROGRAM_BINARY_SIZES) of "+this);
         }
@@ -626,7 +626,7 @@ public class CLProgram extends CLObject implements CLResource {
             address += sizes.get();
         }
         
-        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity()*PointerBuffer.elementSize(), addresses.getBuffer(), null);
+        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity()*addresses.elementSize(), addresses.getBuffer(), null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo(CL_PROGRAM_BINARIES) of "+this);
         }

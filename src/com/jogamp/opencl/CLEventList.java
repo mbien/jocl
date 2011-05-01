@@ -64,13 +64,13 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     public CLEventList(CachedBufferFactory factory, int capacity) {
         this.events = new CLEvent[capacity];
         this.IDs = initIDBuffer(factory, capacity);
-        this.IDsView = PointerBuffer.wrap(IDs.getBuffer().duplicate());
+        this.IDsView = IDs.duplicate();
     }
 
     public CLEventList(CachedBufferFactory factory, CLEvent... events) {
         this.events = events;
         this.IDs = initIDBuffer(factory, events.length);
-        this.IDsView = PointerBuffer.wrap(IDs.getBuffer().duplicate());
+        this.IDsView = IDs.duplicate();
         
         for (CLEvent event : events) {
             if(event == null) {
@@ -86,7 +86,7 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         if(factory == null) {
             return PointerBuffer.allocateDirect(size);
         }else{
-            return PointerBuffer.wrap(factory.newDirectByteBuffer(size*PointerBuffer.elementSize()));
+            return PointerBuffer.wrap(factory.newDirectByteBuffer(size*PointerBuffer.ELEMENT_SIZE));
         }
     }
 

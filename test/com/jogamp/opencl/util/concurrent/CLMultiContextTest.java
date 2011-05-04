@@ -1,8 +1,11 @@
 /*
  * Created on Tuesday, May 03 2011
  */
-package com.jogamp.opencl;
+package com.jogamp.opencl.util.concurrent;
 
+import com.jogamp.opencl.CLContext;
+import com.jogamp.opencl.CLDevice;
+import com.jogamp.opencl.CLPlatform;
 import org.junit.Rule;
 import org.junit.rules.MethodRule;
 import org.junit.rules.Timeout;

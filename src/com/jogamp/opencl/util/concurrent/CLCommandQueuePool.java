@@ -129,16 +129,18 @@ public class CLCommandQueuePool implements CLResource {
         }
 
         public synchronized Thread newThread(Runnable r) {
-            CLCommandQueue queue = queues.get(index++);
-            return new QueueThread(queue);
+            CLCommandQueue queue = queues.get(index);
+            return new QueueThread(queue, index++);
         }
 
     }
     
     private static class QueueThread extends Thread {
         private final CLCommandQueue queue;
-        public QueueThread(CLCommandQueue queue) {
+        public QueueThread(CLCommandQueue queue, int index) {
+            super("queue-worker-thread-"+index+"["+queue+"]");
             this.queue = queue;
+            this.setDaemon(true);
         }
     }
 

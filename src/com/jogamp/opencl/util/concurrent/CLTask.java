@@ -3,7 +3,6 @@
  */
 package com.jogamp.opencl.util.concurrent;
 
-import com.jogamp.opencl.CLCommandQueue;
 
 /**
  * A task executed on a command queue.
@@ -12,8 +11,8 @@ import com.jogamp.opencl.CLCommandQueue;
 public interface CLTask<R> {
 
     /**
-     * Runs the task on a queue and returns its result.
+     * Runs the task on a queue and returns a result.
      */
-    R run(CLCommandQueue queue);
+    R run(CLQueueContext context);
 
 }

@@ -60,8 +60,11 @@ public class CLMultiContext implements CLResource {
         CLMultiContext mc = new CLMultiContext();
         for (Map.Entry<CLPlatform, List<CLDevice>> entry : platformDevicesMap.entrySet()) {
             List<CLDevice> list = entry.getValue();
-            CLContext context = CLContext.create(list.toArray(new CLDevice[list.size()]));
-            mc.contexts.add(context);
+            // one context per device to workaround driver bugs
+            for (CLDevice device : list) {
+                CLContext context = CLContext.create(device);
+                mc.contexts.add(context);
+            }
         }
 
         return mc;

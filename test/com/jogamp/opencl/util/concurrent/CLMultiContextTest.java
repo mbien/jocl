@@ -23,8 +23,8 @@ import static java.lang.System.*;
  */
 public class CLMultiContextTest {
 
-//    @Rule
-//    public MethodRule methodTimeout= new Timeout(10000);
+    @Rule
+    public MethodRule methodTimeout= new Timeout(10000);
 
     @Test
     public void createMultiContextTest() {
@@ -52,15 +52,11 @@ public class CLMultiContextTest {
     }
 
     private final static String programSource =
-          " // OpenCL Kernel Function for element by element vector addition                                  \n"
-        + "kernel void vectorAdd(global const int* a, global const int* b, global int* c, int iNumElements) { \n"
-        + "    // get index in global data array                                                              \n"
+          "kernel void vectorAdd(global const int* a, global const int* b, global int* c, int iNumElements) { \n"
         + "    int iGID = get_global_id(0);                                                                   \n"
-        + "    // bound check (equivalent to the limit on a 'for' loop for standard/serial C code             \n"
         + "    if (iGID >= iNumElements)  {                                                                   \n"
         + "        return;                                                                                    \n"
         + "    }                                                                                              \n"
-        + "    // add the vector elements                                                                     \n"
         + "    c[iGID] = a[iGID] + b[iGID];                                                                   \n"
         + "}                                                                                                  \n";
 
@@ -75,6 +71,8 @@ public class CLMultiContextTest {
             CLCommandQueuePool pool = CLCommandQueuePool.create(factory, mc);
 
             assertTrue(pool.getSize() > 0);
+            
+            pool.switchContext(factory);
 
             pool.release();
         }finally{

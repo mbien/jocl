@@ -9,7 +9,6 @@ import com.jogamp.opencl.CLResource;
 import com.jogamp.opencl.util.CLMultiContext;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -26,13 +25,30 @@ import java.util.concurrent.ThreadFactory;
  */
 public class CLCommandQueuePool implements CLResource {
 
-    private final List<CLQueueContext> contexts;
+    private List<CLQueueContext> contexts;
     private ExecutorService excecutor;
     private FinishAction finishAction = FinishAction.DO_NOTHING;
 
-    private CLCommandQueuePool(Collection<CLQueueContext> contexts) {
-        this.contexts = Collections.unmodifiableList(new ArrayList<CLQueueContext>(contexts));
+    private CLCommandQueuePool(CLQueueContextFactory factory, Collection<CLCommandQueue> queues) {
+        this.contexts = initContexts(queues, factory);
         initExecutor();
+    }
+
+    private List<CLQueueContext> initContexts(Collection<CLCommandQueue> queues, CLQueueContextFactory factory) {
+        List<CLQueueContext> newContexts = new ArrayList<CLQueueContext>(queues.size());
+        
+        int index = 0;
+        for (CLCommandQueue queue : queues) {
+            
+            CLQueueContext old = null;
+            if(this.contexts != null && !this.contexts.isEmpty()) {
+                old = this.contexts.get(index++);
+                old.release();
+            }
+            
+            newContexts.add(factory.setup(queue, old));
+        }
+        return newContexts;
     }
 
     private void initExecutor() {
@@ -52,11 +68,7 @@ public class CLCommandQueuePool implements CLResource {
     }
 
     public static CLCommandQueuePool create(CLQueueContextFactory factory, Collection<CLCommandQueue> queues) {
-        List<CLQueueContext> contexts = new ArrayList<CLQueueContext>(queues.size());
-        for (CLCommandQueue queue : queues) {
-            contexts.add(factory.setup(queue, null));
-        }
-        return new CLCommandQueuePool(contexts);
+        return new CLCommandQueuePool(factory, queues);
     }
 
     public <R> Future<R> submit(CLTask<R> task) {
@@ -69,6 +81,20 @@ public class CLCommandQueuePool implements CLResource {
             wrapper.add(new TaskWrapper<R>(task, finishAction));
         }
         return excecutor.invokeAll(wrapper);
+    }
+    
+    /**
+     * Switches the context of all queues - this operation can be expensive.
+     * Blocks until all tasks finish and sets up a new context for all queues.
+     */
+    public <C extends CLQueueContext> CLCommandQueuePool switchContext(CLQueueContextFactory<C> factory) {
+        
+        excecutor.shutdown();
+        finishQueues(); // just to be sure
+        
+        contexts = initContexts(getQueues(), factory);
+        initExecutor();
+        return this;
     }
 
     /**
@@ -96,6 +122,7 @@ public class CLCommandQueuePool implements CLResource {
         excecutor.shutdown();
         for (CLQueueContext context : contexts) {
             context.queue.finish().release();
+            context.release();
         }
     }
 
@@ -121,6 +148,10 @@ public class CLCommandQueuePool implements CLResource {
         return finishAction;
     }
 
+    /**
+     * Sets the action which is run after every completed task.
+     * This is mainly intended for debugging, default value is {@link FinishAction#DO_NOTHING}.
+     */
     public void setFinishAction(FinishAction action) {
         this.finishAction = action;
     }

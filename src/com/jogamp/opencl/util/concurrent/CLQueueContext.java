@@ -44,7 +44,7 @@ public abstract class CLQueueContext implements CLResource {
         }
 
         public void release() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            program.release();
         }
 
     }

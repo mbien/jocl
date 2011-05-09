@@ -5,9 +5,10 @@ package com.jogamp.opencl.util.concurrent;
 
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLProgram;
+import com.jogamp.opencl.util.concurrent.CLQueueContext.CLSimpleQueueContext;
 
 /**
- *
+ * Creates {@link CLQueueContext}s.
  * @author Michael Bien
  */
 public abstract class CLQueueContextFactory<C extends CLQueueContext> {
@@ -27,7 +28,11 @@ public abstract class CLQueueContextFactory<C extends CLQueueContext> {
         return new CLSimpleContextFactory(source);
     }
 
-    public static class CLSimpleContextFactory extends CLQueueContextFactory<CLQueueContext.CLSimpleQueueContext> {
+    /**
+     * Creates {@link CLSimpleQueueContext}s containing a precompiled program.
+     * @author Michael Bien
+     */
+    public static class CLSimpleContextFactory extends CLQueueContextFactory<CLSimpleQueueContext> {
 
         private final String source;
 
@@ -36,9 +41,9 @@ public abstract class CLQueueContextFactory<C extends CLQueueContext> {
         }
 
         @Override
-        public CLQueueContext.CLSimpleQueueContext setup(CLCommandQueue queue, CLQueueContext old) {
+        public CLSimpleQueueContext setup(CLCommandQueue queue, CLQueueContext old) {
             CLProgram program = queue.getContext().createProgram(source).build(queue.getDevice());
-            return new CLQueueContext.CLSimpleQueueContext(queue, program);
+            return new CLSimpleQueueContext(queue, program);
         }
 
     }

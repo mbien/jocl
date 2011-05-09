@@ -11,6 +11,13 @@ import com.jogamp.opencl.CLResource;
 import java.util.Map;
 
 /**
+ * Superclass for all per-queue contexts as used in {@link CLCommandQueuePool}s.
+ * A context will usually hold queue (and therefore often device) specific resources used
+ * in tasks of the same queue.
+ * <p>
+ * Possible candidates for those resources can be compiled CLPrograms, CLKernels
+ * or even pre allocated CLBuffers.
+ * </p>
  * @author Michael Bien
  */
 public abstract class CLQueueContext implements CLResource {
@@ -29,6 +36,10 @@ public abstract class CLQueueContext implements CLResource {
         return queue.getContext();
     }
 
+    /**
+     * A simple queue context holding a precompiled program and its kernels.
+     * @author Michael Bien
+     */
     public static class CLSimpleQueueContext extends CLQueueContext {
 
         public final CLProgram program;

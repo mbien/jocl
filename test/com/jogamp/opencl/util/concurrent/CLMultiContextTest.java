@@ -62,13 +62,13 @@ public class CLMultiContextTest {
     }
 
     private final static String programSource =
-          "kernel void increment(global int* array, int numElements) { \n"
-        + "    int index = get_global_id(0);                           \n"
-        + "    if (index >= numElements)  {                            \n"
-        + "        return;                                             \n"
-        + "    }                                                       \n"
-        + "    array[index]++;                                         \n"
-        + "}                                                           \n";
+          "kernel void compute(global int* array, int numElements) { \n"
+        + "    int index = get_global_id(0);                         \n"
+        + "    if (index >= numElements)  {                          \n"
+        + "        return;                                           \n"
+        + "    }                                                     \n"
+        + "    array[index]++;                                       \n"
+        + "}                                                         \n";
 
     private final class CLTestTask implements CLTask<CLSimpleQueueContext, Buffer> {
 
@@ -82,7 +82,7 @@ public class CLMultiContextTest {
             
             CLCommandQueue queue = qc.getQueue();
             CLContext context = qc.getCLContext();
-            CLKernel kernel = qc.getKernel("increment");
+            CLKernel kernel = qc.getKernel("compute");
 
             CLBuffer<Buffer> buffer = null;
             try{
@@ -133,26 +133,28 @@ public class CLMultiContextTest {
 
             out.println("invoking "+tasks.size()+" tasks on "+pool.getSize()+" queues");
 
+            // blocking invoke
             pool.invokeAll(tasks);
             checkBuffer(1, data);
 
-
+            // submit blocking emediatly
             for (CLTestTask task : tasks) {
                 pool.submit(task).get();
             }
             checkBuffer(2, data);
 
-
-            List<Future<Buffer>> futures = new ArrayList<Future<Buffer>>(taskCount);
-            for (CLTestTask task : tasks) {
-                futures.add(pool.submit(task));
-            }
+            // submitAll using futures
+            List<Future<Buffer>> futures = pool.submitAll(tasks);
             for (Future<Buffer> future : futures) {
                 future.get();
             }
             checkBuffer(3, data);
-            
-//            pool.switchContext(factory);
+
+            // switching contexts using different program
+            factory = CLQueueContextFactory.createSimple(programSource.replaceAll("\\+\\+", "--"));
+            pool.switchContext(factory);
+            pool.invokeAll(tasks);
+            checkBuffer(2, data);
 
             pool.release();
         }finally{

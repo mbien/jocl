@@ -18,10 +18,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A multithreaded fixed size pool of OpenCL command queues.
- * It serves as a multiplexer distributing tasks over N queues.
+ * A multithreaded, fixed size pool of OpenCL command queues.
+ * It serves as a multiplexer distributing tasks over N queues usually run on N devices.
  * The usage of this pool is similar to {@link ExecutorService} but it uses {@link CLTask}s
- * instead of {@link Callable}s.
+ * instead of {@link Callable}s and provides a per-queue context for resource sharing across all tasks of one queue.
  * @author Michael Bien
  */
 public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource {
@@ -73,13 +73,27 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     }
 
     /**
+     * Submits this task to the pool for execution returning its {@link Future}.
      * @see ExecutorService#submit(java.util.concurrent.Callable)
      */
-    public <R> Future<R> submit(CLTask<? extends C, R> task) {
+    public <R> Future<R> submit(CLTask<? super C, R> task) {
         return excecutor.submit(new TaskWrapper(task, finishAction));
     }
 
     /**
+     * Submits all tasks to the pool for execution and returns their {@link Future}.
+     * Calls {@link #submit(com.jogamp.opencl.util.concurrent.CLTask)} for every task.
+     */
+    public <R> List<Future<R>> submitAll(Collection<? extends CLTask<? super C, R>> tasks) {
+        List<Future<R>> futures = new ArrayList<Future<R>>(tasks.size());
+        for (CLTask<? super C, R> task : tasks) {
+            futures.add(submit(task));
+        }
+        return futures;
+    }
+
+    /**
+     * Submits all tasks to the pool for immediate execution (blocking) and returns their {@link Future} holding the result.
      * @see ExecutorService#invokeAll(java.util.Collection) 
      */
     public <R> List<Future<R>> invokeAll(Collection<? extends CLTask<? super C, R>> tasks) throws InterruptedException {
@@ -88,6 +102,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     }
 
     /**
+     * Submits all tasks to the pool for immediate execution (blocking) and returns their {@link Future} holding the result.
      * @see ExecutorService#invokeAll(java.util.Collection, long, java.util.concurrent.TimeUnit)
      */
     public <R> List<Future<R>> invokeAll(Collection<? extends CLTask<? super C, R>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
@@ -109,6 +124,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     /**
      * Switches the context of all queues - this operation can be expensive.
      * Blocks until all tasks finish and sets up a new context for all queues.
+     * @return this
      */
     public <C extends CLQueueContext> CLCommandQueuePool switchContext(CLQueueContextFactory<C> factory) {
         
@@ -197,7 +213,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
         public synchronized Thread newThread(Runnable runnable) {
 
             SecurityManager sm = System.getSecurityManager();
-            ThreadGroup group = (sm != null)? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            ThreadGroup group = (sm != null) ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
 
             CLQueueContext queue = context.get(index);
             QueueThread thread = new QueueThread(group, runnable, queue, index++);

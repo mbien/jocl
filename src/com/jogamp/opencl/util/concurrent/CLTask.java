@@ -8,11 +8,11 @@ package com.jogamp.opencl.util.concurrent;
  * A task executed on a command queue.
  * @author Michael Bien
  */
-public interface CLTask<R> {
+public interface CLTask<C extends CLQueueContext, R> {
 
     /**
      * Runs the task on a queue and returns a result.
      */
-    R run(CLQueueContext context);
+    R execute(C context);
 
 }

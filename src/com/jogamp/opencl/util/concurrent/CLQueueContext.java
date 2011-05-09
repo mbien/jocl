@@ -4,6 +4,7 @@
 package com.jogamp.opencl.util.concurrent;
 
 import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLKernel;
 import com.jogamp.opencl.CLProgram;
 import com.jogamp.opencl.CLResource;
@@ -24,6 +25,10 @@ public abstract class CLQueueContext implements CLResource {
         return queue;
     }
 
+    public CLContext getCLContext() {
+        return queue.getContext();
+    }
+
     public static class CLSimpleQueueContext extends CLQueueContext {
 
         public final CLProgram program;
@@ -37,6 +42,10 @@ public abstract class CLQueueContext implements CLResource {
 
         public Map<String, CLKernel> getKernels() {
             return kernels;
+        }
+
+        public CLKernel getKernel(String name) {
+            return kernels.get(name);
         }
 
         public CLProgram getProgram() {

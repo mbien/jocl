@@ -510,11 +510,13 @@ public final class CLPlatform {
      * Returns a info string in exchange for a key (CL_PLATFORM_*).
      */
     public String getInfoString(int key) {
-        NativeSizeBuffer size = NativeSizeBuffer.allocateDirect(1);
-        // TODO use cache/query size
-        ByteBuffer bb = ByteBuffer.allocateDirect(512);
 
-        int ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, size);
+        NativeSizeBuffer size = NativeSizeBuffer.allocateDirect(1);
+        int ret = cl.clGetPlatformInfo(ID, key, 0, null, size);
+        checkForError(ret, "can not receive info string");
+
+        ByteBuffer bb = ByteBuffer.allocateDirect((int)size.get(0));
+        ret = cl.clGetPlatformInfo(ID, key, bb.capacity(), bb, null);
         checkForError(ret, "can not receive info string");
 
         return CLUtil.clString2JavaString(bb, (int)size.get(0));
@@ -522,10 +524,10 @@ public final class CLPlatform {
 
     @Override
     public String toString() {
-        return "CLPlatform [name:" + getName()
-                         +" vendor:"+getVendor()
-                         +" profile:"+getProfile()
-                         +" version:"+getVersion()+"]";
+        return "CLPlatform [name: " + getName()
+                         +", vendor: "+getVendor()
+                         +", profile: "+getProfile()
+                         +", version: "+getVersion()+"]";
     }
 
     @Override

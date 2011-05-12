@@ -30,9 +30,7 @@ package com.jogamp.opencl;
 
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.nio.NativeSizeBuffer;
-import com.jogamp.common.os.Platform;
 import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,13 +61,13 @@ public final class CLDevice extends CLObject {
     CLDevice(CL cl, CLPlatform platform, long id) {
         super(cl, id);
         this.platform = platform;
-        this.deviceInfo = new CLDeviceInfoAccessor();
+        this.deviceInfo = new CLDeviceInfoAccessor(cl, id);
     }
 
     CLDevice(CLContext context, long id) {
         super(context, id);
         this.platform = context.getPlatform();
-        this.deviceInfo = new CLDeviceInfoAccessor();
+        this.deviceInfo = new CLDeviceInfoAccessor(context.getCL(), id);
     }
 
     public CLCommandQueue createCommandQueue() {
@@ -340,8 +338,8 @@ public final class CLDevice extends CLObject {
      */
     @CLProperty("CL_DEVICE_MAX_WORK_ITEM_SIZES")
     public int[] getMaxWorkItemSizes() {
-        int n = (int) deviceInfo.getLong(CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS);
-        return deviceInfo.getInts(n, CL_DEVICE_MAX_WORK_ITEM_SIZES);
+        int n = getMaxWorkItemDimensions();
+        return deviceInfo.getInts(CL_DEVICE_MAX_WORK_ITEM_SIZES, n);
     }
 
     /**
@@ -693,34 +691,22 @@ public final class CLDevice extends CLObject {
         return CLUtil.obtainDeviceProperties(this);
     }
 
-    private final class CLDeviceInfoAccessor extends CLInfoAccessor {
+    private final static class CLDeviceInfoAccessor extends CLInfoAccessor {
+
+        private final CL cl;
+        private final long ID;
+
+        private CLDeviceInfoAccessor(CL cl, long id) {
+            this.cl = cl;
+            this.ID = id;
+        }
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {
             return cl.clGetDeviceInfo(ID, name, valueSize, value, valueSizeRet);
         }
 
-        private int[] getInts(int n, int key) {
-
-            ByteBuffer buffer = localBB.get();
-            int ret = getInfo(key, buffer.capacity(), buffer, null);
-            CLException.checkForError(ret, "error while asking device for infos");
-
-            int[] array = new int[n];
-            for(int i = 0; i < array.length; i++) {
-                if(Platform.is32Bit()) {
-                    array[i] = buffer.getInt();
-                }else{
-                    array[i] = (int)buffer.getLong();
-                }
-            }
-            buffer.rewind();
-
-            return array;
-        }
-
     }
-
 
     @Override
     public String toString() {

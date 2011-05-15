@@ -62,28 +62,36 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     private boolean force32BitArgs;
 
     CLKernel(CLProgram program, long id) {
+        this(program, null, id);
+    }
+
+    CLKernel(CLProgram program, String name, long id) {
         super(program.getContext(), id);
+
         this.program = program;
         this.buffer = Buffers.newDirectByteBuffer((is32Bit()?4:8)*3);
 
-        NativeSizeBuffer size = NativeSizeBuffer.allocateDirect(1);
+        if(name == null) {
+            // get function name
+            NativeSizeBuffer size = NativeSizeBuffer.wrap(buffer);
+            int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, size);
+            checkForError(ret, "error while asking for kernel function name");
 
-        // get function name
-        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, size);
-        checkForError(ret, "error while asking for kernel function name");
+            ByteBuffer bb = Buffers.newDirectByteBuffer((int)size.get(0));
 
-        ByteBuffer bb = Buffers.newDirectByteBuffer((int)size.get(0));
-
-        ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
-        checkForError(ret, "error while asking for kernel function name");
-
-        this.name = CLUtil.clString2JavaString(bb, bb.capacity());
+            ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
+            checkForError(ret, "error while asking for kernel function name");
+            
+            this.name = CLUtil.clString2JavaString(bb, bb.capacity());
+        }else{
+            this.name = name;
+        }
 
         // get number of arguments
-        ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, bb.capacity(), bb, null);
+        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, buffer.capacity(), buffer, null);
         checkForError(ret, "error while asking for number of function arguments.");
 
-        numArgs = bb.getInt(0);
+        numArgs = buffer.getInt(0);
 
     }
 
@@ -93,32 +101,38 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
 //    }
     
     public CLKernel putArg(CLMemory<?> value) {
-        setArg(argIndex++, value);
+        setArg(argIndex, value);
+        argIndex++;
         return this;
     }
 
     public CLKernel putArg(int value) {
-        setArg(argIndex++, value);
+        setArg(argIndex, value);
+        argIndex++;
         return this;
     }
 
     public CLKernel putArg(long value) {
-        setArg(argIndex++, value);
+        setArg(argIndex, value);
+        argIndex++;
         return this;
     }
 
     public CLKernel putArg(float value) {
-        setArg(argIndex++, value);
+        setArg(argIndex, value);
+        argIndex++;
         return this;
     }
 
     public CLKernel putArg(double value) {
-        setArg(argIndex++, value);
+        setArg(argIndex, value);
+        argIndex++;
         return this;
     }
 
     public CLKernel putNullArg(int size) {
-        setNullArg(argIndex++, size);
+        setNullArg(argIndex, size);
+        argIndex++;
         return this;
     }
 
@@ -128,9 +142,19 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         return this;
     }
 
+    /**
+     * Resets the argument index to 0.
+     */
     public CLKernel rewind() {
         argIndex = 0;
         return this;
+    }
+
+    /**
+     * Returns the argument index used in the relative putArt(...) methods.
+     */
+    public int position() {
+        return argIndex;
     }
 
 //    public CLKernel setArg(int argumentIndex, Buffer value) {
@@ -224,19 +248,19 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     }
 
     private Buffer wrap(float value) {
-        return buffer.putFloat(value).rewind();
+        return buffer.putFloat(0, value);
     }
 
     private Buffer wrap(double value) {
-        return buffer.putDouble(value).rewind();
+        return buffer.putDouble(0, value);
     }
 
     private Buffer wrap(int value) {
-        return buffer.putInt(value).rewind();
+        return buffer.putInt(0, value);
     }
 
     private Buffer wrap(long value) {
-        return buffer.putLong(value).rewind();
+        return buffer.putLong(0, value);
     }
 
     /**

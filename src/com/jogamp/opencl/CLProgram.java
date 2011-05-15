@@ -407,7 +407,7 @@ public class CLProgram extends CLObject implements CLResource {
             throw newException(err[0], "unable to create Kernel with name: "+kernelName);
         }
 
-        CLKernel kernel = new CLKernel(this, id);
+        CLKernel kernel = new CLKernel(this, kernelName, id);
         kernels.add(kernel);
         return kernel;
     }

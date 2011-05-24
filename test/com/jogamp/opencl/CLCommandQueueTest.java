@@ -191,25 +191,24 @@ public class CLCommandQueueTest {
             }else{
                 queue = device.createCommandQueue();
             }
-            
-            CLEventList writeEvent   = new CLEventList(1);
-            CLEventList kernelEvents = new CLEventList(2);
+
+            // simulate in-order queue by accumulating events of prior commands
+            CLEventList events = new CLEventList(3);
             
             // (1+1)*2 = 4; conditions enforce propper order
             CLKernel addKernel = program.createCLKernel("add").putArg(buffer).putArg(1).putArg(elements);
             CLKernel mulKernel = program.createCLKernel("mul").putArg(buffer).putArg(2).putArg(elements);
             
-            queue.putWriteBuffer(buffer, false, writeEvent);
+            queue.putWriteBuffer(buffer, false, events);
             
-            queue.put1DRangeKernel(addKernel, 0, elements, 1, writeEvent, kernelEvents);
-            queue.put1DRangeKernel(mulKernel, 0, elements, 1, writeEvent, kernelEvents);
+            queue.put1DRangeKernel(addKernel, 0, elements, 1, events, events);
+            queue.put1DRangeKernel(mulKernel, 0, elements, 1, events, events);
             
-            queue.putReadBuffer(buffer, false, kernelEvents, null);
+            queue.putReadBuffer(buffer, false, events, null);
             
             queue.finish();
             
-            writeEvent.release();
-            kernelEvents.release();
+            events.release();
             
             for (int i = 0; i < elements; i++) {
                 assertEquals(4, buffer.getBuffer().get(i));
@@ -372,7 +371,7 @@ public class CLCommandQueueTest {
 
             final CountDownLatch countdown = new CountDownLatch(1);
             customEvent.registerCallback(new CLEventListener() {
-
+                @Override
                 public void eventStateChanged(CLEvent event, int status) {
                     out.println("event received: "+event);
                     assertEquals(event, customEvent);

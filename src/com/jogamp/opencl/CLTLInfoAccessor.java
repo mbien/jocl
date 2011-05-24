@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.spi.CLInfoAccessor;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.common.os.Platform;
 import com.jogamp.opencl.util.CLUtil;
@@ -39,10 +40,10 @@ import static com.jogamp.opencl.CLException.*;
 
 /**
  * Internal utility for common OpenCL clGetFooInfo calls.
- * Threadsafe.
+ * Threadsafe, threadlocal implementation.
  * @author Michael Bien
  */
-abstract class CLInfoAccessor {
+public abstract class CLTLInfoAccessor implements CLInfoAccessor {
 
     private static final int BB_SIZE = 512;
 
@@ -63,6 +64,7 @@ abstract class CLInfoAccessor {
 
     };
 
+    @Override
     public final long getLong(int key) {
 
         ByteBuffer buffer = getBB(8).putLong(0, 0);
@@ -72,6 +74,7 @@ abstract class CLInfoAccessor {
         return buffer.getLong(0);
     }
 
+    @Override
     public final String getString(int key) {
         
         NativeSizeBuffer sizeBuffer = getNSB();
@@ -91,6 +94,7 @@ abstract class CLInfoAccessor {
 
     }
 
+    @Override
     public final int[] getInts(int key, int n) {
 
         ByteBuffer buffer = getBB(n * (Platform.is32Bit()?4:8));

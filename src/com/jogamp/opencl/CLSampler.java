@@ -73,6 +73,7 @@ public class CLSampler extends CLObject implements CLResource {
         return samplerInfo.getLong(CL_SAMPLER_NORMALIZED_COORDS) == CL_TRUE;
     }
 
+    @Override
     public void release() {
         int ret = cl.clReleaseSampler(ID);
         context.onSamplerReleased(this);
@@ -81,7 +82,7 @@ public class CLSampler extends CLObject implements CLResource {
         }
     }
 
-    private class CLSamplerInfoAccessor extends CLInfoAccessor {
+    private class CLSamplerInfoAccessor extends CLTLInfoAccessor {
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {

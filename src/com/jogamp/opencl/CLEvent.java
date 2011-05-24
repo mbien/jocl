@@ -64,12 +64,13 @@ public class CLEvent extends CLObject implements CLResource {
     // apparently only ExecutionStatus.COMPLETE is allowed -> private
     private void registerCallback(final CLEventListener callback, ExecutionStatus trigger) {
         cl.clSetEventCallback(ID, trigger.STATUS, new CLEventCallback() {
-            public void eventStateChanged(long event, int status) {
+            @Override public void eventStateChanged(long event, int status) {
                 callback.eventStateChanged(CLEvent.this, status);
             }
         });
     }
 
+    @Override
     public void release() {
         int ret = cl.clReleaseEvent(ID);
         checkForError(ret, "can not release event");
@@ -138,7 +139,7 @@ public class CLEvent extends CLObject implements CLResource {
 
     
 
-    private class CLEventInfoAccessor extends CLInfoAccessor {
+    private class CLEventInfoAccessor extends CLTLInfoAccessor {
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {
@@ -147,7 +148,7 @@ public class CLEvent extends CLObject implements CLResource {
 
     }
 
-    private class CLEventProfilingInfoAccessor extends CLInfoAccessor {
+    private class CLEventProfilingInfoAccessor extends CLTLInfoAccessor {
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {

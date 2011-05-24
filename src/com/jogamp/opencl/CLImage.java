@@ -41,7 +41,7 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
 
     protected CLImageFormat format;
 
-    final CLInfoAccessor imageInfo;
+    final CLTLInfoAccessor imageInfo;
 
     public final int width;
     public final int height;
@@ -100,7 +100,7 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
     }
 
 
-    protected final static class CLImageInfoAccessor extends CLInfoAccessor {
+    protected final static class CLImageInfoAccessor extends CLTLInfoAccessor {
 
         private final long id;
         private final CL cl;

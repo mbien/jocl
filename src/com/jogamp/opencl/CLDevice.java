@@ -30,6 +30,7 @@ package com.jogamp.opencl;
 
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.spi.CLInfoAccessor;
 import java.nio.Buffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -51,17 +52,23 @@ import static com.jogamp.opencl.CL.*;
  * @see CLContext#getMaxFlopsDevice(com.jogamp.opencl.CLDevice.Type)
  * @author Michael Bien
  */
-public final class CLDevice extends CLObject {
+public class CLDevice extends CLObject {
 
     private Set<String> extensions;
 
-    private final CLDeviceInfoAccessor deviceInfo;
+    private final CLInfoAccessor deviceInfo;
     private final CLPlatform platform;
 
     CLDevice(CL cl, CLPlatform platform, long id) {
         super(cl, id);
         this.platform = platform;
         this.deviceInfo = new CLDeviceInfoAccessor(cl, id);
+    }
+
+    protected CLDevice(CL cl, CLPlatform platform, CLInfoAccessor deviceAccessor, long id) {
+        super(cl, id);
+        this.platform = platform;
+        this.deviceInfo = deviceAccessor;
     }
 
     CLDevice(CLContext context, long id) {
@@ -691,7 +698,7 @@ public final class CLDevice extends CLObject {
         return CLUtil.obtainDeviceProperties(this);
     }
 
-    private final static class CLDeviceInfoAccessor extends CLInfoAccessor {
+    private final static class CLDeviceInfoAccessor extends CLTLInfoAccessor {
 
         private final CL cl;
         private final long ID;

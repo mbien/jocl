@@ -29,9 +29,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.opencl.util.CLUtil;
-import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.spi.CLInfoAccessor;
-import java.nio.Buffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,22 +57,16 @@ public class CLDevice extends CLObject {
     private final CLInfoAccessor deviceInfo;
     private final CLPlatform platform;
 
-    CLDevice(CL cl, CLPlatform platform, long id) {
+    protected CLDevice(CL cl, CLPlatform platform, long id) {
         super(cl, id);
         this.platform = platform;
-        this.deviceInfo = new CLDeviceInfoAccessor(cl, id);
+        this.deviceInfo = platform.getAccessorFactory().createDeviceInfoAccessor(cl, id);
     }
 
-    protected CLDevice(CL cl, CLPlatform platform, CLInfoAccessor deviceAccessor, long id) {
-        super(cl, id);
-        this.platform = platform;
-        this.deviceInfo = deviceAccessor;
-    }
-
-    CLDevice(CLContext context, long id) {
+    protected CLDevice(CLContext context, long id) {
         super(context, id);
         this.platform = context.getPlatform();
-        this.deviceInfo = new CLDeviceInfoAccessor(context.getCL(), id);
+        this.deviceInfo = platform.getAccessorFactory().createDeviceInfoAccessor(cl, id);
     }
 
     public CLCommandQueue createCommandQueue() {
@@ -698,21 +690,8 @@ public class CLDevice extends CLObject {
         return CLUtil.obtainDeviceProperties(this);
     }
 
-    private final static class CLDeviceInfoAccessor extends CLTLInfoAccessor {
-
-        private final CL cl;
-        private final long ID;
-
-        private CLDeviceInfoAccessor(CL cl, long id) {
-            this.cl = cl;
-            this.ID = id;
-        }
-
-        @Override
-        protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {
-            return cl.clGetDeviceInfo(ID, name, valueSize, value, valueSizeRet);
-        }
-
+    public final CLInfoAccessor getCLAccessor() {
+        return deviceInfo;
     }
 
     @Override

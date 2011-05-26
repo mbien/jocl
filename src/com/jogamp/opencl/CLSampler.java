@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.impl.CLTLInfoAccessor;
 import com.jogamp.common.nio.NativeSizeBuffer;
 
 import java.nio.Buffer;

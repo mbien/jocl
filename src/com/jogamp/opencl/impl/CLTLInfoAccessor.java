@@ -26,7 +26,7 @@
  * or implied, of JogAmp Community.
  */
 
-package com.jogamp.opencl;
+package com.jogamp.opencl.impl;
 
 import com.jogamp.opencl.spi.CLInfoAccessor;
 import com.jogamp.common.nio.NativeSizeBuffer;

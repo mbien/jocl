@@ -525,12 +525,18 @@
             <fileset dir="${jogl.root}/build/javadoc"/>
         </copy>
 
+        <copy file="${basedir}/src/com/jogamp/opencl/llb/package.html"
+             todir="${basedir}/gensrc/java/com/jogamp/opencl/llb" overwrite="true"/>
+
+        <copy file="${basedir}/src/com/jogamp/opencl/llb/gl/package.html"
+             todir="${basedir}/gensrc/java/com/jogamp/opencl/llb/gl" overwrite="true"/>
+
         <javadoc author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}"
             docencoding="UTF-8" encoding="${javadoc.encoding.used}" failonerror="true"
             noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}"
             private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}"
             use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}"
-            windowtitle="${javadoc.windowtitle}">
+            windowtitle="${javadoc.windowtitle}" overview="${basedir}/src/overview.html">
 
             <arg line="${javadoc.additionalparam} -J-Dnativetaglet.mapping=${basedir}/resources/native-taglet.properties"/>
             <taglet name="net.highteq.nativetaglet.NativeTaglet" path="${gluegen.root}/${rootrel.build}/gluegen.jar"/>
@@ -555,7 +561,6 @@
                 <include name="**/*.java"/>
             </fileset>
 
-            <excludepackage name="com.jogamp.opencl.impl"/>
         </javadoc>
 
     </target>

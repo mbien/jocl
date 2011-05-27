@@ -29,8 +29,9 @@
 package com.jogamp.opencl;
 
 import java.util.Random;
-import com.jogamp.opencl.impl.BuildProgramCallback;
+import com.jogamp.opencl.llb.impl.BuildProgramCallback;
 import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.llb.CL;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -292,6 +293,7 @@ public class LowLevelBindingTest {
         // tests if the callback is called
         final CountDownLatch latch = new CountDownLatch(1);
         BuildProgramCallback callback = new BuildProgramCallback() {
+            @Override
             public void buildFinished(long cl_program) {
                 try{
                     assertEquals(program, cl_program);
@@ -421,6 +423,7 @@ public class LowLevelBindingTest {
         for(int i = 0; i < 100; i++) {
             final int n = i;
             tasks.add(new Callable<Object>() {
+                @Override
                 public Object call() {
                     try {
                         out.println("###start iteration " + n);

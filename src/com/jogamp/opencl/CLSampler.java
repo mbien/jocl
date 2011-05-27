@@ -34,7 +34,7 @@ import com.jogamp.common.nio.NativeSizeBuffer;
 import java.nio.Buffer;
 
 import static com.jogamp.opencl.CLException.*;
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 import static com.jogamp.opencl.util.CLUtil.*;
 
 /**
@@ -78,7 +78,7 @@ public class CLSampler extends CLObject implements CLResource {
     public void release() {
         int ret = cl.clReleaseSampler(ID);
         context.onSamplerReleased(this);
-        if(ret != CL.CL_SUCCESS) {
+        if(ret != CL_SUCCESS) {
             throw newException(ret, "can not release "+this);
         }
     }

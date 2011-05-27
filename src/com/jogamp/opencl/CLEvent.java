@@ -29,11 +29,11 @@
 package com.jogamp.opencl;
 
 import com.jogamp.opencl.impl.CLTLInfoAccessor;
-import com.jogamp.opencl.impl.CLEventCallback;
+import com.jogamp.opencl.llb.impl.CLEventCallback;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import java.nio.Buffer;
 
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 import static com.jogamp.opencl.CLException.*;
 
 /**

@@ -29,7 +29,7 @@
 /*
  * Created on Monday, June 07 2010 at 04:25
  */
-package com.jogamp.opencl.impl;
+package com.jogamp.opencl.llb.impl;
 
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.common.os.Platform;
@@ -56,6 +56,7 @@ public class CLImpl extends CLAbstractImpl {
         this.contextCallbackMap.setKeyNotFoundValue(0);
     }
 
+    @Override
     public long clCreateContext(NativeSizeBuffer properties, NativeSizeBuffer devices, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
 
         if (properties != null && !properties.isDirect()) {
@@ -87,6 +88,7 @@ public class CLImpl extends CLAbstractImpl {
 
     private native long clCreateContext0(Object cl_context_properties, int props_offset, int numDevices, Object devices, int devices_offset, Object pfn_notify, long[] global, Object errcode_ret, int err_offset, long address);
 
+    @Override
     public long clCreateContextFromType(NativeSizeBuffer properties, long device_type, CLErrorHandler pfn_notify, IntBuffer errcode_ret) {
 
         if (properties != null && !properties.isDirect()) {
@@ -117,6 +119,7 @@ public class CLImpl extends CLAbstractImpl {
 
     private native long clCreateContextFromType0(Object properties, int props_offset, long device_type, Object pfn_notify, long[] global, Object errcode_ret, int err_offset, long address);
 
+    @Override
     public int clReleaseContext(long context) {
         long global = 0;
         synchronized (contextCallbackMap) {
@@ -134,6 +137,7 @@ public class CLImpl extends CLAbstractImpl {
     public native int clReleaseContextImpl(long context, long global, long address);
 
     /** Interface to C language function: <br> <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
+    @Override
     public int clBuildProgram(long program, int deviceCount, NativeSizeBuffer deviceList, String options, BuildProgramCallback cb) {
 
         if (deviceList != null && !deviceList.isDirect()) {
@@ -152,6 +156,7 @@ public class CLImpl extends CLAbstractImpl {
     private native int clBuildProgram0(long program, int deviceCount, Object deviceList, int deviceListOffset, String options, BuildProgramCallback cb, long address);
 
 
+    @Override
     public int clSetEventCallback(long event, int trigger, CLEventCallback callback) {
         final long address = addressTable._addressof_clSetEventCallback;
         if (address == 0) {
@@ -163,6 +168,7 @@ public class CLImpl extends CLAbstractImpl {
     private native int clSetEventCallback0(long event, int type, CLEventCallback cb, long address);
 
 
+    @Override
     public int clSetMemObjectDestructorCallback(long memObjID, CLMemObjectDestructorCallback cb) {
         final long address = addressTable._addressof_clSetMemObjectDestructorCallback;
         if (address == 0) {
@@ -182,6 +188,7 @@ public class CLImpl extends CLAbstractImpl {
     @param event_wait_list a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
     @param event a direct {@link com.jogamp.gluegen.common.nio.NativeSizeBuffer}
     @param errcode_ret a direct {@link java.nio.IntBuffer}   */
+    @Override
     public ByteBuffer clEnqueueMapImage(long command_queue, long image, int blocking_map, long map_flags,
             NativeSizeBuffer origin, NativeSizeBuffer range,
             NativeSizeBuffer image_row_pitch, NativeSizeBuffer image_slice_pitch,

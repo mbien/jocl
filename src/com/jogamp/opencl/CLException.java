@@ -28,7 +28,7 @@
 
 package com.jogamp.opencl;
 
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.gl.CLGL.*;
 
 /**
  * Main Exception type for runtime OpenCL errors and failed function calls (e.g. returning not CL_SUCCESS).

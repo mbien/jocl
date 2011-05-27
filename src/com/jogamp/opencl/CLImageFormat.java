@@ -28,9 +28,9 @@
 
 package com.jogamp.opencl;
 
-import com.jogamp.opencl.impl.CLImageFormatImpl;
+import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 
 /**
  * Represents the OpenCL image format with its channeltype and order.

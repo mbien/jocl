@@ -29,6 +29,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opencl.llb.CL;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 

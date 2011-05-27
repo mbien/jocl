@@ -28,10 +28,11 @@
 
 package com.jogamp.opencl;
 
-import com.jogamp.opencl.gl.CLGLI;
+import com.jogamp.opencl.llb.CL;
+import com.jogamp.opencl.llb.gl.CLGL;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.nio.NativeSizeBuffer;
-import com.jogamp.opencl.impl.CLMemObjectDestructorCallback;
+import com.jogamp.opencl.llb.impl.CLMemObjectDestructorCallback;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static com.jogamp.opencl.CLException.*;
-import static com.jogamp.opencl.gl.CLGLI.*;
+import static com.jogamp.opencl.llb.gl.CLGL.*;
 
 /**
  * Common superclass for all OpenCL memory types.
@@ -231,7 +232,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     @Deprecated
     /*public*/ final GLObjectType _getGLObjectType() {
         int[] array = new int[1];
-        int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, array, 0, null, 0);
+        int ret = ((CLGL)cl).clGetGLObjectInfo(ID, array, 0, null, 0);
         CLException.checkForError(ret, "error while asking for gl object info");
         return GLObjectType.valueOf(array[0]);
     }
@@ -242,7 +243,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     @Deprecated
     /*public*/ final int _getGLObjectID() {
         int[] array = new int[1];
-        int ret = ((CLGLI)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
+        int ret = ((CLGL)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
         CLException.checkForError(ret, "error while asking for gl object info");
         return array[0];
     }

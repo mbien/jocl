@@ -28,12 +28,13 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.CLDevice.Type;
 import com.jogamp.opencl.CLSampler.AddressingMode;
 import com.jogamp.opencl.CLSampler.FilteringMode;
 import com.jogamp.common.nio.NativeSizeBuffer;
-import com.jogamp.opencl.impl.CLImageFormatImpl;
+import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ import static java.lang.System.*;
 import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.common.nio.Buffers.*;
 import static com.jogamp.common.os.Platform.*;
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 import static com.jogamp.opencl.CLBuffer.*;
 import static java.util.Collections.*;
 
@@ -121,11 +122,11 @@ public class CLContext extends CLObject implements CLResource {
 
             NativeSizeBuffer deviceCount = NativeSizeBuffer.allocateDirect(1);
 
-            int ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, 0, null, deviceCount);
+            int ret = cl.clGetContextInfo(ID, CL_CONTEXT_DEVICES, 0, null, deviceCount);
             checkForError(ret, "can not enumerate devices");
 
             ByteBuffer deviceIDs = Buffers.newDirectByteBuffer((int)deviceCount.get());
-            ret = cl.clGetContextInfo(ID, CL.CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null);
+            ret = cl.clGetContextInfo(ID, CL_CONTEXT_DEVICES, deviceIDs.capacity(), deviceIDs, null);
             checkForError(ret, "can not enumerate devices");
 
             devices = new CLDevice[deviceIDs.capacity() / (is32Bit() ? 4 : 8)];
@@ -236,7 +237,7 @@ public class CLContext extends CLObject implements CLResource {
             throw new RuntimeException("no OpenCL installation found");
         }
 
-        return NativeSizeBuffer.allocateDirect(3).put(CL.CL_CONTEXT_PLATFORM)
+        return NativeSizeBuffer.allocateDirect(3).put(CL_CONTEXT_PLATFORM)
                                               .put(platform.ID).put(0) // 0 terminated array
                                               .rewind();
     }

@@ -28,15 +28,16 @@
 
 package com.jogamp.opencl.gl;
 
-import com.jogamp.opencl.CL;
+import com.jogamp.opencl.llb.CL;
+import com.jogamp.opencl.llb.gl.CLGL;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLImage2d;
 import com.jogamp.opencl.CLImageFormat;
-import com.jogamp.opencl.impl.CLImageFormatImpl;
+import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 import java.nio.Buffer;
 import javax.media.opengl.GLContext;
 
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 
 /**
  * 2D OpenCL image representing an OpenGL renderbuffer.
@@ -60,7 +61,7 @@ public class CLGLImage2d<B extends Buffer> extends CLImage2d<B> implements CLGLO
 
         CL cl = getCL(context);
         int[] result = new int[1];
-        CLGLI clgli = (CLGLI)cl;
+        CLGL clgli = (CLGL)cl;
 
         long id = clgli.clCreateFromGLRenderbuffer(context.ID, flags, glObject, result, 0);
 
@@ -94,6 +95,7 @@ public class CLGLImage2d<B extends Buffer> extends CLImage2d<B> implements CLGLO
         return (CLGLContext) super.getContext();
     }
 
+    @Override
     public GLContext getGLContext() {
         return getContext().getGLContext();
     }

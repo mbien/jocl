@@ -39,6 +39,7 @@ import com.jogamp.opencl.CLDevice.GlobalMemCacheType;
 import com.jogamp.opencl.CLDevice.LocalMemType;
 import com.jogamp.opencl.CLDevice.Type;
 import com.jogamp.opencl.CLDevice.Capabilities;
+import com.jogamp.opencl.llb.CL;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;

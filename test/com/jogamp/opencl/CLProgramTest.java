@@ -32,6 +32,7 @@ import com.jogamp.opencl.util.CLBuildConfiguration;
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import com.jogamp.opencl.CLProgram.Status;
 import com.jogamp.opencl.util.CLBuildListener;
+import com.jogamp.opencl.llb.CL;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -221,6 +222,7 @@ public class CLProgramTest {
             final CLProgram outerProgram = program;
 
             CLBuildListener buildCallback = new CLBuildListener() {
+                @Override
                 public void buildFinished(CLProgram program) {
                     assertEquals(outerProgram, program);
                     countdown.countDown();

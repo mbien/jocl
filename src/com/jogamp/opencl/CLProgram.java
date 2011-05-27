@@ -34,7 +34,7 @@ import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.os.Platform;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.common.nio.PointerBuffer;
-import com.jogamp.opencl.impl.BuildProgramCallback;
+import com.jogamp.opencl.llb.impl.BuildProgramCallback;
 import com.jogamp.opencl.util.CLBuildListener;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.jogamp.opencl.CLException.*;
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 import static com.jogamp.common.nio.Buffers.*;
 
 /**

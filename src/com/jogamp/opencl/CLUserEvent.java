@@ -33,7 +33,7 @@
 package com.jogamp.opencl;
 
 import static com.jogamp.opencl.CLException.*;
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 
 /**
  * Custom, user controlled event.

@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl.gl;
 
+import com.jogamp.opencl.llb.gl.CLGL;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLDevice;
 import java.nio.Buffer;
@@ -42,7 +43,7 @@ import jogamp.opengl.windows.wgl.WindowsWGLContext;
 import jogamp.opengl.x11.glx.X11GLXContext;
 import javax.media.opengl.GLContext;
 
-import static com.jogamp.opencl.gl.CLGLI.*;
+import static com.jogamp.opencl.llb.gl.CLGL.*;
 
 /**
  * OpenCL Context supporting JOGL-JOCL interoperablity.
@@ -308,8 +309,8 @@ public final class CLGLContext extends CLContext {
      * Return the low level OpenCL interface with OpenGL interoperability.
      */
     @Override
-    public CLGLI getCL() {
-        return (CLGLI)super.getCL();
+    public CLGL getCL() {
+        return (CLGL)super.getCL();
     }
 
     /**

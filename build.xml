@@ -93,7 +93,119 @@
 
         <echo message=" - - - generate JOCL binding files - - - "/>
 
-        <echo message="generate CL interface..."/>
+        <echo message="generate CL interfaces..."/>
+        
+        <echo message="context..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-context-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="program..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-program-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="kernel..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-kernel-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="queue..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-queue-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="device..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-device-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="memobj..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-mem-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="image..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-image-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="buffer..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-buffer-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="sampler..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-sampler-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="event..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-event-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="platform..."/>
+        <gluegen src="resources/opencl.h"
+                 config="resources/cl-platform-if.cfg"
+                 includeRefid="jocl.include.path"
+                 emitter="com.jogamp.gluegen.JavaEmitter"
+                 dumpCPP="false"
+                 debug="false">
+            <classpath refid="gluegen.classpath" />
+        </gluegen>
+
+        <echo message="CL..."/>
         <gluegen src="resources/opencl.h"
                  config="resources/cl-if.cfg"
                  includeRefid="jocl.include.path"
@@ -103,7 +215,7 @@
             <classpath refid="gluegen.classpath" />
         </gluegen>
 
-        <echo message="generate CLGLI interface..."/>
+        <echo message="CLGL..."/>
         <gluegen src="resources/opencl.h"
                  config="resources/clgl-if.cfg"
                  includeRefid="jocl.include.path"
@@ -112,7 +224,7 @@
             <classpath refid="gluegen.classpath" />
         </gluegen>
 
-        <echo message="generate GLImpl..."/>
+        <echo message="GLImpl..."/>
         <gluegen src="resources/opencl.h"
                  config="resources/cl-impl.cfg"
                  includeRefid="jocl.include.path"

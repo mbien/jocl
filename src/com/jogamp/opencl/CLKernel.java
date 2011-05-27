@@ -35,7 +35,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 import static com.jogamp.opencl.CLException.*;
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 import static com.jogamp.common.os.Platform.*;
 
 /**
@@ -316,10 +316,11 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     /**
      * Releases all resources of this kernel from its context.
      */
+    @Override
     public void release() {
         int ret = cl.clReleaseKernel(ID);
         program.onKernelReleased(this);
-        if(ret != CL.CL_SUCCESS) {
+        if(ret != CL_SUCCESS) {
             throw newException(ret, "can not release "+this);
         }
     }

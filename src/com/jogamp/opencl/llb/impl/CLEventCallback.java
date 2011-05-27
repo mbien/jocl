@@ -27,21 +27,17 @@
  */
 
 /*
- * Created on Thursday, September 02 2010 23:09
+ * Created on Tuesday, July 06 2010 00:46
  */
 
-package com.jogamp.opencl.impl;
+package com.jogamp.opencl.llb.impl;
 
 /**
- * A callback which is invoked by the OpenCL implementation when the memory
- * object is deleted and its resources freed.
+ * A callback for a specific command execution status.
  * @author Michael Bien
  */
-public interface CLMemObjectDestructorCallback {
+public interface CLEventCallback {
 
-    /**
-     * 
-     */
-    public void memoryDeallocated(long memObjID);
+    public void eventStateChanged(long event, int status);
 
 }

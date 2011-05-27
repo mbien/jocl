@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.impl.CLTLAccessorFactory;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.os.DynamicLookupHelper;
@@ -37,8 +38,8 @@ import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.gluegen.runtime.FunctionAddressResolver;
 import com.jogamp.opencl.spi.CLPlatformInfoAccessor;
 import com.jogamp.opencl.util.CLUtil;
-import com.jogamp.opencl.impl.CLImpl;
-import com.jogamp.opencl.impl.CLProcAddressTable;
+import com.jogamp.opencl.llb.impl.CLImpl;
+import com.jogamp.opencl.llb.impl.CLProcAddressTable;
 import com.jogamp.opencl.spi.CLAccessorFactory;
 import com.jogamp.opencl.util.Filter;
 import com.jogamp.opencl.util.JOCLVersion;
@@ -55,7 +56,7 @@ import java.security.PrivilegedAction;
 
 import static java.security.AccessController.*;
 import static com.jogamp.opencl.CLException.*;
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 
 /**
  * CLPlatfrorm representing a OpenCL implementation (e.g. graphics driver).

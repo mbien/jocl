@@ -29,7 +29,7 @@
 package com.jogamp.opencl.util;
 
 import com.jogamp.common.JogampRuntimeException;
-import com.jogamp.opencl.CL;
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.opencl.CLProperty;

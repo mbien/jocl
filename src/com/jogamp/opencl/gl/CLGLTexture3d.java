@@ -28,15 +28,16 @@
 
 package com.jogamp.opencl.gl;
 
-import com.jogamp.opencl.CL;
+import com.jogamp.opencl.llb.gl.CLGL;
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLImage3d;
 import com.jogamp.opencl.CLImageFormat;
-import com.jogamp.opencl.impl.CLImageFormatImpl;
+import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 import java.nio.Buffer;
 import javax.media.opengl.GLContext;
 
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 
 /**
  * 3D OpenCL image representing an 3D OpenGL texture.
@@ -66,7 +67,7 @@ public class CLGLTexture3d<B extends Buffer> extends CLImage3d<B> implements CLG
 
         CL cl = getCL(context);
         int[] result = new int[1];
-        CLGLI clgli = (CLGLI)cl;
+        CLGL clgli = (CLGL)cl;
 
         long id = clgli.clCreateFromGLTexture3D(context.ID, flags, target, mipLevel, texture, result, 0);
 
@@ -82,18 +83,22 @@ public class CLGLTexture3d<B extends Buffer> extends CLImage3d<B> implements CLG
         return new CLGLTexture3d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, depth, id, texture, flags);
     }
 
+    @Override
     public int getGLObjectID() {
         return GLID;
     }
 
+    @Override
     public int getTextureTarget() {
         return target;
     }
 
+    @Override
     public int getMipMapLevel() {
         return mipMapLevel;
     }
 
+    @Override
     public GLObjectType getGLObjectType() {
         return GLObjectType.GL_OBJECT_TEXTURE3D;
     }

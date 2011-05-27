@@ -35,7 +35,7 @@ import com.jogamp.common.GlueGenVersion;
 import com.jogamp.common.os.Platform;
 import com.jogamp.common.util.JogampVersion;
 import com.jogamp.common.util.VersionUtil;
-import com.jogamp.opencl.CL;
+import com.jogamp.opencl.llb.CL;
 import java.security.PrivilegedAction;
 import java.util.jar.Manifest;
 
@@ -56,7 +56,7 @@ public class JOCLVersion extends JogampVersion {
 
     private static JOCLVersion createInstance() {
         return doPrivileged(new PrivilegedAction<JOCLVersion>() {
-            public JOCLVersion run() {
+            @Override public JOCLVersion run() {
                 Manifest manifest = VersionUtil.getManifest(CL.class.getClassLoader(), PACKAGE);
                 if(manifest == null) {
                 manifest = new Manifest();
@@ -92,7 +92,7 @@ public class JOCLVersion extends JogampVersion {
 
         try{
             doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
+                @Override public Object run() {
                     sb.append(GlueGenVersion.getInstance().toString());
                     return null;
                 }

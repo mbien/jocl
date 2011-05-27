@@ -32,6 +32,7 @@ import com.jogamp.opencl.CLBuffer;
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLException;
+import com.jogamp.opencl.llb.gl.CLGL;
 
 import java.nio.Buffer;
 import javax.media.opengl.GLContext;
@@ -58,7 +59,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
     static <B extends Buffer> CLGLBuffer<B> create(CLContext context, B directBuffer, long size, int flags, int glObject) {
         checkBuffer(directBuffer, flags);
         
-        CLGLI clgli = (CLGLI)getCL(context);
+        CLGL clgli = (CLGL)getCL(context);
         
         int[] result = new int[1];
         long id = clgli.clCreateFromGLBuffer(context.ID, flags, glObject, result, 0);
@@ -86,10 +87,12 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
         initCLCapacity();
     }
 
+    @Override
     public int getGLObjectID() {
         return GLID;
     }
 
+    @Override
     public GLObjectType getGLObjectType() {
         return GLObjectType.GL_OBJECT_BUFFER;
     }
@@ -99,6 +102,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
         return (CLGLContext) super.getContext();
     }
 
+    @Override
     public GLContext getGLContext() {
         return getContext().getGLContext();
     }

@@ -3,7 +3,7 @@
  */
 package com.jogamp.opencl.spi;
 
-import com.jogamp.opencl.CL;
+import com.jogamp.opencl.llb.CL;
 
 /**
  * Implementations of this interface are factories responsible for creating CLAccessors.

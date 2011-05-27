@@ -29,7 +29,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.nio.CachedBufferFactory;
-import com.jogamp.opencl.gl.CLGLI;
+import com.jogamp.opencl.llb.gl.CLGL;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.gl.CLGLObject;
 import java.nio.Buffer;
@@ -41,7 +41,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static com.jogamp.opencl.CLException.*;
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 import static com.jogamp.opencl.util.CLUtil.*;
 
 /**
@@ -1667,7 +1667,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        CLGLI xl = (CLGLI) cl;
+        CLGL xl = (CLGL) cl;
 
         int ret = xl.clEnqueueAcquireGLObjects(ID, glObjectIDs.remaining(), glObjectIDs,
                     conditions, conditionIDs,
@@ -1736,7 +1736,7 @@ public class CLCommandQueue extends CLObject implements CLResource {
             conditions   = condition.size;
         }
 
-        CLGLI xl = (CLGLI) cl;
+        CLGL xl = (CLGL) cl;
 
         int ret = xl.clEnqueueReleaseGLObjects(ID, glObjectIDs.remaining(), glObjectIDs,
                 conditions, conditionIDs,

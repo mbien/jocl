@@ -102,6 +102,7 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     /**
      * Releases all CLEvents in this list.
      */
+    @Override
     public void release() {
         for (int i = 0; i < size; i++) {
             events[i].release();
@@ -115,6 +116,7 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
      * @deprecated use {@link #release()} instead.
      */
     @Deprecated
+    @Override
     public final void close() throws Exception {
         release();
     }
@@ -139,6 +141,7 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         return events.length;
     }
 
+    @Override
     public Iterator<CLEvent> iterator() {
         return new EventIterator(events, size);
     }
@@ -167,10 +170,12 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
             this.size = size;
         }
 
+        @Override
         public boolean hasNext() {
             return index < size;
         }
 
+        @Override
         public CLEvent next() {
             if(hasNext())
                 return events[index++];
@@ -178,6 +183,7 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
                 return null;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("remove() not supported.");
         }

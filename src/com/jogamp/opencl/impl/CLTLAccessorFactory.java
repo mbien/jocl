@@ -5,7 +5,7 @@ package com.jogamp.opencl.impl;
 
 import java.nio.IntBuffer;
 import com.jogamp.common.nio.NativeSizeBuffer;
-import com.jogamp.opencl.CL;
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.spi.CLAccessorFactory;
 import com.jogamp.opencl.spi.CLInfoAccessor;
 import com.jogamp.opencl.spi.CLPlatformInfoAccessor;

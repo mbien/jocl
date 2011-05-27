@@ -34,7 +34,7 @@ package com.jogamp.opencl.util;
 import com.jogamp.common.os.Platform;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
-import com.jogamp.opencl.impl.CLImpl;
+import com.jogamp.opencl.llb.impl.CLImpl;
 import java.util.Map;
 
 

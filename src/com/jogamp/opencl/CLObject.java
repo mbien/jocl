@@ -29,6 +29,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.AutoCloseable;
+import com.jogamp.opencl.llb.CL;
 
 /**
  * Common superclass for all OpenCL objects.
@@ -64,6 +65,7 @@ abstract class CLObject implements AutoCloseable {
      * @see java.lang.AutoCloseable
      */
     @Deprecated
+    @Override
     public final void close() {
         if(this instanceof CLResource) {
             ((CLResource)this).release();

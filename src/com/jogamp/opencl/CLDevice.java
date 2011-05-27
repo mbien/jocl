@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.spi.CLInfoAccessor;
 import java.nio.ByteOrder;
@@ -40,7 +41,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
-import static com.jogamp.opencl.CL.*;
+import static com.jogamp.opencl.llb.CL.*;
 
 /**
  * This object represents an OpenCL device.

@@ -34,6 +34,7 @@ import com.jogamp.opencl.CLDevice.Type;
 import com.jogamp.opencl.CLSampler.AddressingMode;
 import com.jogamp.opencl.CLSampler.FilteringMode;
 import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.llb.CLContextBinding;
 import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -116,7 +117,7 @@ public class CLContext extends CLObject implements CLResource {
         
     }
 
-    private synchronized void initDevices() {
+    private synchronized void initDevices(CLContextBinding cl) {
         
         if (devices == null) {
 
@@ -173,7 +174,7 @@ public class CLContext extends CLObject implements CLResource {
 
         NativeSizeBuffer properties = setupContextProperties(platform);
         ErrorDispatcher dispatcher = new ErrorDispatcher();
-        return new CLContext(platform, createContextFromType(dispatcher, properties, type), dispatcher);
+        return new CLContext(platform, createContextFromType(platform, dispatcher, properties, type), dispatcher);
     }
 
     /**
@@ -191,7 +192,7 @@ public class CLContext extends CLObject implements CLResource {
 
         NativeSizeBuffer properties = setupContextProperties(platform);
         ErrorDispatcher dispatcher = new ErrorDispatcher();
-        CLContext context = new CLContext(platform, createContext(dispatcher, properties, devices), dispatcher);
+        CLContext context = new CLContext(platform, createContext(platform, dispatcher, properties, devices), dispatcher);
         if(devices != null) {
             for (int i = 0; i < devices.length; i++) {
                 devices[i].setContext(context);
@@ -200,17 +201,18 @@ public class CLContext extends CLObject implements CLResource {
         return context;
     }
 
-    protected static long createContextFromType(CLErrorHandler handler, NativeSizeBuffer properties, long deviceType) {
+    protected static long createContextFromType(CLPlatform platform, CLErrorHandler handler, NativeSizeBuffer properties, long deviceType) {
 
         IntBuffer status = newDirectIntBuffer(1);
-        long context = CLPlatform.getLowLevelCLInterface().clCreateContextFromType(properties, deviceType, handler, status);
+        CLContextBinding cl = platform.getContextBinding();
+        long context = cl.clCreateContextFromType(properties, deviceType, handler, status);
 
         checkForError(status.get(), "can not create CL context");
 
         return context;
     }
 
-    protected static long createContext(CLErrorHandler handler, NativeSizeBuffer properties, CLDevice... devices) {
+    protected static long createContext(CLPlatform platform, CLErrorHandler handler, NativeSizeBuffer properties, CLDevice... devices) {
 
         IntBuffer status = newDirectIntBuffer(1);
         NativeSizeBuffer pb = null;
@@ -224,7 +226,8 @@ public class CLContext extends CLObject implements CLResource {
                 pb.put(i, device.ID);
             }
         }
-        long context = CLPlatform.getLowLevelCLInterface().clCreateContext(properties, pb, handler, status);
+        CLContextBinding cl = platform.getContextBinding();
+        long context = cl.clCreateContext(properties, pb, handler, status);
 
         checkForError(status.get(), "can not create CL context");
 
@@ -505,15 +508,12 @@ public class CLContext extends CLObject implements CLResource {
             release(memoryObjects);
             release(samplers);
 
-            for (CLDevice device : getDevices()) {
-                Collection<CLCommandQueue> queues = queuesMap.get(device);
-                if(queues != null) {
-                    release(queues);
-                }
+            for (List<CLCommandQueue> queues : queuesMap.values()) {
+                release(queues);
             }
 
         }finally{
-            int ret = cl.clReleaseContext(ID);
+            int ret = platform.getContextBinding().clReleaseContext(ID);
             checkForError(ret, "error releasing context");
         }
 
@@ -525,8 +525,10 @@ public class CLContext extends CLObject implements CLResource {
 
     private CLImageFormat[] getSupportedImageFormats(int flags, int type) {
 
+        CLContextBinding binding = platform.getContextBinding();
+
         int[] entries = new int[1];
-        int ret = cl.clGetSupportedImageFormats(ID, flags, type, 0, null, entries, 0);
+        int ret = binding.clGetSupportedImageFormats(ID, flags, type, 0, null, entries, 0);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "error calling clGetSupportedImageFormats");
         }
@@ -538,7 +540,7 @@ public class CLContext extends CLObject implements CLResource {
 
         CLImageFormat[] formats = new CLImageFormat[count];
         CLImageFormatImpl impl = CLImageFormatImpl.create(newDirectByteBuffer(count * CLImageFormatImpl.size()));
-        ret = cl.clGetSupportedImageFormats(ID, flags, type, count, impl, null, 0);
+        ret = binding.clGetSupportedImageFormats(ID, flags, type, count, impl, null, 0);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "error calling clGetSupportedImageFormats");
         }
@@ -630,7 +632,7 @@ public class CLContext extends CLObject implements CLResource {
      * Returns all devices associated with this CLContext.
      */
     public CLDevice[] getDevices() {
-        initDevices();
+        initDevices(platform.getContextBinding());
         return devices;
     }
 

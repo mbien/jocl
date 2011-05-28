@@ -99,7 +99,7 @@ public final class CLGLContext extends CLContext {
         long[] glID = new long[1];
         NativeSizeBuffer properties = setupContextProperties(platform, glContext, glID);
         ErrorDispatcher dispatcher = createErrorHandler();
-        long clID = createContextFromType(dispatcher, properties, toDeviceBitmap(deviceTypes));
+        long clID = createContextFromType(platform, dispatcher, properties, toDeviceBitmap(deviceTypes));
 
         return new CLGLContext(platform, glContext, clID, glID[0], dispatcher);
 
@@ -123,7 +123,7 @@ public final class CLGLContext extends CLContext {
         long[] glID = new long[1];
         NativeSizeBuffer properties = setupContextProperties(platform, glContext, glID);
         ErrorDispatcher dispatcher = createErrorHandler();
-        long clID = createContext(dispatcher, properties, devices);
+        long clID = createContext(platform, dispatcher, properties, devices);
 
         CLGLContext context = new CLGLContext(platform, glContext, clID, glID[0], dispatcher);
         if(devices != null) {

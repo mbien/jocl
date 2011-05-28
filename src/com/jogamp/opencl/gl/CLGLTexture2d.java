@@ -70,8 +70,8 @@ public class CLGLTexture2d<B extends Buffer> extends CLGLImage2d<B> implements C
         CLImageFormat format = createUninitializedImageFormat();
         accessor.getInfo(CL_IMAGE_FORMAT, CLImageFormatImpl.size(), format.getFormatImpl().getBuffer(), null);
 
-        int width = 640; //(int)accessor.getLong(CL_IMAGE_WIDTH);
-        int height = 480; //(int)accessor.getLong(CL_IMAGE_HEIGHT);
+        int width = (int)accessor.getLong(CL_IMAGE_WIDTH);
+        int height = (int)accessor.getLong(CL_IMAGE_HEIGHT);
 
         return new CLGLTexture2d<B>(context, directBuffer, format, accessor, target, mipLevel, width, height, id, texture, flags);
 

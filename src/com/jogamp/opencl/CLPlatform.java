@@ -28,6 +28,11 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.llb.CLPlatformBinding;
+import com.jogamp.opencl.llb.CLProgramBinding;
+import com.jogamp.opencl.llb.CLSamplerBinding;
+import com.jogamp.opencl.llb.CLKernelBinding;
+import com.jogamp.opencl.llb.CLImageBinding;
 import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.impl.CLTLAccessorFactory;
 import com.jogamp.common.nio.Buffers;
@@ -36,6 +41,12 @@ import com.jogamp.common.JogampRuntimeException;
 import com.jogamp.common.os.NativeLibrary;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.gluegen.runtime.FunctionAddressResolver;
+import com.jogamp.opencl.llb.CLBufferBinding;
+import com.jogamp.opencl.llb.CLCommandQueueBinding;
+import com.jogamp.opencl.llb.CLContextBinding;
+import com.jogamp.opencl.llb.CLDeviceBinding;
+import com.jogamp.opencl.llb.CLEventBinding;
+import com.jogamp.opencl.llb.CLMemObjBinding;
 import com.jogamp.opencl.spi.CLPlatformInfoAccessor;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.llb.impl.CLImpl;
@@ -537,6 +548,50 @@ public class CLPlatform {
 
     public final CLPlatformInfoAccessor getCLAccessor(){
         return info;
+    }
+
+    protected CLBufferBinding getBufferBinding() {
+        return cl;
+    }
+
+    protected CLCommandQueueBinding getCommandQueueBinding() {
+        return cl;
+    }
+
+    protected CLContextBinding getContextBinding() {
+        return cl;
+    }
+
+    protected CLDeviceBinding getDeviceBinding() {
+        return cl;
+    }
+
+    protected CLEventBinding getEventBinding() {
+        return cl;
+    }
+
+    protected CLImageBinding getImageBinding() {
+        return cl;
+    }
+
+    protected CLKernelBinding getKernelBinding() {
+        return cl;
+    }
+
+    protected CLMemObjBinding getMemObjectBinding() {
+        return cl;
+    }
+
+    protected CLPlatformBinding getPlatformBinding() {
+        return cl;
+    }
+
+    protected CLProgramBinding getProgramBinding() {
+        return cl;
+    }
+
+    protected CLSamplerBinding getSamplerBinding() {
+        return cl;
     }
 
     @Override

@@ -1351,13 +1351,16 @@ public class CLCommandQueue extends CLObject implements CLResource {
      */
     public CLCommandQueue putWaitForEvent(CLEventList list, int index, boolean blockingWait) {
 
-        NativeSizeBuffer ids = NativeSizeBuffer.wrap(list.IDs.getBuffer().duplicate()).position(index);
-        
-        int ret = blockingWait ? cl.clWaitForEvents(1, ids)
-                               : cl.clEnqueueWaitForEvents(ID, 1, ids);
-        if(ret != CL_SUCCESS) {
-            throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for event #" + index+ " in "+list);
+        if(blockingWait) {
+            list.waitForEvent(index);
+        }else{
+            NativeSizeBuffer ids = list.getEventBuffer(index);
+            int ret = cl.clEnqueueWaitForEvents(ID, 1, ids);
+            if(ret != CL_SUCCESS) {
+                throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for event #" + index+ " in "+list);
+            }
         }
+
         return this;
     }
 
@@ -1365,10 +1368,13 @@ public class CLCommandQueue extends CLObject implements CLResource {
      * Calls {@native clWaitForEvents} if blockingWait equals true otherwise {@native clEnqueueWaitForEvents}.
      */
     public CLCommandQueue putWaitForEvents(CLEventList list, boolean blockingWait) {
-        int ret = blockingWait ? cl.clWaitForEvents(list.size, list.IDsView)
-                               : cl.clEnqueueWaitForEvents(ID, list.size, list.IDsView);
-        if(ret != CL_SUCCESS) {
-            throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for events " + list);
+        if(blockingWait) {
+            list.waitForEvents();
+        }else{
+            int ret = cl.clEnqueueWaitForEvents(ID, list.size, list.IDsView);
+            if(ret != CL_SUCCESS) {
+                throw newException(ret, "can not "+ (blockingWait?"blocking": "") +" wait for events " + list);
+            }
         }
         return this;
     }

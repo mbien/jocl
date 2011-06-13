@@ -98,6 +98,41 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         events[size] = new CLEvent(context, IDs.get());
         size++;
     }
+    
+    NativeSizeBuffer getEventBuffer(int index) {
+        return NativeSizeBuffer.wrap(IDs.getBuffer().duplicate()).position(index);
+    }
+
+    /**
+     * Waits for all events in this list to occur.
+     * If this list is empty this method won't do anything.
+     */
+    public void waitForEvents() {
+        if(size > 0) {
+            events[0].getPlatform().getEventBinding().clWaitForEvents(size, IDsView);
+        }
+    }
+
+    /**
+     * Waits for all events of the specified region in this list to occur.
+     * Will throw IndexOutOfBoundsException if indices are out of bounds.
+     */
+    public void waitForEvents(int start, int range) {
+        if(start+range < size || range <= 0) {
+            throw new IndexOutOfBoundsException("args: [start: "+start+" range: "+range+"], eventcount: "+size);
+        }
+
+        NativeSizeBuffer view = getEventBuffer(start);
+        getEvent(start).getPlatform().getEventBinding().clWaitForEvents(range, view);
+    }
+
+    /**
+     * Waits for the event with the given index in this list to occur.
+     */
+    public void waitForEvent(int index) {
+        NativeSizeBuffer view = getEventBuffer(index);
+        getEvent(index).getPlatform().getEventBinding().clWaitForEvents(1, view);
+    }
 
     /**
      * Releases all CLEvents in this list.

@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  ******************************************************************************/
 
-/* $Revision: 11928 $ on $Date: 2010-07-13 09:04:56 -0700 (Tue, 13 Jul 2010) $ */
+/* $Revision: 14835 $ on $Date: 2011-05-26 11:32:00 -0700 (Thu, 26 May 2011) $ */
 
 /* cl_ext.h contains OpenCL extensions which don't have external */
 /* (OpenGL, D3D) dependencies.                                   */
@@ -200,9 +200,41 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clIcdGetPlatformIDsKHR_fn)(
     #define CL_PROPERTIES_LIST_END_EXT                  ((cl_device_partition_property_ext) 0)
     #define CL_PARTITION_BY_COUNTS_LIST_END_EXT         ((cl_device_partition_property_ext) 0)
     #define CL_PARTITION_BY_NAMES_LIST_END_EXT          ((cl_device_partition_property_ext) 0 - 1)
-
-
-
+    
+    /* cl_ext_atomic_counters_32 and cl_ext_atomic_counters_64 extensions 
+     * no extension #define since they have no functions                                              
+     */
+    #define CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT           0x4032
+    
+    /***********************************
+     * cl_ext_migrate_memobject extension definitions
+     ***********************************/
+    #define cl_ext_migrate_memobject 1
+    
+    typedef cl_bitfield cl_mem_migration_flags_ext;
+    
+    #define CL_MIGRATE_MEM_OBJECT_HOST_EXT              0x1
+    
+    #define CL_COMMAND_MIGRATE_MEM_OBJECT_EXT           0x4040
+    
+    extern CL_API_ENTRY cl_int CL_API_CALL
+    clEnqueueMigrateMemObjectEXT( cl_command_queue /* command_queue */,
+                                  cl_uint /* num_mem_objects */,           
+                                  const cl_mem * /* mem_objects */,
+                                  cl_mem_migration_flags_ext /* flags */,
+                                  cl_uint /* num_events_in_wait_list */,
+                                  const cl_event * /* event_wait_list */,
+                                  cl_event * /* event */) CL_EXT_SUFFIX__VERSION_1_1;
+    
+    typedef CL_API_ENTRY cl_int 
+    (CL_API_CALL *clEnqueueMigrateMemObjectEXT_fn)( cl_command_queue /* command_queue */,
+                                                    cl_uint /* num_mem_objects */,           
+                                                    const cl_mem * /* mem_objects */,
+                                                    cl_mem_migration_flags_ext /* flags */,
+                                                    cl_uint /* num_events_in_wait_list */,
+                                                    const cl_event * /* event_wait_list */,
+                                                    cl_event * /* event */) CL_EXT_SUFFIX__VERSION_1_1;
+    
 #endif /* CL_VERSION_1_1 */
 
 #ifdef __cplusplus

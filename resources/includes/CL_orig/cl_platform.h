@@ -21,7 +21,7 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  **********************************************************************************/
 
-/* $Revision: 11803 $ on $Date: 2010-06-25 10:02:12 -0700 (Fri, 25 Jun 2010) $ */
+/* $Revision: 14829 $ on $Date: 2011-05-26 08:22:50 -0700 (Thu, 26 May 2011) $ */
 
 #ifndef __CL_PLATFORM_H
 #define __CL_PLATFORM_H
@@ -235,7 +235,7 @@ typedef double          cl_double   __attribute__((aligned(8)));
 #define  CL_M_SQRT2_F       1.41421353816986f
 #define  CL_M_SQRT1_2_F     0.70710676908493f
 
-#if defined( __GNUC__ )
+#if (defined( __GNUC__ ) || defined( __IBMC__ ))
    #define CL_HUGE_VALF     __builtin_huge_valf()
    #define CL_HUGE_VAL      __builtin_huge_val()
    #define CL_NAN           __builtin_nanf( "" )
@@ -396,7 +396,7 @@ typedef unsigned int cl_GLenum;
 #endif
 
 /* Define alignment keys */
-#if defined( __GNUC__ )
+#if (defined( __GNUC__ ) || defined( __IBMC__ ))
     #define CL_ALIGNED(_x)          __attribute__ ((aligned(_x)))
 #elif defined( _WIN32) && (_MSC_VER)
     /* Alignment keys neutered on windows because MSVC can't swallow function arguments with alignment requirements     */
@@ -410,7 +410,7 @@ typedef unsigned int cl_GLenum;
 #endif
 
 /* Indicate whether .xyzw, .s0123 and .hi.lo are supported */
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
     /* .xyzw and .s0123...{f|F} are supported */
     #define CL_HAS_NAMED_VECTOR_FIELDS 1
     /* .hi and .lo are supported */
@@ -423,7 +423,7 @@ typedef unsigned int cl_GLenum;
 typedef union
 {
     cl_char  CL_ALIGNED(2) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_char  x, y; };
    __extension__ struct{ cl_char  s0, s1; };
    __extension__ struct{ cl_char  lo, hi; };
@@ -436,7 +436,7 @@ typedef union
 typedef union
 {
     cl_char  CL_ALIGNED(4) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_char  x, y, z, w; };
    __extension__ struct{ cl_char  s0, s1, s2, s3; };
    __extension__ struct{ cl_char2 lo, hi; };
@@ -455,7 +455,7 @@ typedef  cl_char4  cl_char3;
 typedef union
 {
     cl_char   CL_ALIGNED(8) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_char  x, y, z, w; };
    __extension__ struct{ cl_char  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_char4 lo, hi; };
@@ -474,7 +474,7 @@ typedef union
 typedef union
 {
     cl_char  CL_ALIGNED(16) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_char  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_char  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_char8 lo, hi; };
@@ -498,7 +498,7 @@ typedef union
 typedef union
 {
     cl_uchar  CL_ALIGNED(2) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uchar  x, y; };
    __extension__ struct{ cl_uchar  s0, s1; };
    __extension__ struct{ cl_uchar  lo, hi; };
@@ -511,7 +511,7 @@ typedef union
 typedef union
 {
     cl_uchar  CL_ALIGNED(4) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uchar  x, y, z, w; };
    __extension__ struct{ cl_uchar  s0, s1, s2, s3; };
    __extension__ struct{ cl_uchar2 lo, hi; };
@@ -530,7 +530,7 @@ typedef  cl_uchar4  cl_uchar3;
 typedef union
 {
     cl_uchar   CL_ALIGNED(8) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uchar  x, y, z, w; };
    __extension__ struct{ cl_uchar  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_uchar4 lo, hi; };
@@ -549,7 +549,7 @@ typedef union
 typedef union
 {
     cl_uchar  CL_ALIGNED(16) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uchar  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_uchar  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_uchar8 lo, hi; };
@@ -573,7 +573,7 @@ typedef union
 typedef union
 {
     cl_short  CL_ALIGNED(4) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_short  x, y; };
    __extension__ struct{ cl_short  s0, s1; };
    __extension__ struct{ cl_short  lo, hi; };
@@ -586,7 +586,7 @@ typedef union
 typedef union
 {
     cl_short  CL_ALIGNED(8) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_short  x, y, z, w; };
    __extension__ struct{ cl_short  s0, s1, s2, s3; };
    __extension__ struct{ cl_short2 lo, hi; };
@@ -605,7 +605,7 @@ typedef  cl_short4  cl_short3;
 typedef union
 {
     cl_short   CL_ALIGNED(16) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_short  x, y, z, w; };
    __extension__ struct{ cl_short  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_short4 lo, hi; };
@@ -624,7 +624,7 @@ typedef union
 typedef union
 {
     cl_short  CL_ALIGNED(32) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_short  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_short  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_short8 lo, hi; };
@@ -648,7 +648,7 @@ typedef union
 typedef union
 {
     cl_ushort  CL_ALIGNED(4) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ushort  x, y; };
    __extension__ struct{ cl_ushort  s0, s1; };
    __extension__ struct{ cl_ushort  lo, hi; };
@@ -661,7 +661,7 @@ typedef union
 typedef union
 {
     cl_ushort  CL_ALIGNED(8) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ushort  x, y, z, w; };
    __extension__ struct{ cl_ushort  s0, s1, s2, s3; };
    __extension__ struct{ cl_ushort2 lo, hi; };
@@ -680,7 +680,7 @@ typedef  cl_ushort4  cl_ushort3;
 typedef union
 {
     cl_ushort   CL_ALIGNED(16) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ushort  x, y, z, w; };
    __extension__ struct{ cl_ushort  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_ushort4 lo, hi; };
@@ -699,7 +699,7 @@ typedef union
 typedef union
 {
     cl_ushort  CL_ALIGNED(32) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ushort  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_ushort  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_ushort8 lo, hi; };
@@ -722,7 +722,7 @@ typedef union
 typedef union
 {
     cl_int  CL_ALIGNED(8) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_int  x, y; };
    __extension__ struct{ cl_int  s0, s1; };
    __extension__ struct{ cl_int  lo, hi; };
@@ -735,7 +735,7 @@ typedef union
 typedef union
 {
     cl_int  CL_ALIGNED(16) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_int  x, y, z, w; };
    __extension__ struct{ cl_int  s0, s1, s2, s3; };
    __extension__ struct{ cl_int2 lo, hi; };
@@ -754,7 +754,7 @@ typedef  cl_int4  cl_int3;
 typedef union
 {
     cl_int   CL_ALIGNED(32) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_int  x, y, z, w; };
    __extension__ struct{ cl_int  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_int4 lo, hi; };
@@ -773,7 +773,7 @@ typedef union
 typedef union
 {
     cl_int  CL_ALIGNED(64) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_int  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_int  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_int8 lo, hi; };
@@ -797,7 +797,7 @@ typedef union
 typedef union
 {
     cl_uint  CL_ALIGNED(8) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uint  x, y; };
    __extension__ struct{ cl_uint  s0, s1; };
    __extension__ struct{ cl_uint  lo, hi; };
@@ -810,7 +810,7 @@ typedef union
 typedef union
 {
     cl_uint  CL_ALIGNED(16) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uint  x, y, z, w; };
    __extension__ struct{ cl_uint  s0, s1, s2, s3; };
    __extension__ struct{ cl_uint2 lo, hi; };
@@ -829,7 +829,7 @@ typedef  cl_uint4  cl_uint3;
 typedef union
 {
     cl_uint   CL_ALIGNED(32) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uint  x, y, z, w; };
    __extension__ struct{ cl_uint  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_uint4 lo, hi; };
@@ -848,7 +848,7 @@ typedef union
 typedef union
 {
     cl_uint  CL_ALIGNED(64) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_uint  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_uint  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_uint8 lo, hi; };
@@ -871,7 +871,7 @@ typedef union
 typedef union
 {
     cl_long  CL_ALIGNED(16) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_long  x, y; };
    __extension__ struct{ cl_long  s0, s1; };
    __extension__ struct{ cl_long  lo, hi; };
@@ -884,7 +884,7 @@ typedef union
 typedef union
 {
     cl_long  CL_ALIGNED(32) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_long  x, y, z, w; };
    __extension__ struct{ cl_long  s0, s1, s2, s3; };
    __extension__ struct{ cl_long2 lo, hi; };
@@ -903,7 +903,7 @@ typedef  cl_long4  cl_long3;
 typedef union
 {
     cl_long   CL_ALIGNED(64) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_long  x, y, z, w; };
    __extension__ struct{ cl_long  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_long4 lo, hi; };
@@ -922,7 +922,7 @@ typedef union
 typedef union
 {
     cl_long  CL_ALIGNED(128) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_long  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_long  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_long8 lo, hi; };
@@ -946,7 +946,7 @@ typedef union
 typedef union
 {
     cl_ulong  CL_ALIGNED(16) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ulong  x, y; };
    __extension__ struct{ cl_ulong  s0, s1; };
    __extension__ struct{ cl_ulong  lo, hi; };
@@ -959,7 +959,7 @@ typedef union
 typedef union
 {
     cl_ulong  CL_ALIGNED(32) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ulong  x, y, z, w; };
    __extension__ struct{ cl_ulong  s0, s1, s2, s3; };
    __extension__ struct{ cl_ulong2 lo, hi; };
@@ -978,7 +978,7 @@ typedef  cl_ulong4  cl_ulong3;
 typedef union
 {
     cl_ulong   CL_ALIGNED(64) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ulong  x, y, z, w; };
    __extension__ struct{ cl_ulong  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_ulong4 lo, hi; };
@@ -997,7 +997,7 @@ typedef union
 typedef union
 {
     cl_ulong  CL_ALIGNED(128) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_ulong  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_ulong  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_ulong8 lo, hi; };
@@ -1022,7 +1022,7 @@ typedef union
 typedef union
 {
     cl_float  CL_ALIGNED(8) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_float  x, y; };
    __extension__ struct{ cl_float  s0, s1; };
    __extension__ struct{ cl_float  lo, hi; };
@@ -1035,7 +1035,7 @@ typedef union
 typedef union
 {
     cl_float  CL_ALIGNED(16) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_float   x, y, z, w; };
    __extension__ struct{ cl_float   s0, s1, s2, s3; };
    __extension__ struct{ cl_float2  lo, hi; };
@@ -1054,7 +1054,7 @@ typedef  cl_float4  cl_float3;
 typedef union
 {
     cl_float   CL_ALIGNED(32) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_float   x, y, z, w; };
    __extension__ struct{ cl_float   s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_float4  lo, hi; };
@@ -1073,7 +1073,7 @@ typedef union
 typedef union
 {
     cl_float  CL_ALIGNED(64) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_float  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_float  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_float8 lo, hi; };
@@ -1097,7 +1097,7 @@ typedef union
 typedef union
 {
     cl_double  CL_ALIGNED(16) s[2];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_double  x, y; };
    __extension__ struct{ cl_double s0, s1; };
    __extension__ struct{ cl_double lo, hi; };
@@ -1110,7 +1110,7 @@ typedef union
 typedef union
 {
     cl_double  CL_ALIGNED(32) s[4];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_double  x, y, z, w; };
    __extension__ struct{ cl_double  s0, s1, s2, s3; };
    __extension__ struct{ cl_double2 lo, hi; };
@@ -1129,7 +1129,7 @@ typedef  cl_double4  cl_double3;
 typedef union
 {
     cl_double   CL_ALIGNED(64) s[8];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_double  x, y, z, w; };
    __extension__ struct{ cl_double  s0, s1, s2, s3, s4, s5, s6, s7; };
    __extension__ struct{ cl_double4 lo, hi; };
@@ -1148,7 +1148,7 @@ typedef union
 typedef union
 {
     cl_double  CL_ALIGNED(128) s[16];
-#if defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#if (defined( __GNUC__) ||  defined( __IBMC__ )) && ! defined( __STRICT_ANSI__ )
    __extension__ struct{ cl_double  x, y, z, w, __spacer4, __spacer5, __spacer6, __spacer7, __spacer8, __spacer9, sa, sb, sc, sd, se, sf; };
    __extension__ struct{ cl_double  s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, sA, sB, sC, sD, sE, sF; };
    __extension__ struct{ cl_double8 lo, hi; };

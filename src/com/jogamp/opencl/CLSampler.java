@@ -30,6 +30,7 @@ package com.jogamp.opencl;
 
 import com.jogamp.opencl.impl.CLTLInfoAccessor;
 import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.llb.CLSamplerBinding;
 
 import java.nio.Buffer;
 
@@ -45,16 +46,19 @@ import static com.jogamp.opencl.util.CLUtil.*;
 public class CLSampler extends CLObject implements CLResource {
 
     private final CLSamplerInfoAccessor samplerInfo;
+    private final CLSamplerBinding binding;
 
     private CLSampler(CLContext context, long id,  AddressingMode addrMode, FilteringMode filtMode, boolean normalizedCoords) {
         super(context, id);
+        this.binding = context.getPlatform().getSamplerBinding();
         this.samplerInfo = new CLSamplerInfoAccessor();
     }
 
     static CLSampler create(CLContext context, AddressingMode addrMode, FilteringMode filtMode, boolean normalizedCoords) {
         int[] error = new int[1];
 
-        long id = context.cl.clCreateSampler(context.ID, clBoolean(normalizedCoords), addrMode.MODE, filtMode.MODE, error, 0);
+        CLSamplerBinding binding = context.getPlatform().getSamplerBinding();
+        long id = binding.clCreateSampler(context.ID, clBoolean(normalizedCoords), addrMode.MODE, filtMode.MODE, error, 0);
 
         checkForError(error[0], "can not create sampler");
         return new CLSampler(context, id, addrMode, filtMode, normalizedCoords);
@@ -76,7 +80,7 @@ public class CLSampler extends CLObject implements CLResource {
 
     @Override
     public void release() {
-        int ret = cl.clReleaseSampler(ID);
+        int ret = binding.clReleaseSampler(ID);
         context.onSamplerReleased(this);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not release "+this);
@@ -87,7 +91,7 @@ public class CLSampler extends CLObject implements CLResource {
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {
-            return cl.clGetSamplerInfo(ID, name, valueSize, value, valueSizeRet);
+            return binding.clGetSamplerInfo(ID, name, valueSize, value, valueSizeRet);
         }
 
     }

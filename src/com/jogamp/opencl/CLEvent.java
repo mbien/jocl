@@ -29,6 +29,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.opencl.impl.CLTLInfoAccessor;
+import com.jogamp.opencl.llb.CLEventBinding;
 import com.jogamp.opencl.llb.impl.CLEventCallback;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import java.nio.Buffer;
@@ -48,9 +49,11 @@ public class CLEvent extends CLObject implements CLResource {
 
     private final CLEventInfoAccessor eventInfo;
     private final CLEventProfilingInfoAccessor eventProfilingInfo;
+    private final CLEventBinding binding;
 
     CLEvent(CLContext context, long id) {
         super(context, id);
+        binding = context.getPlatform().getEventBinding();
         this.eventInfo = new CLEventInfoAccessor();
         this.eventProfilingInfo = new CLEventProfilingInfoAccessor();
     }
@@ -64,7 +67,7 @@ public class CLEvent extends CLObject implements CLResource {
 
     // apparently only ExecutionStatus.COMPLETE is allowed -> private
     private void registerCallback(final CLEventListener callback, ExecutionStatus trigger) {
-        cl.clSetEventCallback(ID, trigger.STATUS, new CLEventCallback() {
+        binding.clSetEventCallback(ID, trigger.STATUS, new CLEventCallback() {
             @Override public void eventStateChanged(long event, int status) {
                 callback.eventStateChanged(CLEvent.this, status);
             }
@@ -73,7 +76,7 @@ public class CLEvent extends CLObject implements CLResource {
 
     @Override
     public void release() {
-        int ret = cl.clReleaseEvent(ID);
+        int ret = binding.clReleaseEvent(ID);
         checkForError(ret, "can not release event");
     }
 
@@ -144,7 +147,7 @@ public class CLEvent extends CLObject implements CLResource {
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {
-            return cl.clGetEventInfo(ID, name, valueSize, value, valueSizeRet);
+            return binding.clGetEventInfo(ID, name, valueSize, value, valueSizeRet);
         }
 
     }
@@ -153,7 +156,7 @@ public class CLEvent extends CLObject implements CLResource {
 
         @Override
         protected int getInfo(int name, long valueSize, Buffer value, NativeSizeBuffer valueSizeRet) {
-            return cl.clGetEventProfilingInfo(ID, name, valueSize, value, valueSizeRet);
+            return binding.clGetEventProfilingInfo(ID, name, valueSize, value, valueSizeRet);
         }
 
     }

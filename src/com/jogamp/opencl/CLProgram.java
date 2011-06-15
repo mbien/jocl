@@ -29,11 +29,13 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.nio.CachedBufferFactory;
+import com.jogamp.opencl.llb.CLProgramBinding;
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.os.Platform;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.common.nio.PointerBuffer;
+import com.jogamp.opencl.llb.CLKernelBinding;
 import com.jogamp.opencl.llb.impl.BuildProgramCallback;
 import com.jogamp.opencl.util.CLBuildListener;
 import java.nio.ByteBuffer;
@@ -62,6 +64,7 @@ import static com.jogamp.common.nio.Buffers.*;
 public class CLProgram extends CLObject implements CLResource {
 
     private final static ReentrantLock buildLock = new ReentrantLock();
+    private final CLProgramBinding binding;
     
     private final Set<CLKernel> kernels;
     private Map<CLDevice, Status> buildStatusMap;
@@ -72,6 +75,7 @@ public class CLProgram extends CLObject implements CLResource {
     private CLProgram(CLContext context, long id) {
         super(context, id);
         this.kernels = new HashSet<CLKernel>();
+        this.binding = context.getPlatform().getProgramBinding();
     }
     
     static CLProgram create(CLContext context, String src) {
@@ -82,7 +86,8 @@ public class CLProgram extends CLObject implements CLResource {
         String[] srcArray = new String[] {src};
         
         // Create the program
-        long id = context.cl.clCreateProgramWithSource(context.ID, 1, srcArray, length, status);
+        CLProgramBinding binding = context.getPlatform().getProgramBinding();
+        long id = binding.clCreateProgramWithSource(context.ID, 1, srcArray, length, status);
 
         int err = status.get();
         if(err != CL_SUCCESS) {
@@ -127,7 +132,8 @@ public class CLProgram extends CLObject implements CLResource {
 
         IntBuffer errBuffer = bf.newDirectIntBuffer(1);
 //        IntBuffer status = newDirectByteBuffer(binaries.size()*4).asIntBuffer();
-        long id = context.cl.clCreateProgramWithBinary(context.ID, devices.capacity(), devices, lengths, codeBuffers, /*status*/null, errBuffer);
+        CLProgramBinding binding = context.getPlatform().getProgramBinding();
+        long id = binding.clCreateProgramWithBinary(context.ID, devices.capacity(), devices, lengths, codeBuffers, /*status*/null, errBuffer);
 
 //        while(status.remaining() != 0) {
 //            checkForError(status.get(), "unable to load binaries on all devices");
@@ -167,14 +173,14 @@ public class CLProgram extends CLObject implements CLResource {
 
         NativeSizeBuffer size = NativeSizeBuffer.allocateDirect(1);
 
-        int ret = cl.clGetProgramBuildInfo(ID, device.ID, flag, 0, null, size);
+        int ret = binding.clGetProgramBuildInfo(ID, device.ID, flag, 0, null, size);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramBuildInfo with "+device);
         }
 
         ByteBuffer buffer = newDirectByteBuffer((int)size.get(0));
 
-        ret = cl.clGetProgramBuildInfo(ID, device.ID, flag, buffer.capacity(), buffer, null);
+        ret = binding.clGetProgramBuildInfo(ID, device.ID, flag, buffer.capacity(), buffer, null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramBuildInfo with "+device);
         }
@@ -190,12 +196,12 @@ public class CLProgram extends CLObject implements CLResource {
 
         NativeSizeBuffer size = NativeSizeBuffer.allocateDirect(1);
 
-        int ret = cl.clGetProgramInfo(ID, flag, 0, null, size);
+        int ret = binding.clGetProgramInfo(ID, flag, 0, null, size);
         checkForError(ret, "on clGetProgramInfo");
 
         ByteBuffer buffer = newDirectByteBuffer((int)size.get(0));
 
-        ret = cl.clGetProgramInfo(ID, flag, buffer.capacity(), buffer, null);
+        ret = binding.clGetProgramInfo(ID, flag, buffer.capacity(), buffer, null);
         checkForError(ret, "on clGetProgramInfo");
 
         return CLUtil.clString2JavaString(buffer, (int)size.get(0));
@@ -205,12 +211,15 @@ public class CLProgram extends CLObject implements CLResource {
 
         ByteBuffer buffer = newDirectByteBuffer(4);
 
-        int ret = cl.clGetProgramBuildInfo(ID, device.ID, flag, buffer.capacity(), buffer, null);
+        int ret = binding.clGetProgramBuildInfo(ID, device.ID, flag, buffer.capacity(), buffer, null);
         checkForError(ret, "error on clGetProgramBuildInfo");
 
         return buffer.getInt();
     }
 
+    private CLKernelBinding getKernelBinding() {
+        return getPlatform().getKernelBinding();
+    }
 
     /**
      * Builds this program for all devices associated with the context.
@@ -369,7 +378,7 @@ public class CLProgram extends CLObject implements CLResource {
             buildLock.lock();
             boolean exception = true;
             try{
-                ret = cl.clBuildProgram(ID, count, deviceIDs, options, callback);
+                ret = binding.clBuildProgram(ID, count, deviceIDs, options, callback);
                 exception = false;
             }finally{
                 if(callback == null || exception) {
@@ -402,7 +411,7 @@ public class CLProgram extends CLObject implements CLResource {
         }
 
         int[] err = new int[1];
-        long id = cl.clCreateKernel(ID, kernelName, err, 0);
+        long id = getKernelBinding().clCreateKernel(ID, kernelName, err, 0);
         if(err[0] != CL_SUCCESS) {
             throw newException(err[0], "unable to create Kernel with name: "+kernelName);
         }
@@ -424,7 +433,8 @@ public class CLProgram extends CLObject implements CLResource {
         HashMap<String, CLKernel> newKernels = new HashMap<String, CLKernel>();
 
         IntBuffer numKernels = newDirectByteBuffer(4).asIntBuffer();
-        int ret = cl.clCreateKernelsInProgram(ID, 0, null, numKernels);
+        CLKernelBinding kernelBinding = getKernelBinding();
+        int ret = kernelBinding.clCreateKernelsInProgram(ID, 0, null, numKernels);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not create kernels for "+this);
         }
@@ -432,7 +442,7 @@ public class CLProgram extends CLObject implements CLResource {
         if(numKernels.get(0) > 0) {
 
             NativeSizeBuffer kernelIDs = NativeSizeBuffer.allocateDirect(numKernels.get(0));
-            ret = cl.clCreateKernelsInProgram(ID, kernelIDs.capacity(), kernelIDs, null);
+            ret = kernelBinding.clCreateKernelsInProgram(ID, kernelIDs.capacity(), kernelIDs, null);
             if(ret != CL_SUCCESS) {
                 throw newException(ret, "can not create "+kernelIDs.capacity()+" kernels for "+this);
             }
@@ -470,8 +480,8 @@ public class CLProgram extends CLObject implements CLResource {
         executable = false;
         released = true;
         buildStatusMap = null;
-
-        int ret = cl.clReleaseProgram(ID);
+        
+        int ret = binding.clReleaseProgram(ID);
         context.onProgramReleased(this);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not release "+this);
@@ -495,14 +505,15 @@ public class CLProgram extends CLObject implements CLResource {
         if(released) {
             return new CLDevice[0];
         }
+
         NativeSizeBuffer size = NativeSizeBuffer.allocateDirect(1);
-        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, 0, null, size);
+        int ret = binding.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, 0, null, size);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo of "+this);
         }
 
         ByteBuffer bb = newDirectByteBuffer((int) size.get(0));
-        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, bb.capacity(), bb, null);
+        ret = binding.clGetProgramInfo(ID, CL_PROGRAM_DEVICES, bb.capacity(), bb, null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo of "+this);
         }
@@ -606,7 +617,7 @@ public class CLProgram extends CLObject implements CLResource {
         CLDevice[] devices = getCLDevices();
 
         NativeSizeBuffer sizes = NativeSizeBuffer.allocateDirect(devices.length);
-        int ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity()*NativeSizeBuffer.elementSize(), sizes.getBuffer(), null);
+        int ret = binding.clGetProgramInfo(ID, CL_PROGRAM_BINARY_SIZES, sizes.capacity()*NativeSizeBuffer.elementSize(), sizes.getBuffer(), null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo(CL_PROGRAM_BINARY_SIZES) of "+this);
         }
@@ -628,7 +639,7 @@ public class CLProgram extends CLObject implements CLResource {
         }
         addresses.rewind();
         
-        ret = cl.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity()*NativeSizeBuffer.elementSize(), addresses.getBuffer(), null);
+        ret = binding.clGetProgramInfo(ID, CL_PROGRAM_BINARIES, addresses.capacity()*NativeSizeBuffer.elementSize(), addresses.getBuffer(), null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "on clGetProgramInfo(CL_PROGRAM_BINARIES) of "+this);
         }

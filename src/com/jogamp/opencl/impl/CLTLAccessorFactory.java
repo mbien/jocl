@@ -6,6 +6,7 @@ package com.jogamp.opencl.impl;
 import java.nio.IntBuffer;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.llb.CL;
+import com.jogamp.opencl.llb.CLDeviceBinding;
 import com.jogamp.opencl.spi.CLAccessorFactory;
 import com.jogamp.opencl.spi.CLInfoAccessor;
 import com.jogamp.opencl.spi.CLPlatformInfoAccessor;
@@ -20,7 +21,7 @@ import static com.jogamp.opencl.CLException.*;
 public class CLTLAccessorFactory implements CLAccessorFactory {
 
     @Override
-    public CLInfoAccessor createDeviceInfoAccessor(CL cl, long id) {
+    public CLInfoAccessor createDeviceInfoAccessor(CLDeviceBinding cl, long id) {
         return new CLDeviceInfoAccessor(cl, id);
     }
 
@@ -31,10 +32,10 @@ public class CLTLAccessorFactory implements CLAccessorFactory {
 
     private final static class CLDeviceInfoAccessor extends CLTLInfoAccessor {
 
-        private final CL cl;
+        private final CLDeviceBinding cl;
         private final long ID;
 
-        private CLDeviceInfoAccessor(CL cl, long id) {
+        private CLDeviceInfoAccessor(CLDeviceBinding cl, long id) {
             this.cl = cl;
             this.ID = id;
         }

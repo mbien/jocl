@@ -28,8 +28,8 @@
 
 package com.jogamp.opencl;
 
-import com.jogamp.opencl.llb.CL;
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opencl.llb.CLImageBinding;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 
@@ -58,7 +58,7 @@ public class CLImage3d<B extends Buffer> extends CLImage<B> {
     static <B extends Buffer> CLImage3d<B> createImage(CLContext context, B directBuffer,
             int width, int height, int depth, int rowPitch, int slicePitch, CLImageFormat format, int flags) {
 
-        CL cl = context.cl;
+        CLImageBinding cl = context.getPlatform().getImageBinding();
         IntBuffer err = Buffers.newDirectIntBuffer(1);
         B host_ptr = null;
         if(isHostPointerFlag(flags)) {

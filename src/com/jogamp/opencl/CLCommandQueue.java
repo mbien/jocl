@@ -32,6 +32,7 @@ import com.jogamp.common.nio.CachedBufferFactory;
 import com.jogamp.opencl.llb.gl.CLGL;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.gl.CLGLObject;
+import com.jogamp.opencl.llb.CLCommandQueueBinding;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -59,6 +60,7 @@ import static com.jogamp.opencl.util.CLUtil.*;
  */
 public class CLCommandQueue extends CLObject implements CLResource {
 
+    private final CLCommandQueueBinding cl;
     private final CLDevice device;
     private long properties;
 
@@ -75,21 +77,23 @@ public class CLCommandQueue extends CLObject implements CLResource {
 
         this.device = device;
         this.properties = properties;
+        this.cl = context.getPlatform().getCommandQueueBinding();
 
         int pbsize = NativeSizeBuffer.elementSize();
         CachedBufferFactory factory = CachedBufferFactory.create(9*pbsize + 4, true);
-        
+
         this.ibA = NativeSizeBuffer.wrap(factory.newDirectByteBuffer(3*pbsize));
         this.ibB = NativeSizeBuffer.wrap(factory.newDirectByteBuffer(3*pbsize));
         this.ibC = NativeSizeBuffer.wrap(factory.newDirectByteBuffer(3*pbsize));
-        
+
         this.pbA = factory.newDirectIntBuffer(1);
 
     }
 
     static CLCommandQueue create(CLContext context, CLDevice device, long properties) {
         int[] status = new int[1];
-        long id = context.cl.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
+        CLCommandQueueBinding binding = context.getPlatform().getCommandQueueBinding();
+        long id = binding.clCreateCommandQueue(context.ID, device.ID, properties, status, 0);
 
         if(status[0] != CL_SUCCESS) {
             throw newException(status[0], "can not create command queue on " + device +" with properties: " + Mode.valuesOf(properties));

@@ -358,7 +358,7 @@ public class CLPlatform {
     }
 
     protected CLDevice createDevice(long id) {
-        return new CLDevice(cl, this, id);
+        return new CLDevice(this, id);
     }
 
     private static <I> void addIfAccepted(I item, List<I> list, Filter<I>[] filters) {
@@ -594,9 +594,13 @@ public class CLPlatform {
         return cl;
     }
 
+    protected CL getCLBinding() {
+        return cl;
+    }
+
     @Override
     public String toString() {
-        return "CLPlatform [name: " + getName()
+        return getClass().getSimpleName()+" [name: " + getName()
                          +", vendor: "+getVendor()
                          +", profile: "+getProfile()
                          +", version: "+getVersion()+"]";

@@ -28,10 +28,10 @@
 
 package com.jogamp.opencl;
 
-import com.jogamp.opencl.llb.CL;
-import com.jogamp.opencl.llb.gl.CLGL;
+import com.jogamp.opencl.llb.CLMemObjBinding;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.llb.impl.CLMemObjectDestructorCallback;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
@@ -56,6 +56,8 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     // depends on the nio buffer type
     protected int elementSize;
     protected int clCapacity;
+
+    private final CLMemObjBinding binding;
     
     protected <Buffer> CLMemory(CLContext context, long size, long id, int flags) {
         this(context, null, size, id, flags);
@@ -66,6 +68,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
         this.buffer = directBuffer;
         this.FLAGS = flags;
         this.size = size;
+        this.binding = context.getPlatform().getMemObjectBinding();
         initElementSize();
         initCLCapacity();
     }
@@ -86,15 +89,16 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
             || (flags & CL_MEM_USE_HOST_PTR)  != 0;
     }
 
-    protected static long getSizeImpl(CL cl, long id) {
+    protected static long getSizeImpl(CLContext context, long id) {
         NativeSizeBuffer pb = NativeSizeBuffer.allocateDirect(1);
-        int ret = cl.clGetMemObjectInfo(id, CL_MEM_SIZE, NativeSizeBuffer.elementSize(), pb.getBuffer(), null);
+        CLMemObjBinding binding = context.getPlatform().getMemObjectBinding();
+        int ret = binding.clGetMemObjectInfo(id, CL_MEM_SIZE, NativeSizeBuffer.elementSize(), pb.getBuffer(), null);
         checkForError(ret, "can not obtain buffer info");
         return pb.get();
     }
 
     protected static CL getCL(CLContext context) {
-        return context.cl;
+        return context.getCL();
     }
 
     /**
@@ -102,7 +106,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
      * when the memory object is released.
      */
     public void registerDestructorCallback(final CLMemObjectListener listener) {
-        cl.clSetMemObjectDestructorCallback(ID, new CLMemObjectDestructorCallback() {
+        binding.clSetMemObjectDestructorCallback(ID, new CLMemObjectDestructorCallback() {
             @Override
             public void memoryDeallocated(long memObjID) {
                 listener.memoryDeallocated(CLMemory.this);
@@ -190,7 +194,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
      */
     public int getMapCount() {
         IntBuffer value = Buffers.newDirectIntBuffer(1);
-        int ret = cl.clGetMemObjectInfo(ID, CL_MEM_MAP_COUNT, 4, value, null);
+        int ret = binding.clGetMemObjectInfo(ID, CL_MEM_MAP_COUNT, 4, value, null);
         checkForError(ret, "can not obtain buffer map count.");
         return value.get();
     }
@@ -218,7 +222,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     @Override
     public void release() {
-        int ret = cl.clReleaseMemObject(ID);
+        int ret = binding.clReleaseMemObject(ID);
         context.onMemoryReleased(this);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not release "+this);
@@ -229,24 +233,24 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
     /**
      * Returns the OpenGL buffer type of this shared buffer.
      */
-    @Deprecated
-    /*public*/ final GLObjectType _getGLObjectType() {
-        int[] array = new int[1];
-        int ret = ((CLGL)cl).clGetGLObjectInfo(ID, array, 0, null, 0);
-        CLException.checkForError(ret, "error while asking for gl object info");
-        return GLObjectType.valueOf(array[0]);
-    }
-
-    /**
-     * Returns the OpenGL object id of this shared buffer.
-     */
-    @Deprecated
-    /*public*/ final int _getGLObjectID() {
-        int[] array = new int[1];
-        int ret = ((CLGL)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
-        CLException.checkForError(ret, "error while asking for gl object info");
-        return array[0];
-    }
+//    @Deprecated
+//    /*public*/ final GLObjectType _getGLObjectType() {
+//        int[] array = new int[1];
+//        int ret = ((CLGL)cl).clGetGLObjectInfo(ID, array, 0, null, 0);
+//        CLException.checkForError(ret, "error while asking for gl object info");
+//        return GLObjectType.valueOf(array[0]);
+//    }
+//
+//    /**
+//     * Returns the OpenGL object id of this shared buffer.
+//     */
+//    @Deprecated
+//    /*public*/ final int _getGLObjectID() {
+//        int[] array = new int[1];
+//        int ret = ((CLGL)cl).clGetGLObjectInfo(ID, null, 0, array, 0);
+//        CLException.checkForError(ret, "error while asking for gl object info");
+//        return array[0];
+//    }
 
     @Override
     public boolean equals(Object obj) {

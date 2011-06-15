@@ -31,6 +31,7 @@ package com.jogamp.opencl;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.llb.CLKernelBinding;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -55,6 +56,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     public final int numArgs;
 
     private final CLProgram program;
+    private final CLKernelBinding binding;
 
     private final ByteBuffer buffer;
 
@@ -71,15 +73,17 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         this.program = program;
         this.buffer = Buffers.newDirectByteBuffer((is32Bit()?4:8)*3);
 
+        binding = program.getPlatform().getKernelBinding();
+
         if(name == null) {
             // get function name
             NativeSizeBuffer size = NativeSizeBuffer.wrap(buffer);
-            int ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, size);
+            int ret = binding.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, 0, null, size);
             checkForError(ret, "error while asking for kernel function name");
 
             ByteBuffer bb = Buffers.newDirectByteBuffer((int)size.get(0));
 
-            ret = cl.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
+            ret = binding.clGetKernelInfo(ID, CL_KERNEL_FUNCTION_NAME, bb.capacity(), bb, null);
             checkForError(ret, "error while asking for kernel function name");
             
             this.name = CLUtil.clString2JavaString(bb, bb.capacity());
@@ -88,7 +92,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
         }
 
         // get number of arguments
-        int ret = cl.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, buffer.capacity(), buffer, null);
+        int ret = binding.clGetKernelInfo(ID, CL_KERNEL_NUM_ARGS, buffer.capacity(), buffer, null);
         checkForError(ret, "error while asking for number of function arguments.");
 
         numArgs = buffer.getInt(0);
@@ -221,7 +225,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
                     " arguments for a not executable program. "+program);
         }
 
-        int ret = cl.clSetKernelArg(ID, argumentIndex, size, value);
+        int ret = binding.clSetKernelArg(ID, argumentIndex, size, value);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "error setting arg "+argumentIndex+" to value "+value+" of size "+size+" of "+this);
         }
@@ -293,7 +297,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
      * The returned array has always three elements.
      */
     public long[] getCompileWorkGroupSize(CLDevice device) {
-        int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, (is32Bit()?4:8)*3, buffer, null);
+        int ret = binding.clGetKernelWorkGroupInfo(ID, device.ID, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, (is32Bit()?4:8)*3, buffer, null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "error while asking for CL_KERNEL_COMPILE_WORK_GROUP_SIZE of "+this+" on "+device);
         }
@@ -306,7 +310,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
     }
 
     private long getWorkGroupInfo(CLDevice device, int flag) {
-        int ret = cl.clGetKernelWorkGroupInfo(ID, device.ID, flag, 8, buffer, null);
+        int ret = binding.clGetKernelWorkGroupInfo(ID, device.ID, flag, 8, buffer, null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "error while asking for clGetKernelWorkGroupInfo of "+this+" on "+device);
         }
@@ -318,7 +322,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
      */
     @Override
     public void release() {
-        int ret = cl.clReleaseKernel(ID);
+        int ret = binding.clReleaseKernel(ID);
         program.onKernelReleased(this);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "can not release "+this);

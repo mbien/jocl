@@ -29,7 +29,6 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.AutoCloseable;
-import com.jogamp.opencl.llb.CL;
 
 /**
  * Common superclass for all OpenCL objects.
@@ -44,16 +43,12 @@ abstract class CLObject implements AutoCloseable {
     
     protected CLContext context;
 
-    protected final CL cl;
-
-    CLObject(CL cl, long ID) {
-        this.cl = cl;
+    CLObject(long ID) {
         this.context = null;
         this.ID = ID;
     }
 
     CLObject(CLContext context, long ID) {
-        this.cl = context.cl;
         this.context = context;
         this.ID = ID;
     }

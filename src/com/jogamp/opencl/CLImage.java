@@ -30,7 +30,7 @@ package com.jogamp.opencl;
 
 import com.jogamp.opencl.impl.CLTLInfoAccessor;
 import com.jogamp.common.nio.NativeSizeBuffer;
-import com.jogamp.opencl.llb.CL;
+import com.jogamp.opencl.llb.CLImageBinding;
 import java.nio.Buffer;
 
 import static com.jogamp.opencl.llb.CL.*;
@@ -49,15 +49,19 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
     public final int height;
 
     protected CLImage(CLContext context, B directBuffer, CLImageFormat format, int width, int height, long id, int flags) {
-        this(context, directBuffer, format, new CLImageInfoAccessor(context.cl, id), width, height, id, flags);
+        this(context, directBuffer, format, createAccessor(context, id), width, height, id, flags);
     }
 
     protected CLImage(CLContext context, B directBuffer, CLImageFormat format, CLImageInfoAccessor accessor, int width, int height, long id, int flags) {
-        super(context, directBuffer, getSizeImpl(context.cl, id), id, flags);
+        super(context, directBuffer, getSizeImpl(context, id), id, flags);
         this.imageInfo = accessor;
         this.format = format;
         this.width = width;
         this.height = height;
+    }
+
+    private static CLImageInfoAccessor createAccessor(CLContext context, long id) {
+        return new CLImageInfoAccessor(context.getPlatform().getImageBinding(), id);
     }
 
     protected static CLImageFormat createUninitializedImageFormat() {
@@ -105,9 +109,9 @@ public abstract class CLImage<B extends Buffer> extends CLMemory<B>  {
     protected final static class CLImageInfoAccessor extends CLTLInfoAccessor {
 
         private final long id;
-        private final CL cl;
+        private final CLImageBinding cl;
 
-        public CLImageInfoAccessor(CL cl, long id) {
+        public CLImageInfoAccessor(CLImageBinding cl, long id) {
             this.cl = cl;
             this.id = id;
         }

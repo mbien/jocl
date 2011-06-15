@@ -28,7 +28,6 @@
 
 package com.jogamp.opencl;
 
-import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.spi.CLInfoAccessor;
 import java.nio.ByteOrder;
@@ -58,16 +57,16 @@ public class CLDevice extends CLObject {
     private final CLInfoAccessor deviceInfo;
     private final CLPlatform platform;
 
-    protected CLDevice(CL cl, CLPlatform platform, long id) {
-        super(cl, id);
+    protected CLDevice(CLPlatform platform, long id) {
+        super(id);
         this.platform = platform;
-        this.deviceInfo = platform.getAccessorFactory().createDeviceInfoAccessor(cl, id);
+        this.deviceInfo = platform.getAccessorFactory().createDeviceInfoAccessor(platform.getDeviceBinding(), id);
     }
 
     protected CLDevice(CLContext context, long id) {
         super(context, id);
         this.platform = context.getPlatform();
-        this.deviceInfo = platform.getAccessorFactory().createDeviceInfoAccessor(cl, id);
+        this.deviceInfo = platform.getAccessorFactory().createDeviceInfoAccessor(platform.getDeviceBinding(), id);
     }
 
     public CLCommandQueue createCommandQueue() {

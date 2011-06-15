@@ -96,7 +96,7 @@ public class CLContext extends CLObject implements CLResource {
     private final ErrorDispatcher errorHandler;
 
     protected CLContext(CLPlatform platform, long contextID, ErrorDispatcher dispatcher) {
-        super(CLPlatform.getLowLevelCLInterface(), contextID);
+        super(contextID);
         this.platform = platform;
         
         this.programs = synchronizedSet(new HashSet<CLProgram>());
@@ -540,7 +540,7 @@ public class CLContext extends CLObject implements CLResource {
 
         CLImageFormat[] formats = new CLImageFormat[count];
         CLImageFormatImpl impl = CLImageFormatImpl.create(newDirectByteBuffer(count * CLImageFormatImpl.size()));
-        ret = binding.clGetSupportedImageFormats(ID, flags, type, count, impl, null, 0);
+        ret = binding.clGetSupportedImageFormats(ID, flags, type, count, impl, null);
         if(ret != CL_SUCCESS) {
             throw newException(ret, "error calling clGetSupportedImageFormats");
         }
@@ -640,7 +640,7 @@ public class CLContext extends CLObject implements CLResource {
      * Return the low level OpenCL interface.
      */
     public CL getCL() {
-        return cl;
+        return getPlatform().getCLBinding();
     }
 
     CLDevice getDevice(long dID) {

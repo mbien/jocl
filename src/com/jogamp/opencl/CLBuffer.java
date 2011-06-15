@@ -33,6 +33,7 @@ import java.util.List;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.llb.CL;
+import com.jogamp.opencl.llb.CLBufferBinding;
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,14 +59,13 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
     @SuppressWarnings("unchecked")
     static CLBuffer<?> create(CLContext context, int size, int flags) {
 
-        CL cl = context.cl;
-        int[] result = new int[1];
-
         if(isHostPointerFlag(flags)) {
             throw new IllegalArgumentException("no host pointer defined");
         }
 
-        long id = cl.clCreateBuffer(context.ID, flags, size, null, result, 0);
+        CLBufferBinding binding = context.getPlatform().getBufferBinding();
+        int[] result = new int[1];
+        long id = binding.clCreateBuffer(context.ID, flags, size, null, result, 0);
         checkForError(result[0], "can not create cl buffer");
 
         return new CLBuffer(context, size, id, flags);
@@ -77,14 +77,14 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
             throw new IllegalArgumentException("buffer is not direct");
 
         B host_ptr = null;
-        CL cl = context.cl;
-        int[] result = new int[1];
-
         if(isHostPointerFlag(flags)) {
             host_ptr = directBuffer;
         }
+
+        CLBufferBinding binding = context.getPlatform().getBufferBinding();
+        int[] result = new int[1];
         int size = Buffers.sizeOfBufferElem(directBuffer) * directBuffer.capacity();
-        long id = cl.clCreateBuffer(context.ID, flags, size, host_ptr, result, 0);
+        long id = binding.clCreateBuffer(context.ID, flags, size, host_ptr, result, 0);
         checkForError(result[0], "can not create cl buffer");
         
         return new CLBuffer<B>(context, directBuffer, size, id, flags);
@@ -113,8 +113,9 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
         info.put(offset).put(size).rewind();
         int bitset = Mem.flagsToInt(flags);
         
+        CLBufferBinding binding = getPlatform().getBufferBinding();
         int[] err = new int[1];
-        long subID = cl.clCreateSubBuffer(ID, bitset, CL.CL_BUFFER_CREATE_TYPE_REGION, info.getBuffer(), err, 0);
+        long subID = binding.clCreateSubBuffer(ID, bitset, CL.CL_BUFFER_CREATE_TYPE_REGION, info.getBuffer(), err, 0);
         checkForError(err[0], "can not create sub buffer");
 
         CLSubBuffer<B> clSubBuffer = new CLSubBuffer<B>(this, offset, size, slice, subID, bitset);

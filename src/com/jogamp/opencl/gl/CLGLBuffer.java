@@ -83,7 +83,7 @@ public final class CLGLBuffer<B extends Buffer> extends CLBuffer<B> implements C
      * {@link CLCommandQueue#putAcquireGLObject(com.jogamp.opencl.gl.CLGLObject)}.
      */
     public void updateSize() {
-        size = getSizeImpl(cl, ID);
+        size = getSizeImpl(context, ID);
         initCLCapacity();
     }
 

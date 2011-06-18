@@ -32,6 +32,7 @@ import com.jogamp.opencl.CLCommandQueue.Mode;
 import com.jogamp.opencl.CLDevice;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -45,13 +46,14 @@ public class CLDeviceFilters {
     /**
      * Accepts all devices of the given type.
      */
-    public static Filter<CLDevice> type(final CLDevice.Type type) {
+    public static Filter<CLDevice> type(final CLDevice.Type... types) {
         return new Filter<CLDevice>() {
+            private final EnumSet<CLDevice.Type> set = EnumSet.copyOf(Arrays.asList(types));
             public boolean accept(CLDevice item) {
-                if(type.equals(CLDevice.Type.ALL)) {
+                if(set.contains(CLDevice.Type.ALL)) {
                     return true;
                 }
-                return item.getType().equals(type);
+                return set.contains(item.getType());
             }
         };
     }

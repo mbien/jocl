@@ -41,7 +41,14 @@ public class CLMultiContext implements CLResource {
      * Creates a multi context with all devices of the specified platforms and types.
      */
     public static CLMultiContext create(CLPlatform[] platforms, CLDevice.Type... types) {
-        
+        return create(platforms, CLDeviceFilters.type(types));
+    }
+
+    /**
+     * Creates a multi context with all matching devices of the specified platforms.
+     */
+    public static CLMultiContext create(CLPlatform[] platforms, Filter<CLDevice>... filters) {
+
         if(platforms == null) {
             throw new NullPointerException("platform list was null");
         }else if(platforms.length == 0) {
@@ -50,7 +57,7 @@ public class CLMultiContext implements CLResource {
 
         List<CLDevice> devices = new ArrayList<CLDevice>();
         for (CLPlatform platform : platforms) {
-            devices.addAll(asList(platform.listCLDevices(types)));
+            devices.addAll(asList(platform.listCLDevices(filters)));
         }
         return create(devices);
     }

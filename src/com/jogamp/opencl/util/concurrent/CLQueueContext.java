@@ -63,8 +63,14 @@ public abstract class CLQueueContext implements CLResource {
             return program;
         }
 
+        @Override
         public void release() {
             program.release();
+        }
+
+        @Override
+        public boolean isReleased() {
+            return program.isReleased();
         }
 
     }

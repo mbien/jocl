@@ -61,7 +61,7 @@ import static com.jogamp.common.nio.Buffers.*;
  * @see CLContext#createProgram(java.util.Map)
  * @author Michael Bien
  */
-public class CLProgram extends CLObject implements CLResource {
+public class CLProgram extends CLObjectResource {
 
     private final static ReentrantLock buildLock = new ReentrantLock();
     private final CLProgramBinding binding;
@@ -475,6 +475,7 @@ public class CLProgram extends CLObject implements CLResource {
     @Override
     public void release() {
 
+        super.release();
         releaseKernels();
 
         executable = false;

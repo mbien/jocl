@@ -50,7 +50,7 @@ import static com.jogamp.common.os.Platform.*;
  * @see CLProgram#createCLKernels()
  * @author Michael Bien
  */
-public class CLKernel extends CLObject implements CLResource, Cloneable {
+public class CLKernel extends CLObjectResource implements Cloneable {
 
     public final String name;
     public final int numArgs;
@@ -322,6 +322,7 @@ public class CLKernel extends CLObject implements CLResource, Cloneable {
      */
     @Override
     public void release() {
+        super.release();
         int ret = binding.clReleaseKernel(ID);
         program.onKernelReleased(this);
         if(ret != CL_SUCCESS) {

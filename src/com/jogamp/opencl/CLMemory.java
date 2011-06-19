@@ -47,7 +47,7 @@ import static com.jogamp.opencl.llb.gl.CLGL.*;
  * Represents an OpenCL memory object and wraps an optional NIO buffer.
  * @author Michael Bien
  */
-public abstract class CLMemory <B extends Buffer> extends CLObject implements CLResource {
+public abstract class CLMemory <B extends Buffer> extends CLObjectResource {
     
     B buffer;
     protected final int FLAGS;
@@ -222,6 +222,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObject implements CL
 
     @Override
     public void release() {
+        super.release();
         int ret = binding.clReleaseMemObject(ID);
         context.onMemoryReleased(this);
         if(ret != CL_SUCCESS) {

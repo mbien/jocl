@@ -25,6 +25,7 @@ import static com.jogamp.opencl.CLDevice.Type.*;
 public class CLMultiContext implements CLResource {
 
     private final List<CLContext> contexts;
+    private boolean released;
 
     private CLMultiContext() {
         contexts = new ArrayList<CLContext>();
@@ -132,7 +133,12 @@ public class CLMultiContext implements CLResource {
      * Releases all contexts.
      * @see CLContext#release()
      */
+    @Override
     public void release() {
+        if(released) {
+            throw new RuntimeException(getClass().getSimpleName()+" already released");
+        }
+        released = true;
         for (CLContext context : contexts) {
             context.release();
         }
@@ -152,6 +158,10 @@ public class CLMultiContext implements CLResource {
             devices.addAll(asList(context.getDevices()));
         }
         return devices;
+    }
+
+    public boolean isReleased() {
+        return released;
     }
 
     @Override

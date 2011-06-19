@@ -58,7 +58,7 @@ import static com.jogamp.opencl.util.CLUtil.*;
  * @see CLDevice#createCommandQueue(com.jogamp.opencl.CLCommandQueue.Mode...)
  * @author Michael Bien
  */
-public class CLCommandQueue extends CLObject implements CLResource {
+public class CLCommandQueue extends CLObjectResource {
 
     private final CLCommandQueueBinding cl;
     private final CLDevice device;
@@ -1795,7 +1795,9 @@ public class CLCommandQueue extends CLObject implements CLResource {
         return (Mode.OUT_OF_ORDER_MODE.QUEUE_MODE & properties) != 0;
     }
 
+    @Override
     public void release() {
+        super.release();
         int ret = cl.clReleaseCommandQueue(ID);
         context.onCommandQueueReleased(device, this);
         if(ret != CL_SUCCESS) {

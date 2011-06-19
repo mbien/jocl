@@ -29,6 +29,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     private List<CLQueueContext> contexts;
     private ExecutorService excecutor;
     private FinishAction finishAction = FinishAction.DO_NOTHING;
+    private boolean released;
 
     private CLCommandQueuePool(CLQueueContextFactory factory, Collection<CLCommandQueue> queues) {
         this.contexts = initContexts(queues, factory);
@@ -157,7 +158,12 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     /**
      * Releases all queues.
      */
+    @Override
     public void release() {
+        if(released) {
+            throw new RuntimeException(getClass().getSimpleName()+" already released");
+        }
+        released = true;
         excecutor.shutdown();
         for (CLQueueContext context : contexts) {
             context.queue.finish().release();
@@ -185,6 +191,11 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
 
     public FinishAction getFinishAction() {
         return finishAction;
+    }
+
+    @Override
+    public boolean isReleased() {
+        return released;
     }
 
     /**

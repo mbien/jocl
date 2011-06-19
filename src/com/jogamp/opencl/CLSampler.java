@@ -43,7 +43,7 @@ import static com.jogamp.opencl.util.CLUtil.*;
  * @see CLContext#createSampler(com.jogamp.opencl.CLSampler.AddressingMode, com.jogamp.opencl.CLSampler.FilteringMode, boolean)
  * @author Michael Bien
  */
-public class CLSampler extends CLObject implements CLResource {
+public class CLSampler extends CLObjectResource {
 
     private final CLSamplerInfoAccessor samplerInfo;
     private final CLSamplerBinding binding;
@@ -80,6 +80,7 @@ public class CLSampler extends CLObject implements CLResource {
 
     @Override
     public void release() {
+        super.release();
         int ret = binding.clReleaseSampler(ID);
         context.onSamplerReleased(this);
         if(ret != CL_SUCCESS) {

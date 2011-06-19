@@ -81,7 +81,7 @@ import static java.util.Collections.*;
  * 
  * @author Michael Bien
  */
-public class CLContext extends CLObject implements CLResource {
+public class CLContext extends CLObjectResource {
 
     protected CLDevice[] devices;
 
@@ -501,6 +501,7 @@ public class CLContext extends CLObject implements CLResource {
      */
     @Override
     public synchronized void release() {
+        super.release();
 
         try{
             //release all resources

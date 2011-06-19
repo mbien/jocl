@@ -176,6 +176,10 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         return events.length;
     }
 
+    public boolean isReleased() {
+        return size == 0;
+    }
+
     @Override
     public Iterator<CLEvent> iterator() {
         return new EventIterator(events, size);

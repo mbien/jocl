@@ -45,7 +45,7 @@ import static com.jogamp.opencl.CLException.*;
  * {@link com.jogamp.opencl.CLCommandQueue.Mode#PROFILING_MODE}.
  * @author Michael Bien
  */
-public class CLEvent extends CLObject implements CLResource {
+public class CLEvent extends CLObjectResource {
 
     private final CLEventInfoAccessor eventInfo;
     private final CLEventProfilingInfoAccessor eventProfilingInfo;
@@ -76,6 +76,7 @@ public class CLEvent extends CLObject implements CLResource {
 
     @Override
     public void release() {
+        super.release();
         int ret = binding.clReleaseEvent(ID);
         checkForError(ret, "can not release event");
     }

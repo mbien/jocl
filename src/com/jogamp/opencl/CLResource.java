@@ -39,4 +39,8 @@ public interface CLResource {
      */
     public void release();
 
+    /**
+     * Returns true if {@link #release()} has been called.
+     */
+    public boolean isReleased();
 }

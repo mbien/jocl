@@ -110,6 +110,12 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
+    public CLKernel putArg(short value) {
+        setArg(argIndex, value);
+        argIndex++;
+        return this;
+    }
+
     public CLKernel putArg(int value) {
         setArg(argIndex, value);
         argIndex++;
@@ -171,6 +177,11 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
+    public CLKernel setArg(int argumentIndex, short value) {
+        setArgument(argumentIndex, 2, wrap(value));
+        return this;
+    }
+
     public CLKernel setArg(int argumentIndex, int value) {
         setArgument(argumentIndex, 4, wrap(value));
         return this;
@@ -206,6 +217,31 @@ public class CLKernel extends CLObjectResource implements Cloneable {
 
     public CLKernel setArgs(CLMemory<?>... values) {
         setArgs(0, values);
+        return this;
+    }
+
+    public CLKernel setArgs(Object... values) {
+        if(values == null || values.length == 0) {
+            throw new IllegalArgumentException("values array was empty or null.");
+        }
+        for (int i = 0; i < values.length; i++) {
+            Object value = values[i];
+            if(value instanceof CLMemory<?>) {
+                setArg(i, (CLMemory<?>)value);
+            }else if(value instanceof Short) {
+                setArg(i, (Short)value);
+            }else if(value instanceof Integer) {
+                setArg(i, (Integer)value);
+            }else if(value instanceof Long) {
+                setArg(i, (Long)value);
+            }else if(value instanceof Float) {
+                setArg(i, (Float)value);
+            }else if(value instanceof Double) {
+                setArg(i, (Double)value);
+            }else{
+                throw new IllegalArgumentException(value + " is not a valid argument.");
+            }
+        }
         return this;
     }
 
@@ -257,6 +293,10 @@ public class CLKernel extends CLObjectResource implements Cloneable {
 
     private Buffer wrap(double value) {
         return buffer.putDouble(0, value);
+    }
+
+    private Buffer wrap(short value) {
+        return buffer.putShort(0, value);
     }
 
     private Buffer wrap(int value) {

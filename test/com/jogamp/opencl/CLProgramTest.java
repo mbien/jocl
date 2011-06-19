@@ -270,7 +270,7 @@ public class CLProgramTest {
     @Test
     public void kernelTest() {
 
-        String source = "__attribute__((reqd_work_group_size(1, 1, 1))) kernel void foo(float a, int b) { }\n";
+        String source = "__attribute__((reqd_work_group_size(1, 1, 1))) kernel void foo(float a, int b, short c) { }\n";
 
         CLContext context = CLContext.create();
 
@@ -297,13 +297,16 @@ public class CLProgramTest {
 
             kernel.putArg(2);
             assertEquals(2, kernel.position());
+
+            kernel.putArg((short)3);
+            assertEquals(3, kernel.position());
             
             try{
                 kernel.putArg(3);
                 fail("exception not thrown");
             }catch (IndexOutOfBoundsException expected){ }
 
-            assertEquals(2, kernel.position());
+            assertEquals(3, kernel.position());
             assertEquals(0, kernel.rewind().position());
 
         }finally{

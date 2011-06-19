@@ -255,27 +255,52 @@ public class CLContext extends CLObjectResource {
     }
 
     /**
-     * Creates a program and reads the source from stream, the returned program is not build yet.
-     * The InputStream is automatically closed after the sources have been read.
-     * @throws IOException when a IOException occurred while reading or closing the stream.
+     * Creates a program from the given sources, the returned program is not build yet.
      */
-    public CLProgram createProgram(InputStream source) throws IOException {
+    public CLProgram createProgram(String... sources) {
 
-        if(source == null)
-            throw new IllegalArgumentException("input stream for program source must not be null");
+        if(sources.length == 0)
+            throw new IllegalArgumentException("source string array was empty");
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(source));
-        StringBuilder sb = new StringBuilder(2048);
-
-        String line;
-        try {
-            while ((line = reader.readLine()) != null)
-                sb.append(line).append("\n");
-        } finally {
-            reader.close();
+        StringBuilder sb = new StringBuilder(2048*sources.length);
+        for (String source : sources) {
+            sb.append(source);
         }
 
-        return createProgram(sb.toString());
+        return createProgram(sb);
+    }
+
+    /**
+     * Creates a program and reads the source from stream, the returned program is not build yet.
+     * The InputStream is automatically closed after the sources have been read.
+     * Multiple streams are concatenated to one sourcecode String in the order they are provided.
+     * @throws IOException when a IOException occurred while reading or closing the stream.
+     */
+    public CLProgram createProgram(InputStream... sources) throws IOException {
+
+        if(sources.length == 0)
+            throw new IllegalArgumentException("input stream array was empty");
+
+        StringBuilder sb = new StringBuilder(2048*sources.length);
+        for (InputStream source : sources) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(source));
+            try {
+                String line;
+                while ((line = reader.readLine()) != null)
+                    sb.append(line).append("\n");
+            } finally {
+                reader.close();
+            }
+        }
+
+        return createProgram(sb);
+    }
+
+    /**
+     * Creates a program from the given sources, the returned program is not build yet.
+     */
+    private CLProgram createProgram(StringBuilder sources) {
+        return createProgram(sources.toString());
     }
 
     /**

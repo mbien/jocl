@@ -78,6 +78,7 @@ public class CLMultiContextTest {
             this.data = buffer;
         }
 
+        @Override
         public Buffer execute(CLSimpleQueueContext qc) {
             
             CLCommandQueue queue = qc.getQueue();
@@ -134,27 +135,36 @@ public class CLMultiContextTest {
             out.println("invoking "+tasks.size()+" tasks on "+pool.getSize()+" queues");
 
             // blocking invoke
-            pool.invokeAll(tasks);
+            List<Future<Buffer>> results = pool.invokeAll(tasks);
+            assertNotNull(results);
             checkBuffer(1, data);
 
             // submit blocking emediatly
             for (CLTestTask task : tasks) {
-                pool.submit(task).get();
+                Buffer ret = pool.submit(task).get();
+                assertNotNull(ret);
             }
             checkBuffer(2, data);
 
             // submitAll using futures
             List<Future<Buffer>> futures = pool.submitAll(tasks);
             for (Future<Buffer> future : futures) {
-                future.get();
+                Buffer ret = future.get();
+                assertNotNull(ret);
             }
             checkBuffer(3, data);
 
             // switching contexts using different program
             factory = CLQueueContextFactory.createSimple(programSource.replaceAll("\\+\\+", "--"));
             pool.switchContext(factory);
-            pool.invokeAll(tasks);
+            List<Future<Buffer>> results2 = pool.invokeAll(tasks);
+            assertNotNull(results2);
             checkBuffer(2, data);
+            
+            // submit any
+            Buffer buffer = pool.invokeAny(tasks);
+            assertNotNull(buffer);
+            checkContains(1, data);
 
             pool.release();
         }finally{
@@ -167,6 +177,16 @@ public class CLMultiContextTest {
             assertEquals(expected, data.get());
         }
         data.rewind();
+    }
+
+    private void checkContains(int expected, IntBuffer data) {
+        while(data.hasRemaining()) {
+            if(expected == data.get()){
+                data.rewind();
+                return;
+            }
+        }
+        fail();
     }
 
 }

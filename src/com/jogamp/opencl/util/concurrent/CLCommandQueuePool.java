@@ -11,11 +11,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A multithreaded, fixed size pool of OpenCL command queues.
@@ -109,6 +111,26 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     public <R> List<Future<R>> invokeAll(Collection<? extends CLTask<? super C, R>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
         List<TaskWrapper<C, R>> wrapper = wrapTasks(tasks);
         return excecutor.invokeAll(wrapper, timeout, unit);
+    }
+
+    /**
+     * Submits all tasks for immediate execution (blocking) until a result can be returned.
+     * All other unfinished but started tasks are cancelled.
+     * @see ExecutorService#invokeAny(java.util.Collection)
+     */
+    public <R> R invokeAny(Collection<? extends CLTask<? super C, R>> tasks) throws InterruptedException, ExecutionException {
+        List<TaskWrapper<C, R>> wrapper = wrapTasks(tasks);
+        return excecutor.invokeAny(wrapper);
+    }
+
+    /**
+     * Submits all tasks for immediate execution (blocking) until a result can be returned.
+     * All other unfinished but started tasks are cancelled.
+     * @see ExecutorService#invokeAny(java.util.Collection, long, java.util.concurrent.TimeUnit)
+     */
+    public <R> R invokeAny(Collection<? extends CLTask<? super C, R>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        List<TaskWrapper<C, R>> wrapper = wrapTasks(tasks);
+        return excecutor.invokeAny(wrapper, timeout, unit);
     }
 
     private <R> List<TaskWrapper<C, R>> wrapTasks(Collection<? extends CLTask<? super C, R>> tasks) {
@@ -221,6 +243,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
             this.index = 0;
         }
 
+        @Override
         public synchronized Thread newThread(Runnable runnable) {
 
             SecurityManager sm = System.getSecurityManager();
@@ -253,6 +276,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
             this.mode = mode;
         }
 
+        @Override
         public R call() throws Exception {
             CLQueueContext context = ((QueueThread)Thread.currentThread()).context;
             R result = task.execute((C)context);

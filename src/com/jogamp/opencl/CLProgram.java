@@ -422,6 +422,19 @@ public class CLProgram extends CLObjectResource {
     }
 
     /**
+     * Creates a kernel with the specified kernel name and initializes it with the given arguments.
+     * @see CLKernel#setArgs(java.lang.Object[]) 
+     */
+    public CLKernel createCLKernel(String kernelName, Object... args) {
+
+        if(released) {
+            return null;
+        }
+        
+        return createCLKernel(kernelName).setArgs(args);
+    }
+
+    /**
      * Creates all kernels of this program and stores them a Map with the kernel name as key.
      */
     public Map<String, CLKernel> createCLKernels() {

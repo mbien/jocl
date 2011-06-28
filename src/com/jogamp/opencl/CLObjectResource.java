@@ -21,6 +21,7 @@ abstract class CLObjectResource extends CLObject implements CLResource, AutoClos
         super(context, ID);
     }
 
+    @Override
     public void release() {
         if(released) {
             throw new RuntimeException(getClass().getSimpleName()+" was already released.");
@@ -43,6 +44,7 @@ abstract class CLObjectResource extends CLObject implements CLResource, AutoClos
         }
     }
 
+    @Override
     public boolean isReleased() {
         return released;
     }

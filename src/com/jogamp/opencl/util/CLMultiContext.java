@@ -8,6 +8,7 @@ import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.opencl.CLResource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,24 +36,24 @@ public class CLMultiContext implements CLResource {
      * Creates a multi context with all devices of the specified platforms.
      */
     public static CLMultiContext create(CLPlatform... platforms) {
-        return create(platforms, ALL);
-    }
-
-    /**
-     * Creates a multi context with all devices of the specified platforms and types.
-     */
-    public static CLMultiContext create(CLPlatform[] platforms, CLDevice.Type... types) {
-        return create(platforms, CLDeviceFilters.type(types));
+        return create(platforms, CLDeviceFilters.type(ALL));
     }
 
     /**
      * Creates a multi context with all matching devices of the specified platforms.
      */
     public static CLMultiContext create(CLPlatform[] platforms, Filter<CLDevice>... filters) {
+        return create(Arrays.asList(platforms), filters);
+    }
+
+    /**
+     * Creates a multi context with all matching devices of the specified platforms.
+     */
+    public static CLMultiContext create(Collection<CLPlatform> platforms, Filter<CLDevice>... filters) {
 
         if(platforms == null) {
             throw new NullPointerException("platform list was null");
-        }else if(platforms.length == 0) {
+        }else if(platforms.isEmpty()) {
             throw new IllegalArgumentException("platform list was empty");
         }
 
@@ -160,6 +161,7 @@ public class CLMultiContext implements CLResource {
         return devices;
     }
 
+    @Override
     public boolean isReleased() {
         return released;
     }

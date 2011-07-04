@@ -51,7 +51,7 @@ public class CLEvent extends CLObjectResource {
     private final CLEventProfilingInfoAccessor eventProfilingInfo;
     private final CLEventBinding binding;
 
-    public CLEvent(CLContext context, long id) {
+    protected CLEvent(CLContext context, long id) {
         super(context, id);
         binding = context.getPlatform().getEventBinding();
         this.eventInfo = new CLEventInfoAccessor();

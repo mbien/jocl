@@ -80,7 +80,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * @see ExecutorService#submit(java.util.concurrent.Callable)
      */
     public <R> Future<R> submit(CLTask<? super C, R> task) {
-        return excecutor.submit(new TaskWrapper(task, finishAction));
+        return excecutor.submit(wrapTask(task));
     }
 
     /**
@@ -133,6 +133,10 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
         return excecutor.invokeAny(wrapper, timeout, unit);
     }
 
+    <R> TaskWrapper<C, R> wrapTask(CLTask<? super C, R> task) {
+        return new TaskWrapper(task, finishAction);
+    }
+
     private <R> List<TaskWrapper<C, R>> wrapTasks(Collection<? extends CLTask<? super C, R>> tasks) {
         List<TaskWrapper<C, R>> wrapper = new ArrayList<TaskWrapper<C, R>>(tasks.size());
         for (CLTask<? super C, R> task : tasks) {
@@ -178,7 +182,8 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     }
 
     /**
-     * Releases all queues.
+     * Releases the queue context, all queues including a shutdown of the internal threadpool.
+     * The call will block until all currently executing tasks have finished, no new tasks are started.
      */
     @Override
     public void release() {
@@ -186,11 +191,21 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
             throw new RuntimeException(getClass().getSimpleName()+" already released");
         }
         released = true;
-        excecutor.shutdown();
-        for (CLQueueContext context : contexts) {
-            context.queue.finish().release();
-            context.release();
+        excecutor.shutdownNow();
+        try {
+            excecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }finally{
+            for (CLQueueContext context : contexts) {
+                context.queue.finish().release();
+                context.release();
+            }
         }
+    }
+
+    ExecutorService getExcecutor() {
+        return excecutor;
     }
 
     /**
@@ -271,7 +286,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
         private final CLTask<? super C, R> task;
         private final FinishAction mode;
         
-        public TaskWrapper(CLTask<? super C, R> task, FinishAction mode) {
+        private TaskWrapper(CLTask<? super C, R> task, FinishAction mode) {
             this.task = task;
             this.mode = mode;
         }

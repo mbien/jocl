@@ -74,7 +74,7 @@
         
     </target>
         
-    <target name="generate-binding" depends="prepare-build,preprocess-headers" unless="dont-generate">
+    <target name="generate-binding" depends="prepare-build,preprocess-headers" unless="dont.generate">
     
         <path id="gluegen.classpath">
             <pathelement location="${file.reference.gluegen.jar}" />

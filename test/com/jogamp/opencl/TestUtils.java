@@ -29,6 +29,7 @@
 package com.jogamp.opencl;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.Random;
 
 import static java.lang.System.*;
@@ -44,7 +45,7 @@ public class TestUtils {
 
     final static int NUM_ELEMENTS = 10000000;
 
-    public static final void fillBuffer(ByteBuffer buffer, int seed) {
+    public static ByteBuffer fillBuffer(ByteBuffer buffer, int seed) {
 
         Random rnd = new Random(seed);
 
@@ -52,9 +53,23 @@ public class TestUtils {
             buffer.putInt(rnd.nextInt());
 
         buffer.rewind();
+        
+        return buffer;
     }
 
-    public static final int roundUp(int groupSize, int globalSize) {
+    public static FloatBuffer fillBuffer(FloatBuffer buffer, int seed) {
+
+        Random rnd = new Random(seed);
+
+        while(buffer.remaining() != 0)
+            buffer.put(rnd.nextFloat());
+
+        buffer.rewind();
+
+        return buffer;
+    }
+
+    public static int roundUp(int groupSize, int globalSize) {
         int r = globalSize % groupSize;
         if (r == 0) {
             return globalSize;
@@ -63,7 +78,7 @@ public class TestUtils {
         }
     }
 
-    public static final void checkIfEqual(ByteBuffer a, ByteBuffer b, int elements) {
+    public static void checkIfEqual(ByteBuffer a, ByteBuffer b, int elements) {
         for(int i = 0; i < elements; i++) {
             int aVal = a.getInt();
             int bVal = b.getInt();

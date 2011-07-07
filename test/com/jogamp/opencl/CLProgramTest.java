@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.util.CLBuildConfiguration;
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import com.jogamp.opencl.CLProgram.Status;
@@ -39,7 +40,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.FloatBuffer;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Rule;
 import org.junit.Test;
@@ -313,7 +316,76 @@ public class CLProgramTest {
             context.release();
         }
 
-    } 
+    }
+
+    @Test
+    public void kernelVectorArgsTest() {
+
+        String source =
+                "kernel void vector(global float * out,\n"
+              + "                   const float v1,\n"
+              + "                   const float2 v2,\n"
+              + "//                   const float3 v3,\n" // nv does not support float3
+              + "                   const float4 v4,\n"
+              + "                   const float8 v8) {\n"
+              + "    out[0] = v1;\n"
+
+              + "    out[1] = v2.x;\n"
+              + "    out[2] = v2.y;\n"
+
+              + "    out[3] = v4.x;\n"
+              + "    out[4] = v4.y;\n"
+              + "    out[5] = v4.z;\n"
+              + "    out[6] = v4.w;\n"
+
+              + "    out[ 7] = v8.s0;\n"
+              + "    out[ 8] = v8.s1;\n"
+              + "    out[ 9] = v8.s2;\n"
+              + "    out[10] = v8.s3;\n"
+              + "    out[11] = v8.s4;\n"
+              + "    out[12] = v8.s5;\n"
+              + "    out[13] = v8.s6;\n"
+              + "    out[14] = v8.s7;\n"
+              + "}\n";
+
+        CLContext context = CLContext.create();
+
+        try{
+            CLProgram program = context.createProgram(source).build();
+            CLKernel kernel = program.createCLKernel("vector");
+
+            CLBuffer<FloatBuffer> buffer = context.createFloatBuffer(15, CLBuffer.Mem.WRITE_ONLY);
+            
+            final int seed = 7;
+            Random rnd = new Random(seed);
+            
+            kernel.putArg(buffer);
+            kernel.putArg(rnd.nextFloat());
+            kernel.putArg(rnd.nextFloat(), rnd.nextFloat());
+//            kernel.putArg(rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat()); // nv does not support float3
+            kernel.putArg(rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat());
+            kernel.putArg(TestUtils.fillBuffer(Buffers.newDirectFloatBuffer(8), seed));
+
+            CLCommandQueue queue = context.getMaxFlopsDevice().createCommandQueue();
+            queue.putTask(kernel).putReadBuffer(buffer, true);
+
+            FloatBuffer out = buffer.getBuffer();
+
+            rnd = new Random(seed);
+            for(int i = 0; i < 7; i++) {
+                assertEquals(rnd.nextFloat(), out.get(), 0.01f);
+            }
+
+            rnd = new Random(seed);
+            for(int i = 0; i < 8; i++) {
+                assertEquals(rnd.nextFloat(), out.get(), 0.01f);
+            }
+
+        }finally{
+            context.release();
+        }
+
+    }
 
     @Test
     public void createAllKernelsTest() {

@@ -45,7 +45,24 @@ import static com.jogamp.common.os.Platform.*;
  * applied to any function in a program. A kernel object encapsulates the specific <code>kernel</code>
  * function declared in a program and the argument values to be used when executing this
  * <code>kernel</code> function.
- * CLKernel is not threadsafe.
+ * <p>
+ * Example:
+ * <pre>
+ * CLKernel addKernel = program.createCLKernel("add");
+ * addKernel.setArgs(clBufferA, clBufferB);
+ * ...
+ * queue.putEnqueue1DKernel(addKernel, 0, clBufferA.getSize(), 0);
+ * </pre>
+ * CLKernel provides utility methods for setting vector types (float4, int2...) with up to 4 elements. Larger
+ * vectors like float16 can be set using {@link #setArg(int, java.nio.Buffer)}.
+ *
+ * Arguments pointing to {@link CLBuffer}s or {@link CLImage}s can be set using {@link #setArg(int, com.jogamp.opencl.CLMemory) }
+ * or its relative putArg(..) methods.
+ * </p>
+ * <p>
+ * CLKernel is not threadsafe. However it is perfectly safe to create a new instance of a CLKernel for every
+ * involved Thread.
+ * </p>
  * @see CLProgram#createCLKernel(java.lang.String)
  * @see CLProgram#createCLKernels()
  * @author Michael Bien
@@ -71,7 +88,7 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         super(program.getContext(), id);
 
         this.program = program;
-        this.buffer = Buffers.newDirectByteBuffer((is32Bit()?4:8)*3);
+        this.buffer = Buffers.newDirectByteBuffer(8*4);
 
         binding = program.getPlatform().getKernelBinding();
 
@@ -99,10 +116,10 @@ public class CLKernel extends CLObjectResource implements Cloneable {
 
     }
 
-//    public CLKernel putArg(Buffer value) {
-//        setArg(argIndex++, value);
-//        return this;
-//    }
+    public CLKernel putArg(Buffer value) {
+        setArg(argIndex++, value);
+        return this;
+    }
     
     public CLKernel putArg(CLMemory<?> value) {
         setArg(argIndex, value);
@@ -116,8 +133,44 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
+    public CLKernel putArg(short x, short y) {
+        setArg(argIndex, x, y);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(short x, short y, short z) {
+        setArg(argIndex, x, y, z);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(short x, short y, short z, short w) {
+        setArg(argIndex, x, y, z, w);
+        argIndex++;
+        return this;
+    }
+
     public CLKernel putArg(int value) {
         setArg(argIndex, value);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(int x, int y) {
+        setArg(argIndex, x, y);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(int x, int y, int z) {
+        setArg(argIndex, x, y, z);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(int x, int y, int z, int w) {
+        setArg(argIndex, x, y, z, w);
         argIndex++;
         return this;
     }
@@ -128,14 +181,68 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
+    public CLKernel putArg(long x, long y) {
+        setArg(argIndex, x, y);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(long x, long y, long z) {
+        setArg(argIndex, x, y, z);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(long x, long y, long z, long w) {
+        setArg(argIndex, x, y, z, w);
+        argIndex++;
+        return this;
+    }
+
     public CLKernel putArg(float value) {
         setArg(argIndex, value);
         argIndex++;
         return this;
     }
 
+    public CLKernel putArg(float x, float y) {
+        setArg(argIndex, x, y);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(float x, float y, float z) {
+        setArg(argIndex, x, y, z);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(float x, float y, float z, float w) {
+        setArg(argIndex, x, y, z, w);
+        argIndex++;
+        return this;
+    }
+
     public CLKernel putArg(double value) {
         setArg(argIndex, value);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(double x, double y) {
+        setArg(argIndex, x, y);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(double x, double y, double z) {
+        setArg(argIndex, x, y, z);
+        argIndex++;
+        return this;
+    }
+
+    public CLKernel putArg(double x, double y, double z, double w) {
+        setArg(argIndex, x, y, z, w);
         argIndex++;
         return this;
     }
@@ -167,10 +274,13 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return argIndex;
     }
 
-//    public CLKernel setArg(int argumentIndex, Buffer value) {
-//        setArgument(argumentIndex, CLMemory.sizeOfBufferElem(value)*value.capacity(), value);
-//        return this;
-//    }
+    public CLKernel setArg(int argumentIndex, Buffer value) {
+        if(!value.isDirect()) {
+            throw new IllegalArgumentException("buffer must be direct.");
+        }
+        setArgument(argumentIndex, Buffers.sizeOfBufferElem(value)*value.remaining(), value);
+        return this;
+    }
 
     public CLKernel setArg(int argumentIndex, CLMemory<?> value) {
         setArgument(argumentIndex, is32Bit()?4:8, wrap(value.ID));
@@ -182,8 +292,38 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
+    public CLKernel setArg(int argumentIndex, short x, short y) {
+        setArgument(argumentIndex, 2*2, wrap(x, y));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, short x, short y, short z) {
+        setArgument(argumentIndex, 2*3, wrap(x, y, z));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, short x, short y, short z, short w) {
+        setArgument(argumentIndex, 2*4, wrap(x, y, z, w));
+        return this;
+    }
+
     public CLKernel setArg(int argumentIndex, int value) {
         setArgument(argumentIndex, 4, wrap(value));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, int x, int y) {
+        setArgument(argumentIndex, 4*2, wrap(x, y));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, int x, int y, int z) {
+        setArgument(argumentIndex, 4*3, wrap(x, y, z));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, int x, int y, int z, int w) {
+        setArgument(argumentIndex, 4*4, wrap(x, y, z, w));
         return this;
     }
 
@@ -196,8 +336,50 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
+    public CLKernel setArg(int argumentIndex, long x, long y) {
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4*2, wrap((int)x, (int)y));
+        }else{
+            setArgument(argumentIndex, 8*2, wrap(x, y));
+        }
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, long x, long y, long z) {
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4*3, wrap((int)x, (int)y, (int)z));
+        }else{
+            setArgument(argumentIndex, 8*3, wrap(x, y, z));
+        }
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, long x, long y, long z, long w) {
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4*4, wrap((int)x, (int)y, (int)z, (int)w));
+        }else{
+            setArgument(argumentIndex, 8*4, wrap(x, y, z, w));
+        }
+        return this;
+    }
+
     public CLKernel setArg(int argumentIndex, float value) {
         setArgument(argumentIndex, 4, wrap(value));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, float x, float y) {
+        setArgument(argumentIndex, 4*2, wrap(x, y));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, float x, float y, float z) {
+        setArgument(argumentIndex, 4*3, wrap(x, y, z));
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, float x, float y, float z, float w) {
+        setArgument(argumentIndex, 4*4, wrap(x, y, z, w));
         return this;
     }
 
@@ -206,6 +388,33 @@ public class CLKernel extends CLObjectResource implements Cloneable {
             setArgument(argumentIndex, 4, wrap((float)value));
         }else{
             setArgument(argumentIndex, 8, wrap(value));
+        }
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, double x, double y) {
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4*2, wrap((float)x, (float)y));
+        }else{
+            setArgument(argumentIndex, 8*2, wrap(x, y));
+        }
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, double x, double y, double z) {
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4*3, wrap((float)x, (float)y, (float)z));
+        }else{
+            setArgument(argumentIndex, 8*3, wrap(x, y, z));
+        }
+        return this;
+    }
+
+    public CLKernel setArg(int argumentIndex, double x, double y, double z, double w) {
+        if(force32BitArgs) {
+            setArgument(argumentIndex, 4*4, wrap((float)x, (float)y, (float)z, (float)w));
+        }else{
+            setArgument(argumentIndex, 8*4, wrap(x, y, z, w));
         }
         return this;
     }
@@ -238,6 +447,8 @@ public class CLKernel extends CLObjectResource implements Cloneable {
                 setArg(i, (Float)value);
             }else if(value instanceof Double) {
                 setArg(i, (Double)value);
+            }else if(value instanceof Buffer) {
+                setArg(i, (Buffer)value);
             }else{
                 throw new IllegalArgumentException(value + " is not a valid argument.");
             }
@@ -291,20 +502,80 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return buffer.putFloat(0, value);
     }
 
+    private Buffer wrap(float a, float b) {
+        return buffer.putFloat(0, a).putFloat(4, b);
+    }
+
+    private Buffer wrap(float a, float b, float c) {
+        return buffer.putFloat(0, a).putFloat(4, b).putFloat(8, c);
+    }
+
+    private Buffer wrap(float a, float b, float c, float d) {
+        return buffer.putFloat(0, a).putFloat(4, b).putFloat(8, c).putFloat(12, d);
+    }
+
     private Buffer wrap(double value) {
         return buffer.putDouble(0, value);
+    }
+
+    private Buffer wrap(double a, double b) {
+        return buffer.putDouble(0, a).putDouble(8, b);
+    }
+
+    private Buffer wrap(double a, double b, double c) {
+        return buffer.putDouble(0, a).putDouble(8, b).putDouble(16, c);
+    }
+
+    private Buffer wrap(double a, double b, double c, double d) {
+        return buffer.putDouble(0, a).putDouble(8, b).putDouble(16, c).putDouble(24, d);
     }
 
     private Buffer wrap(short value) {
         return buffer.putShort(0, value);
     }
 
+    private Buffer wrap(short a, short b) {
+        return buffer.putShort(0, a).putShort(2, b);
+    }
+
+    private Buffer wrap(short a, short b, short c) {
+        return buffer.putShort(0, a).putShort(2, b).putShort(4, c);
+    }
+
+    private Buffer wrap(short a, short b, short c, short d) {
+        return buffer.putShort(0, a).putShort(2, b).putShort(4, c).putShort(6, d);
+    }
+
     private Buffer wrap(int value) {
         return buffer.putInt(0, value);
     }
 
+    private Buffer wrap(int a, int b) {
+        return buffer.putInt(0, a).putInt(4, b);
+    }
+
+    private Buffer wrap(int a, int b, int c) {
+        return buffer.putInt(0, a).putInt(4, b).putInt(8, c);
+    }
+
+    private Buffer wrap(int a, int b, int c, int d) {
+        return buffer.putInt(0, a).putInt(4, b).putInt(8, c).putInt(12, d);
+    }
+
     private Buffer wrap(long value) {
         return buffer.putLong(0, value);
+    }
+
+    private Buffer wrap(long a, long b) {
+        return buffer.putLong(0, a).putLong(8, b);
+    }
+
+    private Buffer wrap(long a, long b, long c) {
+        return buffer.putLong(0, a).putLong(8, b).putLong(16, c);
+    }
+
+    private Buffer wrap(long a, long b, long c, long d) {
+        return buffer.putLong(0, a).putLong(8, b).putLong(16, c).putLong(24, d);
     }
 
     /**

@@ -132,16 +132,16 @@ public class CLMultiContextTest {
             CLSimpleContextFactory factory = CLQueueContextFactory.createSimple(programSource);
             CLCommandQueuePool<CLSimpleQueueContext> pool = CLCommandQueuePool.create(factory, mc);
 
-            assertTrue(pool.getSize() > 0);
+            assertTrue(pool.getPoolSize() > 0);
 
             final int slice = 64;
             final int tasksPerQueue = 10;
-            final int taskCount = pool.getSize() * tasksPerQueue;
+            final int taskCount = pool.getPoolSize() * tasksPerQueue;
             
             IntBuffer data = Buffers.newDirectIntBuffer(slice*taskCount);
             List<CLTestTask> tasks = createTasks(data, taskCount, slice);
 
-            out.println("invoking "+tasks.size()+" tasks on "+pool.getSize()+" queues");
+            out.println("invoking "+tasks.size()+" tasks on "+pool.getPoolSize()+" queues");
 
             // blocking invoke
             List<Future<IntBuffer>> results = pool.invokeAll(tasks);

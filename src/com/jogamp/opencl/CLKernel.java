@@ -632,7 +632,7 @@ public class CLKernel extends CLObjectResource implements Cloneable {
      * Releases all resources of this kernel from its context.
      */
     @Override
-    public void release() {
+    public synchronized void release() {
         super.release();
         int ret = binding.clReleaseKernel(ID);
         program.onKernelReleased(this);

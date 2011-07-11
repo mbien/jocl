@@ -70,11 +70,10 @@ public class CLProgram extends CLObjectResource {
     private Map<CLDevice, Status> buildStatusMap;
 
     private boolean executable;
-    private boolean released;
 
     private CLProgram(CLContext context, long id) {
         super(context, id);
-        this.kernels = new HashSet<CLKernel>();
+        this.kernels = Collections.synchronizedSet(new HashSet<CLKernel>());
         this.binding = context.getPlatform().getProgramBinding();
     }
     
@@ -486,13 +485,12 @@ public class CLProgram extends CLObjectResource {
      * Releases this program with its kernels.
      */
     @Override
-    public void release() {
+    public synchronized void release() {
 
         super.release();
         releaseKernels();
 
         executable = false;
-        released = true;
         buildStatusMap = null;
         
         int ret = binding.clReleaseProgram(ID);
@@ -503,11 +501,15 @@ public class CLProgram extends CLObjectResource {
     }
 
     private void releaseKernels() {
-        if(!kernels.isEmpty()) {
-            // copy to array to prevent concurrent modification exception
-            CLKernel[] array = kernels.toArray(new CLKernel[kernels.size()]);
-            for (CLKernel kernel : array) {
-                kernel.release();
+        synchronized(kernels) {
+            if(!kernels.isEmpty()) {
+                // copy to array to prevent concurrent modification exception
+                CLKernel[] array = kernels.toArray(new CLKernel[kernels.size()]);
+                for (CLKernel kernel : array) {
+                    if(!kernel.isReleased()) {
+                        kernel.release();
+                    }
+                }
             }
         }
     }

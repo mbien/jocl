@@ -127,7 +127,7 @@ public class CLBuffer<B extends Buffer> extends CLMemory<B> {
     }
 
     @Override
-    public void release() {
+    public synchronized void release() {
         if(childs != null) {
             while(!childs.isEmpty()) {
                 childs.get(0).release();

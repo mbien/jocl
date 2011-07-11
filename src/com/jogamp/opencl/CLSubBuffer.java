@@ -57,7 +57,7 @@ public class CLSubBuffer<B extends Buffer> extends CLBuffer<B> {
     }
 
     @Override
-    public void release() {
+    public synchronized void release() {
         parent.onReleaseSubBuffer(this);
         super.release();
     }

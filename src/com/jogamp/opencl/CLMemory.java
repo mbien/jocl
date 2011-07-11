@@ -221,7 +221,7 @@ public abstract class CLMemory <B extends Buffer> extends CLObjectResource {
     }
 
     @Override
-    public void release() {
+    public synchronized void release() {
         super.release();
         int ret = binding.clReleaseMemObject(ID);
         context.onMemoryReleased(this);

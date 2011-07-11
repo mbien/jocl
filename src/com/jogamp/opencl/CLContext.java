@@ -510,13 +510,27 @@ public class CLContext extends CLObjectResource {
     public void removeCLErrorHandler(CLErrorHandler handler) {
         errorHandler.removeHandler(handler);
     }
-    
+
+    /*
+     * We have a hierarchy of resources and we don't want any
+     * global lock in the create or release methods. context.release() releases the whole hierarchy
+     * but in the meantime a other thread could have already release a child resource.
+     */
     private void release(Collection<? extends CLResource> resources) {
         // resources remove themselves when released, see above
         if(!resources.isEmpty()) {
-            CLResource[] array = resources.toArray(new CLResource[resources.size()]);
+            // copy to workaround concurrent modification exceptions
+            CLResource[] array = null;
+            synchronized(resources) {
+                array = resources.toArray(new CLResource[resources.size()]);
+            }
             for (CLResource resource : array) {
-                resource.release();
+                synchronized(resource) {
+                    // released==true can only happen if an other thread released the resource while we where iterating
+                    if(!resource.isReleased()) {
+                        resource.release();
+                    }
+                }
             }
         }
     }

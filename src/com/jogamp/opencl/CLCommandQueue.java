@@ -1796,7 +1796,7 @@ public class CLCommandQueue extends CLObjectResource {
     }
 
     @Override
-    public void release() {
+    public synchronized void release() {
         super.release();
         int ret = cl.clReleaseCommandQueue(ID);
         context.onCommandQueueReleased(device, this);

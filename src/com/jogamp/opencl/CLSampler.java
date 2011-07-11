@@ -79,7 +79,7 @@ public class CLSampler extends CLObjectResource {
     }
 
     @Override
-    public void release() {
+    public synchronized void release() {
         super.release();
         int ret = binding.clReleaseSampler(ID);
         context.onSamplerReleased(this);

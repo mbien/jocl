@@ -11,7 +11,7 @@ import com.jogamp.common.AutoCloseable;
  */
 abstract class CLObjectResource extends CLObject implements CLResource, AutoCloseable {
 
-    private boolean released;
+    protected volatile boolean released;
 
     public CLObjectResource(long ID) {
         super(ID);

@@ -10,8 +10,7 @@ import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLKernel;
 import com.jogamp.opencl.CLPlatform;
-import com.jogamp.opencl.util.concurrent.CLQueueContext.CLSimpleQueueContext;
-import com.jogamp.opencl.util.concurrent.CLQueueContextFactory.CLSimpleContextFactory;
+import com.jogamp.opencl.util.concurrent.CLQueueContext.CLSingleProgramQueueContext;
 import java.nio.IntBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -69,16 +68,23 @@ public class CLMultiContextTest {
         + "    array[index]++;                                       \n"
         + "}                                                         \n";
 
-    private final class CLTestTask implements CLTask<CLSimpleQueueContext, IntBuffer> {
+    private final class CLTestTask extends CLTask<CLSingleProgramQueueContext, IntBuffer> {
 
         private final IntBuffer data;
+        private final String source;
 
-        public CLTestTask(IntBuffer buffer) {
+        public CLTestTask(String source, IntBuffer buffer) {
             this.data = buffer;
+            this.source = source;
         }
 
         @Override
-        public IntBuffer execute(CLSimpleQueueContext qc) {
+        public CLSingleProgramQueueContext createQueueContext(CLCommandQueue queue) {
+            return new CLSingleProgramQueueContext(queue, source);
+        }
+
+        @Override
+        public IntBuffer execute(CLSingleProgramQueueContext qc) {
             
             CLCommandQueue queue = qc.getQueue();
             CLContext context = qc.getCLContext();
@@ -110,14 +116,19 @@ public class CLMultiContextTest {
             return data;
         }
 
+        @Override
+        public Object getContextKey() {
+            return source.hashCode();
+        }
+
     }
 
-    private List<CLTestTask> createTasks(IntBuffer data, int taskCount, int slice) {
+    private List<CLTestTask> createTasks(String source, IntBuffer data, int taskCount, int slice) {
         List<CLTestTask> tasks = new ArrayList<CLTestTask>(taskCount);
         for (int i = 0; i < taskCount; i++) {
             IntBuffer subBuffer = Buffers.slice(data, i*slice, slice);
             assertEquals(slice, subBuffer.capacity());
-            tasks.add(new CLTestTask(subBuffer));
+            tasks.add(new CLTestTask(source, subBuffer));
         }
         return tasks;
     }
@@ -129,8 +140,7 @@ public class CLMultiContextTest {
 
         try {
 
-            CLSimpleContextFactory factory = CLQueueContextFactory.createSimple(programSource);
-            CLCommandQueuePool<CLSimpleQueueContext> pool = CLCommandQueuePool.create(factory, mc);
+            CLCommandQueuePool pool = CLCommandQueuePool.create(mc);
 
             assertTrue(pool.getPoolSize() > 0);
 
@@ -139,7 +149,7 @@ public class CLMultiContextTest {
             final int taskCount = pool.getPoolSize() * tasksPerQueue;
             
             IntBuffer data = Buffers.newDirectIntBuffer(slice*taskCount);
-            List<CLTestTask> tasks = createTasks(data, taskCount, slice);
+            List<CLTestTask> tasks = createTasks(programSource, data, taskCount, slice);
 
             out.println("invoking "+tasks.size()+" tasks on "+pool.getPoolSize()+" queues");
 
@@ -166,8 +176,8 @@ public class CLMultiContextTest {
             checkBuffer(3, data);
 
             // switching contexts using different program
-            factory = CLQueueContextFactory.createSimple(programSource.replaceAll("\\+\\+", "--"));
-            pool.switchContext(factory);
+            final String decrementProgramSource = programSource.replaceAll("\\+\\+", "--");
+            tasks = createTasks(decrementProgramSource, data, taskCount, slice);
             List<Future<IntBuffer>> results2 = pool.invokeAll(tasks);
             assertNotNull(results2);
             checkBuffer(2, data);
@@ -176,7 +186,7 @@ public class CLMultiContextTest {
             // we wait only for completion of a subset of tasks.
             // submit any
             data = Buffers.newDirectIntBuffer(slice*taskCount);
-            tasks = createTasks(data, taskCount, slice);
+            tasks = createTasks(decrementProgramSource, data, taskCount, slice);
 
             IntBuffer ret1 = pool.invokeAny(tasks);
             assertNotNull(ret1);
@@ -185,9 +195,9 @@ public class CLMultiContextTest {
 
             // completionservice take/any test
             data = Buffers.newDirectIntBuffer(slice*taskCount);
-            tasks = createTasks(data, taskCount, slice);
+            tasks = createTasks(decrementProgramSource, data, taskCount, slice);
 
-            CLTaskCompletionService<CLSimpleQueueContext, IntBuffer> service = new CLTaskCompletionService(pool);
+            CLTaskCompletionService<IntBuffer> service = new CLTaskCompletionService(pool);
             for (CLTestTask task : tasks) {
                 service.submit(task);
             }

@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * @see CompletionService
  * @author Michael Bien
  */
-public class CLTaskCompletionService<C extends CLQueueContext, R> {
+public class CLTaskCompletionService<R> {
 
     private final ExecutorCompletionService<R> service;
     private final CLCommandQueuePool pool;
@@ -25,7 +25,7 @@ public class CLTaskCompletionService<C extends CLQueueContext, R> {
      * task execution and a LinkedBlockingQueue with the capacity of {@link Integer#MAX_VALUE}
      * as a completion queue.
      */
-    public CLTaskCompletionService(CLCommandQueuePool<C> pool) {
+    public CLTaskCompletionService(CLCommandQueuePool pool) {
         this.service = new ExecutorCompletionService<R>(pool.getExcecutor());
         this.pool = pool;
     }
@@ -34,7 +34,7 @@ public class CLTaskCompletionService<C extends CLQueueContext, R> {
      * Creates an CLTaskCompletionService using the supplied pool for base
      * task execution the supplied queue as its completion queue.
      */
-    public CLTaskCompletionService(CLCommandQueuePool<C> pool, BlockingQueue queue) {
+    public CLTaskCompletionService(CLCommandQueuePool pool, BlockingQueue queue) {
         this.service = new ExecutorCompletionService<R>(pool.getExcecutor(), queue);
         this.pool = pool;
     }
@@ -44,7 +44,7 @@ public class CLTaskCompletionService<C extends CLQueueContext, R> {
      * results of the task. Upon completion, this task may be taken or polled.
      * @see CompletionService#submit(java.util.concurrent.Callable)
      */
-    public Future<R> submit(CLTask<? super C, R> task) {
+    public Future<R> submit(CLTask<? extends CLQueueContext, R> task) {
         return service.submit(pool.wrapTask(task));
     }
 

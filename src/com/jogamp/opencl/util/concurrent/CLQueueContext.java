@@ -40,15 +40,19 @@ public abstract class CLQueueContext implements CLResource {
      * A simple queue context holding a precompiled program and its kernels.
      * @author Michael Bien
      */
-    public static class CLSimpleQueueContext extends CLQueueContext {
+    public static class CLSingleProgramQueueContext extends CLQueueContext {
 
         public final CLProgram program;
         public final Map<String, CLKernel> kernels;
 
-        public CLSimpleQueueContext(CLCommandQueue queue, CLProgram program) {
+        public CLSingleProgramQueueContext(CLCommandQueue queue, CLProgram program) {
             super(queue);
             this.program = program;
             this.kernels = program.createCLKernels();
+        }
+
+        public CLSingleProgramQueueContext(CLCommandQueue queue, String... source) {
+            this(queue, queue.getContext().createProgram(source).build());
         }
 
         public Map<String, CLKernel> getKernels() {
@@ -65,7 +69,11 @@ public abstract class CLQueueContext implements CLResource {
 
         @Override
         public void release() {
-            program.release();
+            synchronized(program) {
+                if(!program.isReleased()) {
+                    program.release();
+                }
+            }
         }
 
         @Override

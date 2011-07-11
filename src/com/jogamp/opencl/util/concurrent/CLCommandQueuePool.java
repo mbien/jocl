@@ -9,7 +9,10 @@ import com.jogamp.opencl.CLResource;
 import com.jogamp.opencl.util.CLMultiContext;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -30,63 +33,46 @@ import java.util.concurrent.TimeoutException;
  * instead of {@link Callable}s and provides a per-queue context for resource sharing across all tasks of one queue.
  * @author Michael Bien
  */
-public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource {
+public class CLCommandQueuePool implements CLResource {
 
-    private List<CLQueueContext> contexts;
     private ThreadPoolExecutor excecutor;
     private FinishAction finishAction = FinishAction.DO_NOTHING;
     private boolean released;
+    private final List<CLCommandQueue> queues;
 
-    private CLCommandQueuePool(CLQueueContextFactory factory, Collection<CLCommandQueue> queues) {
-        this.contexts = initContexts(queues, factory);
+    private CLCommandQueuePool(Collection<CLCommandQueue> queues) {
+        this.queues = new ArrayList<CLCommandQueue>(queues);
         initExecutor();
-    }
-
-    private List<CLQueueContext> initContexts(Collection<CLCommandQueue> queues, CLQueueContextFactory factory) {
-        List<CLQueueContext> newContexts = new ArrayList<CLQueueContext>(queues.size());
-        
-        int index = 0;
-        for (CLCommandQueue queue : queues) {
-            
-            CLQueueContext old = null;
-            if(this.contexts != null && !this.contexts.isEmpty()) {
-                old = this.contexts.get(index++);
-                old.release();
-            }
-            
-            newContexts.add(factory.setup(queue, old));
-        }
-        return newContexts;
     }
 
     private void initExecutor() {
         BlockingQueue<Runnable> queue = new LinkedBlockingDeque<Runnable>();
-        QueueThreadFactory factory = new QueueThreadFactory(contexts);
-        int size = contexts.size();
+        QueueThreadFactory factory = new QueueThreadFactory(queues);
+        int size = queues.size();
         this.excecutor = new CLThreadPoolExecutor(size, size, 0L, TimeUnit.MILLISECONDS, queue, factory);
     }
 
-    public static <C extends CLQueueContext> CLCommandQueuePool<C> create(CLQueueContextFactory<C> factory, CLMultiContext mc, CLCommandQueue.Mode... modes) {
-        return create(factory, mc.getDevices(), modes);
+    public static CLCommandQueuePool create(CLMultiContext mc, CLCommandQueue.Mode... modes) {
+        return create(mc.getDevices(), modes);
     }
 
-    public static <C extends CLQueueContext> CLCommandQueuePool<C> create(CLQueueContextFactory<C> factory, Collection<CLDevice> devices, CLCommandQueue.Mode... modes) {
+    public static CLCommandQueuePool create(Collection<CLDevice> devices, CLCommandQueue.Mode... modes) {
         List<CLCommandQueue> queues = new ArrayList<CLCommandQueue>(devices.size());
         for (CLDevice device : devices) {
             queues.add(device.createCommandQueue(modes));
         }
-        return create(factory, queues);
+        return create(queues);
     }
 
-    public static <C extends CLQueueContext> CLCommandQueuePool create(CLQueueContextFactory<C> factory, Collection<CLCommandQueue> queues) {
-        return new CLCommandQueuePool(factory, queues);
+    public static CLCommandQueuePool create(Collection<CLCommandQueue> queues) {
+        return new CLCommandQueuePool(queues);
     }
 
     /**
      * Submits this task to the pool for execution returning its {@link Future}.
      * @see ExecutorService#submit(java.util.concurrent.Callable)
      */
-    public <R> Future<R> submit(CLTask<? super C, R> task) {
+    public <R> Future<R> submit(CLTask<? extends CLQueueContext, R> task) {
         return excecutor.submit(wrapTask(task));
     }
 
@@ -94,9 +80,9 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * Submits all tasks to the pool for execution and returns their {@link Future}.
      * Calls {@link #submit(com.jogamp.opencl.util.concurrent.CLTask)} for every task.
      */
-    public <R> List<Future<R>> submitAll(Collection<? extends CLTask<? super C, R>> tasks) {
+    public <R> List<Future<R>> submitAll(Collection<? extends CLTask<? extends CLQueueContext, R>> tasks) {
         List<Future<R>> futures = new ArrayList<Future<R>>(tasks.size());
-        for (CLTask<? super C, R> task : tasks) {
+        for (CLTask<? extends CLQueueContext, R> task : tasks) {
             futures.add(submit(task));
         }
         return futures;
@@ -106,8 +92,8 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * Submits all tasks to the pool for immediate execution (blocking) and returns their {@link Future} holding the result.
      * @see ExecutorService#invokeAll(java.util.Collection) 
      */
-    public <R> List<Future<R>> invokeAll(Collection<? extends CLTask<? super C, R>> tasks) throws InterruptedException {
-        List<TaskWrapper<C, R>> wrapper = wrapTasks(tasks);
+    public <R> List<Future<R>> invokeAll(Collection<? extends CLTask<? extends CLQueueContext, R>> tasks) throws InterruptedException {
+        List<TaskWrapper<R>> wrapper = wrapTasks(tasks);
         return excecutor.invokeAll(wrapper);
     }
 
@@ -115,8 +101,8 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * Submits all tasks to the pool for immediate execution (blocking) and returns their {@link Future} holding the result.
      * @see ExecutorService#invokeAll(java.util.Collection, long, java.util.concurrent.TimeUnit)
      */
-    public <R> List<Future<R>> invokeAll(Collection<? extends CLTask<? super C, R>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
-        List<TaskWrapper<C, R>> wrapper = wrapTasks(tasks);
+    public <R> List<Future<R>> invokeAll(Collection<? extends CLTask<? extends CLQueueContext, R>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+        List<TaskWrapper<R>> wrapper = wrapTasks(tasks);
         return excecutor.invokeAll(wrapper, timeout, unit);
     }
 
@@ -125,13 +111,13 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * All other unfinished but started tasks are cancelled.
      * @see ExecutorService#invokeAny(java.util.Collection)
      */
-    public <R> R invokeAny(Collection<? extends CLTask<? super C, R>> tasks) throws InterruptedException, ExecutionException {
-        List<TaskWrapper<C, R>> wrapper = wrapTasks(tasks);
+    public <R> R invokeAny(Collection<? extends CLTask<? extends CLQueueContext, R>> tasks) throws InterruptedException, ExecutionException {
+        List<TaskWrapper<R>> wrapper = wrapTasks(tasks);
         return excecutor.invokeAny(wrapper);
     }
 
-    /*public*/ CLTask<? super C, ?> takeCLTask() throws InterruptedException {
-        return ((CLFutureTask<? super C, ?>)excecutor.getQueue().take()).getCLTask();
+    /*public*/ CLTask<? extends CLQueueContext, ?> takeCLTask() throws InterruptedException {
+        return ((CLFutureTask<?>)excecutor.getQueue().take()).getCLTask();
     }
 
     /**
@@ -139,47 +125,32 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * All other unfinished but started tasks are cancelled.
      * @see ExecutorService#invokeAny(java.util.Collection, long, java.util.concurrent.TimeUnit)
      */
-    public <R> R invokeAny(Collection<? extends CLTask<? super C, R>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        List<TaskWrapper<C, R>> wrapper = wrapTasks(tasks);
+    public <R> R invokeAny(Collection<? extends CLTask<? super CLQueueContext, R>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        List<TaskWrapper<R>> wrapper = wrapTasks(tasks);
         return excecutor.invokeAny(wrapper, timeout, unit);
     }
 
-    <R> TaskWrapper<C, R> wrapTask(CLTask<? super C, R> task) {
+    <R> TaskWrapper<R> wrapTask(CLTask<? extends CLQueueContext, R> task) {
         return new TaskWrapper(task, finishAction);
     }
 
-    private <R> List<TaskWrapper<C, R>> wrapTasks(Collection<? extends CLTask<? super C, R>> tasks) {
-        List<TaskWrapper<C, R>> wrapper = new ArrayList<TaskWrapper<C, R>>(tasks.size());
-        for (CLTask<? super C, R> task : tasks) {
+    private <R> List<TaskWrapper<R>> wrapTasks(Collection<? extends CLTask<? extends CLQueueContext, R>> tasks) {
+        List<TaskWrapper<R>> wrapper = new ArrayList<TaskWrapper<R>>(tasks.size());
+        for (CLTask<? extends CLQueueContext, R> task : tasks) {
             if(task == null) {
                 throw new NullPointerException("at least one task was null");
             }
-            wrapper.add(new TaskWrapper<C, R>(task, finishAction));
+            wrapper.add(new TaskWrapper<R>((CLTask<CLQueueContext, R>)task, finishAction));
         }
         return wrapper;
-    }
-    
-    /**
-     * Switches the context of all queues - this operation can be expensive.
-     * Blocks until all tasks finish and sets up a new context for all queues.
-     * @return this
-     */
-    public <C extends CLQueueContext> CLCommandQueuePool switchContext(CLQueueContextFactory<C> factory) {
-        
-        excecutor.shutdown();
-        finishQueues(); // just to be sure
-        
-        contexts = initContexts(getQueues(), factory);
-        initExecutor();
-        return this;
     }
 
     /**
      * Calls {@link CLCommandQueue#flush()} on all queues.
      */
     public void flushQueues() {
-        for (CLQueueContext context : contexts) {
-            context.queue.flush();
+        for (CLCommandQueue queue : queues) {
+            queue.flush();
         }
     }
 
@@ -187,8 +158,8 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * Calls {@link CLCommandQueue#finish()} on all queues.
      */
     public void finishQueues() {
-        for (CLQueueContext context : contexts) {
-            context.queue.finish();
+        for (CLCommandQueue queue : queues) {
+            queue.finish();
         }
     }
 
@@ -202,16 +173,11 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
             throw new RuntimeException(getClass().getSimpleName()+" already released");
         }
         released = true;
-        excecutor.shutdownNow();
+        excecutor.shutdownNow(); // threads will cleanup CL resources on exit
         try {
             excecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             throw new RuntimeException(ex);
-        }finally{
-            for (CLQueueContext context : contexts) {
-                context.queue.finish().release();
-                context.release();
-            }
         }
     }
 
@@ -223,18 +189,14 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
      * Returns the command queues used in this pool.
      */
     public List<CLCommandQueue> getQueues() {
-        List<CLCommandQueue> queues = new ArrayList<CLCommandQueue>(contexts.size());
-        for (CLQueueContext context : contexts) {
-            queues.add(context.queue);
-        }
-        return queues;
+        return Collections.unmodifiableList(queues);
     }
 
     /**
      * Returns the size of this pool (number of command queues).
      */
     public int getPoolSize() {
-        return contexts.size();
+        return queues.size();
     }
 
     /**
@@ -284,16 +246,16 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
 
     @Override
     public String toString() {
-        return getClass().getSimpleName()+" [queues: "+contexts.size()+" on finish: "+finishAction+"]";
+        return getClass().getSimpleName()+" [queues: "+getPoolSize()+" on finish: "+finishAction+"]";
     }
 
     private static class QueueThreadFactory implements ThreadFactory {
 
-        private final List<CLQueueContext> context;
+        private final List<CLCommandQueue> queues;
         private int index;
 
-        private QueueThreadFactory(List<CLQueueContext> queues) {
-            this.context = queues;
+        private QueueThreadFactory(List<CLCommandQueue> queues) {
+            this.queues = queues;
             this.index = 0;
         }
 
@@ -303,7 +265,7 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
             SecurityManager sm = System.getSecurityManager();
             ThreadGroup group = (sm != null) ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
 
-            CLQueueContext queue = context.get(index);
+            CLCommandQueue queue = queues.get(index);
             QueueThread thread = new QueueThread(group, runnable, queue, index++);
             thread.setDaemon(true);
             
@@ -313,27 +275,52 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
     }
     
     private static class QueueThread extends Thread {
-        private final CLQueueContext context;
-        public QueueThread(ThreadGroup group, Runnable runnable, CLQueueContext context, int index) {
-            super(group, runnable, "queue-worker-thread-"+index+"["+context+"]");
-            this.context = context;
+
+        private final CLCommandQueue queue;
+        private final Map<Object, CLQueueContext> contextMap;
+
+        public QueueThread(ThreadGroup group, Runnable runnable, CLCommandQueue queue, int index) {
+            super(group, runnable, "queue-worker-thread-"+index+"["+queue+"]");
+            this.queue = queue;
+            this.contextMap = new HashMap<Object, CLQueueContext>();
         }
+
+        @Override
+        public void run() {
+            super.run();
+            //release threadlocal contexts
+            queue.finish();
+            for (CLQueueContext context : contextMap.values()) {
+                context.release();
+            }
+        }
+
     }
 
-    private static class TaskWrapper<C extends CLQueueContext, R> implements Callable<R> {
+    private static class TaskWrapper<R> implements Callable<R> {
 
-        private final CLTask<? super C, R> task;
+        private final CLTask<CLQueueContext, R> task;
         private final FinishAction mode;
         
-        private TaskWrapper(CLTask<? super C, R> task, FinishAction mode) {
+        private TaskWrapper(CLTask<CLQueueContext, R> task, FinishAction mode) {
             this.task = task;
             this.mode = mode;
         }
 
         @Override
         public R call() throws Exception {
-            CLQueueContext context = ((QueueThread)Thread.currentThread()).context;
-            R result = task.execute((C)context);
+
+            QueueThread thread = (QueueThread)Thread.currentThread();
+            
+            final Object key = task.getContextKey();
+
+            CLQueueContext context = thread.contextMap.get(key);
+            if(context == null) {
+                context = task.createQueueContext(thread.queue);
+                thread.contextMap.put(key, context);
+            }
+
+            R result = task.execute(context);
             if(mode.equals(FinishAction.FLUSH)) {
                 context.queue.flush();
             }else if(mode.equals(FinishAction.FINISH)) {
@@ -344,16 +331,16 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
 
     }
 
-    private static class CLFutureTask<C extends CLQueueContext, R> extends FutureTask<R> {
+    private static class CLFutureTask<R> extends FutureTask<R> {
 
-        private final TaskWrapper<C, R> wrapper;
+        private final TaskWrapper<R> wrapper;
 
-        public CLFutureTask(TaskWrapper<C, R> wrapper) {
+        public CLFutureTask(TaskWrapper<R> wrapper) {
             super(wrapper);
             this.wrapper = wrapper;
         }
 
-        public CLTask<? super C, R> getCLTask() {
+        public CLTask<? extends CLQueueContext, R> getCLTask() {
             return wrapper.task;
         }
 
@@ -366,9 +353,9 @@ public class CLCommandQueuePool<C extends CLQueueContext> implements CLResource 
         }
 
         @Override
-        protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-            TaskWrapper<CLQueueContext, T> wrapper = (TaskWrapper<CLQueueContext, T>)callable;
-            return new CLFutureTask<CLQueueContext, T>(wrapper);
+        protected <R> RunnableFuture<R> newTaskFor(Callable<R> callable) {
+            TaskWrapper<R> wrapper = (TaskWrapper<R>)callable;
+            return new CLFutureTask<R>(wrapper);
         }
 
     }

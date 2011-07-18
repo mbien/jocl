@@ -409,3 +409,36 @@ Java_com_jogamp_opencl_llb_impl_CLImpl_clSetMemObjectDestructorCallback0(JNIEnv 
 
     return _res;
 }
+
+/*   Java->C glue code:
+ *   Java package: com.jogamp.opencl.llb.impl.CLImpl
+ *    Java method: java.nio.ByteBuffer dispatch_clGetExtensionFunctionAddressImpl(java.lang.String func_name)
+ *     C function: void *  clGetExtensionFunctionAddress(const char *  func_name);
+ */
+JNIEXPORT jlong JNICALL
+Java_com_jogamp_opencl_llb_impl_CLImpl_dispatch_1clGetExtensionFunctionAddress1__Ljava_lang_String_2J(JNIEnv *env, jobject _unused,
+        jstring func_name, jlong procAddress) {
+
+    typedef void * (*_local_ARG)(const char * func_name);
+    _local_ARG ptr_clGetExtensionFunctionAddress;
+    const char* _strchars_func_name = NULL;
+    void * _res;
+
+    if (NULL != func_name) {
+        _strchars_func_name = (*env)->GetStringUTFChars(env, func_name, (jboolean*) NULL);
+        if (NULL == _strchars_func_name) {
+            (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/OutOfMemoryError"), "Failed to get UTF-8 chars for argument \"func_name\"");
+            return 0;
+        }
+    }
+
+    ptr_clGetExtensionFunctionAddress = (_local_ARG) (intptr_t) procAddress;
+    _res = (* ptr_clGetExtensionFunctionAddress) ((char *) _strchars_func_name);
+
+    if (NULL != func_name) {
+        (*env)->ReleaseStringUTFChars(env, func_name, _strchars_func_name);
+    }
+    if (NULL == _res) return 0;
+
+    return (jlong)_res;
+}

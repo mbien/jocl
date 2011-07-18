@@ -174,11 +174,6 @@ public class CLPlatform {
                 @Override
                 public long resolve(String name, DynamicLookupHelper lookup) {
 
-                    //FIXME workaround to fix a gluegen issue
-                    if(name.endsWith("Impl")) {
-                        name = name.substring(0, name.length() - "Impl".length());
-                    }
-
                     if(name.endsWith("KHR") || name.endsWith("EXT")) {
                         long address = ((CLImpl) cl).clGetExtensionFunctionAddress(name);
                         if(address != 0) {
@@ -203,7 +198,7 @@ public class CLPlatform {
                     }
 
                     //eagerly init function to query extension addresses (used in reset())
-                    table.initEntry("clGetExtensionFunctionAddressImpl", libOpenCL);
+                    table.initEntry("clGetExtensionFunctionAddress", libOpenCL);
                     table.reset(libOpenCL);
                     return null;
                 }

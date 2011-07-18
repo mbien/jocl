@@ -32,7 +32,6 @@
 package com.jogamp.opencl.llb.impl;
 
 import com.jogamp.common.nio.NativeSizeBuffer;
-import com.jogamp.common.os.Platform;
 import com.jogamp.common.util.LongLongHashMap;
 import com.jogamp.opencl.CLErrorHandler;
 import com.jogamp.opencl.CLException;
@@ -256,18 +255,22 @@ public class CLImpl extends CLAbstractImpl {
             int event_byte_offset, Object errcode_ret, int errcode_ret_byte_offset);
 
     /**
-     * Returns the extension function address for the given function name.
+     * Returns the address of a extension function with the supplied name.
      */
     public long clGetExtensionFunctionAddress(String name) {
-        ByteBuffer res = super.clGetExtensionFunctionAddressImpl(name);
-        if(res == null) {
-            return 0;
-        }else if (Platform.is32Bit()) {
-            return res.getInt();
-        } else {
-            return res.getLong();
+
+        final long address = addressTable._addressof_clGetExtensionFunctionAddress;
+
+        if (address == 0) {
+            throw new UnsupportedOperationException("Method not available");
         }
+
+        return dispatch_clGetExtensionFunctionAddress1(name, address);
     }
+
+    /** Entry point (through function pointer) to C language function: <br> <code> void *  {@native clGetExtensionFunctionAddress}(const char *  func_name); </code>    */
+    private native long dispatch_clGetExtensionFunctionAddress1(String func_name, long procAddress);
+
 
     public CLProcAddressTable getAddressTable() {
         return addressTable;

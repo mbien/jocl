@@ -28,6 +28,8 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.CLSubDevice.AffinityDomain;
+import com.jogamp.opencl.CLSubDevice.Partition;
 import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLMemory.GLObjectType;
 import com.jogamp.opencl.CLSampler.AddressingMode;
@@ -96,6 +98,14 @@ public class HighLevelBindingTest {
         }
         for (Capabilities e : Capabilities.values()) {
             assertEquals(e, Capabilities.valueOf(e.CAPS));
+        }
+
+        // CLSubDevice enums
+        for (Partition e : Partition.values()) {
+            assertEquals(e, Partition.valueOf(e.FLAG));
+        }
+        for (AffinityDomain e : AffinityDomain.values()) {
+            assertEquals(e, AffinityDomain.valueOf(e.TYPE));
         }
 
         // CLMemory enums
@@ -209,6 +219,60 @@ public class HighLevelBindingTest {
         }else{
             fail("please tell us about your hardware");
         }
+    }
+
+    @Test
+    public void subDeviceTest() {
+
+        out.println(" - - - highLevelTest; device fission - - - ");
+
+        CLPlatform platform = CLPlatform.getDefault(version(CL_1_1), type(CPU));
+
+        CLDevice[] devices = platform.listCLDevices();
+
+        for (CLDevice device : devices) {
+
+            out.println(device.getPartitionTypes());
+//            out.println(device.getAffinityDomains());
+
+            if(device.isFissionSupported() && device.getMaxComputeUnits() >= 2) {
+
+                CLSubDevice[] subs = device.createSubDevicesEqually(2);
+                assertNotNull(subs);
+                assertEquals(device.getMaxComputeUnits()/2, subs.length);
+
+                for (CLSubDevice sub : subs) {
+
+                    assertTrue(sub.isSubDevice());
+                    assertFalse(sub.isReleased());
+                    assertEquals(2, sub.getMaxComputeUnits());
+
+                    sub.release();
+                    assertTrue(sub.isReleased());
+                }
+
+                subs = device.createSubDevicesByCount(1, 1);
+                assertNotNull(subs);
+                assertEquals(2, subs.length);
+                for (CLSubDevice sub : subs) {
+                    sub.release();
+                }
+
+              /* does not work. looks like a driver bug... waiting for reply
+                subs = device.createSubDevicesByDomain(AffinityDomain.NEXT_FISSIONABLE);
+                assertNotNull(subs);
+                assertTrue(subs.length > 0);
+                for (CLSubDevice sub : subs) {
+                    sub.release();
+                }
+
+                CLSubDevice sub = device.createSubDeviceByIndex(0, 1);
+                assertNotNull(sub);
+                sub.release();
+             */
+            }
+        }
+
     }
 
     @Test

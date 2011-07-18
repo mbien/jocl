@@ -147,6 +147,9 @@ public class CLException extends RuntimeException {
             case CL_PLATFORM_NOT_FOUND_KHR:                 return "CL_PLATFORM_NOT_FOUND_KHR";
             case CL_MISALIGNED_SUB_BUFFER_OFFSET:             return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
             case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:  return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
+            case CL_DEVICE_PARTITION_FAILED_EXT:                return "CL_DEVICE_PARTITION_FAILED";
+            case CL_INVALID_PARTITION_COUNT_EXT:             return "CL_INVALID_PARTITION_COUNT";
+            case CL_INVALID_PARTITION_NAME_EXT:             return "CL_INVALID_PARTITION_NAME";
             default: return null;
         }
     }
@@ -204,6 +207,9 @@ public class CLException extends RuntimeException {
             case CL_PLATFORM_NOT_FOUND_KHR:                 return new CLPlatformNotFoundKhrException(message);
             case CL_MISALIGNED_SUB_BUFFER_OFFSET:             return new CLMisalignedSubBufferOffsetException(message);
             case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST:  return new CLExecStatusErrorForEventsInWaitListException(message);
+            case CL_DEVICE_PARTITION_FAILED_EXT:               return new CLDevicePartitionFailedException(message);
+            case CL_INVALID_PARTITION_COUNT_EXT:              return new CLInvalidPartitionCountException(message);
+            case CL_INVALID_PARTITION_NAME_EXT:              return new CLInvalidPartitionNameException(message);
             default: return null;
         }
     }
@@ -766,6 +772,39 @@ public class CLException extends RuntimeException {
         private static final long serialVersionUID = CLException.serialVersionUID+CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST;
         public CLExecStatusErrorForEventsInWaitListException(String message) {
             super(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST, "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST", message);
+        }
+    }
+
+    /**
+     * {@link CLException} thrown on CL.CL_DEVICE_PARTITION_FAILED_EXT errors.
+     * @author Michael Bien
+     */
+    public final static class CLDevicePartitionFailedException extends CLException {
+        private static final long serialVersionUID = CLException.serialVersionUID+CL_DEVICE_PARTITION_FAILED_EXT;
+        public CLDevicePartitionFailedException(String message) {
+            super(CL_DEVICE_PARTITION_FAILED_EXT, "CL_DEVICE_PARTITION_FAILED", message);
+        }
+    }
+
+    /**
+     * {@link CLException} thrown on CL.CL_INVALID_PARTITION_COUNT_EXT errors.
+     * @author Michael Bien
+     */
+    public final static class CLInvalidPartitionCountException extends CLException {
+        private static final long serialVersionUID = CLException.serialVersionUID+CL_INVALID_PARTITION_COUNT_EXT;
+        public CLInvalidPartitionCountException(String message) {
+            super(CL_INVALID_PARTITION_COUNT_EXT, "CL_INVALID_PARTITION_COUNT", message);
+        }
+    }
+
+    /**
+     * {@link CLException} thrown on CL.CL_INVALID_PARTITION_NAME_EXT errors.
+     * @author Michael Bien
+     */
+    public final static class CLInvalidPartitionNameException extends CLException {
+        private static final long serialVersionUID = CLException.serialVersionUID+CL_INVALID_PARTITION_NAME_EXT;
+        public CLInvalidPartitionNameException(String message) {
+            super(CL_INVALID_PARTITION_NAME_EXT, "CL_INVALID_PARTITION_NAME", message);
         }
     }
 

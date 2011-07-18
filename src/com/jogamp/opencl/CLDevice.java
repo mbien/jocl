@@ -28,9 +28,16 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.CLSubDevice.Partition;
+import com.jogamp.opencl.CLSubDevice.AffinityDomain;
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.common.nio.NativeSizeBuffer;
+import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.spi.CLInfoAccessor;
 import java.nio.ByteOrder;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -67,6 +74,85 @@ public class CLDevice extends CLObject {
         super(context, id);
         this.platform = context.getPlatform();
         this.deviceInfo = platform.getAccessorFactory().createDeviceInfoAccessor(platform.getDeviceBinding(), id);
+    }
+
+    /**
+     * Split the aggregate device into as many smaller aggregate devices as can be created, each containing N
+     * compute units. The value N is passed as the value accompanying this property.
+     * If N does not divide evenly into {@link #getMaxComputeUnits() } then the remaining compute units are
+     * not used.
+     */
+    public CLSubDevice[] createSubDevicesEqually(int computeUnitsPerDevice) {
+
+        LongBuffer props = Buffers.newDirectLongBuffer(3);
+        props.put(CL_DEVICE_PARTITION_EQUALLY_EXT).put(computeUnitsPerDevice).put(0).rewind();
+
+        return createSubDevices(props);
+    }
+
+    /**
+     * For each non-zero value in the list, a sub-device is created with N
+     * compute units in it.
+     */
+    public CLSubDevice[] createSubDevicesByCount(int... computeUnitsArray) {
+
+        if(computeUnitsArray.length == 0) {
+            throw new IllegalArgumentException("list was empty");
+        }
+
+        LongBuffer props = Buffers.newDirectLongBuffer(computeUnitsArray.length+3);
+        props.put(CL_DEVICE_PARTITION_BY_COUNTS_EXT);
+        for (int units : computeUnitsArray) {
+            props.put(units);
+        }
+        props.put(0).put(0).rewind();
+        return createSubDevices(props);
+    }
+
+    public CLSubDevice[] createSubDevicesByDomain(AffinityDomain domain) {
+
+        LongBuffer props = Buffers.newDirectLongBuffer(3);
+        props.put(CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN_EXT).put(domain.TYPE).put(0).rewind();
+        return createSubDevices(props);
+    }
+
+    /**
+     * Creates a devise from the supplied compute unit indices.
+     * An individual compute unit name may not appear more than once in the sub-device description.
+     */
+    public CLSubDevice createSubDeviceByIndex(int... computeUnitsIndexArray) {
+
+        if(computeUnitsIndexArray.length == 0) {
+            throw new IllegalArgumentException("list was empty");
+        }
+
+        LongBuffer props = Buffers.newDirectLongBuffer(computeUnitsIndexArray.length+3);
+        props.put(CL_DEVICE_PARTITION_BY_NAMES_EXT);
+        for (int units : computeUnitsIndexArray) {
+            props.put(units);
+        }
+        props.put(-1).put(0).rewind();
+        return createSubDevices(props)[0];
+    }
+
+    private CLSubDevice[] createSubDevices(LongBuffer props) {
+
+        CL cl = CLPlatform.getLowLevelCLInterface();
+
+        IntBuffer ib = Buffers.newDirectIntBuffer(1);
+        int ret = cl.clCreateSubDevicesEXT(ID, props, 0, null, ib);
+        CLException.checkForError(ret, "create sub devices failed");
+
+        int count = ib.get(0);
+        NativeSizeBuffer ids = NativeSizeBuffer.allocateDirect(count);
+        ret = cl.clCreateSubDevicesEXT(ID, props, count, ids, null);
+        CLException.checkForError(ret, "create sub devices failed");
+
+        CLSubDevice[] devices = new CLSubDevice[count];
+        for (int i = 0; i < devices.length; i++) {
+            devices[i] = CLSubDevice.createSubDevice(this, ids.get());
+        }
+        return devices;
     }
 
     public CLCommandQueue createCommandQueue() {
@@ -581,6 +667,50 @@ public class CLDevice extends CLObject {
     }
 
     /**
+     * Returns all supported partition types for device fission or an empty list if fission is not possible.
+     */
+    @CLProperty("CL_DEVICE_PARTITION_TYPES")
+    public EnumSet<Partition> getPartitionTypes() {
+
+        if(!isFissionSupported()) {
+            return EnumSet.noneOf(Partition.class);
+        }
+        LongBuffer types = getInfoLongs(CL_DEVICE_PARTITION_TYPES_EXT);
+
+        List<Partition> list = new ArrayList<Partition>();
+        while(types.hasRemaining()) {
+            Partition type = Partition.valueOf((int)types.get());
+            if(type != null) {
+                list.add(type);
+            }
+        }
+        return EnumSet.copyOf(list);
+    }
+
+    /**
+     * Returns all supported partition affinity domains which can be used to partition a device.
+     * @see #createSubDevicesByDomain(com.jogamp.opencl.CLSubDevice.AffinityDomain)
+     */
+    @CLProperty("CL_DEVICE_AFFINITY_DOMAINS")
+    public EnumSet<AffinityDomain> getAffinityDomains() {
+
+        if(!getPartitionTypes().contains(Partition.DOMAIN)) {
+            return EnumSet.noneOf(AffinityDomain.class);
+        }
+
+        LongBuffer types = getInfoLongs(CL_DEVICE_AFFINITY_DOMAINS_EXT);
+
+        List<AffinityDomain> list = new ArrayList<AffinityDomain>();
+        while(types.hasRemaining()) {
+            AffinityDomain type = AffinityDomain.valueOf((int)types.get());
+            if(type != null) {
+                list.add(type);
+            }
+        }
+        return EnumSet.copyOf(list);
+    }
+
+    /**
      * Returns true if this device is available.
      */
     @CLProperty("CL_DEVICE_AVAILABLE")
@@ -642,7 +772,6 @@ public class CLDevice extends CLObject {
     public boolean isGLMemorySharingSupported() {
         return isExtensionAvailable("cl_khr_gl_sharing") || isExtensionAvailable("cl_APPLE_gl_sharing");
     }
-
     /**
      * Returns true if the extension is supported on this device.
      * @see #getExtensions()
@@ -650,7 +779,22 @@ public class CLDevice extends CLObject {
     public boolean isExtensionAvailable(String extension) {
         return getExtensions().contains(extension);
     }
-    
+
+    /**
+     * Returns true if this device can be split up in sub-devices.
+     */
+    @CLProperty("cl_ext_device_fission")
+    public boolean isFissionSupported() {
+        return isExtensionAvailable("cl_ext_device_fission");
+    }
+
+    /**
+     * Returns false.
+     */
+    public boolean isSubDevice() {
+        return false;
+    }
+
     /**
      * Returns {@link ByteOrder#LITTLE_ENDIAN} or {@link ByteOrder#BIG_ENDIAN}.
      */
@@ -694,12 +838,27 @@ public class CLDevice extends CLObject {
         return deviceInfo;
     }
 
+    private LongBuffer getInfoLongs(int flag) {
+
+        CL cl = CLPlatform.getLowLevelCLInterface();
+
+        NativeSizeBuffer nsb = NativeSizeBuffer.allocateDirect(1);
+        int ret = cl.clGetDeviceInfo(ID, flag, 0, null, nsb);
+        CLException.checkForError(ret, "clGetDeviceInfo failed");
+
+        LongBuffer types = Buffers.newDirectByteBuffer((int)nsb.get(0)).asLongBuffer();
+        ret = cl.clGetDeviceInfo(ID, flag, types.capacity()*Buffers.SIZEOF_LONG, types, null);
+        CLException.checkForError(ret, "clGetDeviceInfo failed");
+
+        return types;
+    }
+
     @Override
     public String toString() {
-        return "CLDevice [id: " + ID
-                      + " name: " + getName()
-                      + " type: " + getType()
-                      + " profile: " + getProfile()+"]";
+        return getClass().getSimpleName()+" [id: " + ID
+                                         + " name: " + getName()
+                                         + " type: " + getType()
+                                         + " profile: " + getProfile()+"]";
     }
 
     @Override

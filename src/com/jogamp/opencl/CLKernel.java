@@ -247,8 +247,11 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
-    public CLKernel putNullArg(int size) {
-        setNullArg(argIndex, size);
+    /**
+     * Sets the size of a <i>local</i> kernel argument.
+     */
+    public CLKernel putArgSize(int size) {
+        setArgSize(argIndex, size);
         argIndex++;
         return this;
     }
@@ -419,7 +422,10 @@ public class CLKernel extends CLObjectResource implements Cloneable {
         return this;
     }
 
-    public CLKernel setNullArg(int argumentIndex, int size) {
+    /**
+     * Sets the size of a <i>local</i> kernel argument at the specified index.
+     */
+    public CLKernel setArgSize(int argumentIndex, int size) {
         setArgument(argumentIndex, size, null);
         return this;
     }

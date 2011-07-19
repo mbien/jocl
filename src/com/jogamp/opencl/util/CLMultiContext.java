@@ -68,7 +68,7 @@ public class CLMultiContext implements CLResource {
      * Creates a multi context with the specified devices.
      * The devices don't have to be from the same platform.
      */
-    public static CLMultiContext create(Collection<CLDevice> devices) {
+    public static CLMultiContext create(Collection<? extends CLDevice> devices) {
 
         if(devices.isEmpty()) {
             throw new IllegalArgumentException("device list was empty");
@@ -103,7 +103,7 @@ public class CLMultiContext implements CLResource {
      * filter devices; don't allow the same device to be used in more than one platform.
      * example: a CPU available via the AMD and Intel SDKs shouldn't end up in two contexts
      */
-    private static Map<CLPlatform, List<CLDevice>> filterPlatformConflicts(Collection<CLDevice> devices) {
+    private static Map<CLPlatform, List<CLDevice>> filterPlatformConflicts(Collection<? extends CLDevice> devices) {
 
         // FIXME: devicename-platform is used as unique device identifier - replace if we have something better
         

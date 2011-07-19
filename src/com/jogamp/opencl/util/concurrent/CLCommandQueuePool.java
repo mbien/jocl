@@ -56,7 +56,7 @@ public class CLCommandQueuePool implements CLResource {
         return create(mc.getDevices(), modes);
     }
 
-    public static CLCommandQueuePool create(Collection<CLDevice> devices, CLCommandQueue.Mode... modes) {
+    public static CLCommandQueuePool create(Collection<? extends CLDevice> devices, CLCommandQueue.Mode... modes) {
         List<CLCommandQueue> queues = new ArrayList<CLCommandQueue>(devices.size());
         for (CLDevice device : devices) {
             queues.add(device.createCommandQueue(modes));

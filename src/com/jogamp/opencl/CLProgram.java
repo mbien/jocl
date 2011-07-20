@@ -56,7 +56,7 @@ import static com.jogamp.common.nio.Buffers.*;
 /**
  * Represents a OpenCL program executed on one or more {@link CLDevice}s.
  * A CLProgram must be build using one of the build methods before creating {@link CLKernel}s.
- * @see CLContext#createProgram(java.io.InputStream)
+ * @see CLContext#createProgram(java.io.InputStream[])
  * @see CLContext#createProgram(java.lang.String)
  * @see CLContext#createProgram(java.util.Map)
  * @author Michael Bien

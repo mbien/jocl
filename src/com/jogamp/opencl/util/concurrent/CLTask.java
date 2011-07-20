@@ -17,8 +17,8 @@ public abstract class CLTask<C extends CLQueueContext, R> {
      * Creates a CLQueueContext for this task. A context may contain static resources
      * like OpenCL program binaries or pre allocated buffers. A context can be used by an group
      * of tasks identified by a common context key ({@link #getContextKey()}). This method
-     * won't be called if a context was already created by an previously executed task with the
-     * same context key as this task.
+     * won't be called if a context was already created by an previously executed task having the
+     * same context key.
      */
     public abstract C createQueueContext(CLCommandQueue queue);
 

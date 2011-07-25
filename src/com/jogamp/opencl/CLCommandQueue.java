@@ -259,7 +259,8 @@ public class CLCommandQueue extends CLObjectResource {
         putWriteBufferRect( writeBuffer, originX, originY, 0,
                                          hostX, hostY, 0,
                                          rangeX, rangeY, 1,
-                                         0, 0, 0, 0, blockingWrite, condition, events);
+                                         rowPitch, slicePitch, hostRowPitch, hostSlicePitch,
+                                         blockingWrite, condition, events);
         return this;
     }
 
@@ -336,7 +337,8 @@ public class CLCommandQueue extends CLObjectResource {
         putReadBufferRect(  readBuffer, originX, originY, 0,
                             hostX, hostY, 0,
                             rangeX, rangeY, 1,
-                            0, 0, 0, 0, blockingRead, condition, events);
+                            rowPitch, slicePitch, hostRowPitch, hostSlicePitch,
+                            blockingRead, condition, events);
         return this;
     }
 

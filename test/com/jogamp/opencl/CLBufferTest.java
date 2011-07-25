@@ -305,6 +305,66 @@ public class CLBufferTest {
     }
 
     @Test
+    public void bufferRectTest() {
+
+        out.println(" - - - buffer rect test - - - ");
+
+        CLPlatform platform = CLPlatform.getDefault(version(CL_1_1));
+        out.println(platform);
+
+        if(platform == null) {
+            out.println("aborting buffer rect test");
+            return;
+        }
+
+        CLContext context = CLContext.create(platform);
+        
+        try{
+
+            IntBuffer data = Buffers.newDirectIntBuffer(new int[]{ 2,2,1,
+                                                                2,2,1,
+                                                                1,1,1, });
+
+            CLBuffer<IntBuffer> buffer = context.createBuffer(data);
+            CLBuffer<IntBuffer> output = buffer.cloneWith(newDirectIntBuffer(9));
+
+            CLCommandQueue queue = context.getMaxFlopsDevice().createCommandQueue();
+
+            queue.putWriteBuffer(buffer, false)
+                 .putReadBufferRect(output,
+                                    0, 0,   // src offset
+                                    4, 1,   // dest offset
+                                    8, 2,   // range in bytes
+                                    12, 0,  // src row/slice pitch
+                                    12, 0,  // dst row/slice pitch
+                                    true, null, null);
+
+            printMatrix(output.getBuffer(), 3, 3);
+
+            IntBuffer expected = newDirectIntBuffer(new int[]{ 0,0,0,
+                                                            0,2,2,
+                                                            0,2,2, });
+            assertEquals(expected, output.getBuffer());
+
+        }finally{
+            context.release();
+        }
+
+    }
+
+    private void printMatrix(IntBuffer buffer, int width, int height) {
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                out.print(buffer.get()+" ");
+            }
+            out.println();
+        }
+        buffer.rewind();
+    }
+
+
+    @Test
     public void destructorCallbackTest() throws InterruptedException {
 
         out.println(" - - - destructorCallbackTest - - - ");
@@ -323,6 +383,7 @@ public class CLBufferTest {
             final CountDownLatch countdown = new CountDownLatch(1);
 
             buffer.registerDestructorCallback(new CLMemObjectListener() {
+                @Override
                 public void memoryDeallocated(CLMemory<?> mem) {
                     out.println("buffer released");
                     assertEquals(mem, buffer);

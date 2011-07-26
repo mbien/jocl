@@ -1628,6 +1628,30 @@ public class CLCommandQueue extends CLObjectResource {
     }
 
     /**
+     * Calls {@native clEnqueueNDRangeKernel}.
+     */
+    public CLCommandQueue putWork(CLWork work) {
+        this.putNDRangeKernel(work.getKernel(), work.getDimension(), work.getWorkOffset(), work.getWorkSize(), work.getGroupSize(), null, null);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueNDRangeKernel}.
+     */
+    public CLCommandQueue putWork(CLWork work, CLEventList events) {
+        this.putNDRangeKernel(work.getKernel(), work.getDimension(), work.getWorkOffset(), work.getWorkSize(), work.getGroupSize(), null, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueNDRangeKernel}.
+     */
+    public CLCommandQueue putWork(CLWork work, CLEventList condition, CLEventList events) {
+        this.putNDRangeKernel(work.getKernel(), work.getDimension(), work.getWorkOffset(), work.getWorkSize(), work.getGroupSize(), condition, events);
+        return this;
+    }
+
+    /**
      * Calls {@native clEnqueueAcquireGLObjects}.
      */
     public CLCommandQueue putAcquireGLObject(CLGLObject glObject) {

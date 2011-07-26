@@ -29,6 +29,7 @@
 package com.jogamp.opencl;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opencl.CLWork.CLWork1D;
 import com.jogamp.opencl.util.CLBuildConfiguration;
 import com.jogamp.opencl.util.CLProgramConfiguration;
 import com.jogamp.opencl.CLProgram.Status;
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -51,6 +53,8 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.*;
 import static java.lang.System.*;
 import static com.jogamp.opencl.CLProgram.CompilerOptions.*;
+import static com.jogamp.opencl.util.CLPlatformFilters.*;
+import static com.jogamp.opencl.CLVersion.*;
 
 /**
  *
@@ -409,6 +413,38 @@ public class CLProgramTest {
             kernels.get("foo").setArg(0, 42);
             kernels.get("bar").setArg(0, 3.14f);
 
+
+        }finally{
+            context.release();
+        }
+
+    }
+
+    @Test
+    public void workTest() throws IOException {
+
+        CLContext context = CLContext.create(CLPlatform.getDefault(version(CL_1_1)));
+
+        try{
+            CLProgram program = context.createProgram(CLProgramTest.class.getResourceAsStream("testkernels.cl")).build();
+
+            CLDevice device = context.getMaxFlopsDevice();
+            out.println(device);
+            CLCommandQueue queue = device.createCommandQueue();
+
+            CLBuffer<IntBuffer> buffer = context.createIntBuffer(20);
+
+            CLWork1D work = CLWork.create1D(program.createCLKernel("add"));
+            work.getKernel().setArgs(buffer, 5, buffer.getNIOCapacity());
+            work.setWorkSize(20, 1).optimizeFor(device);
+
+            queue.putWriteBuffer(buffer, false)
+                 .putWork(work)
+                 .putReadBuffer(buffer, true);
+
+            while(buffer.getBuffer().hasRemaining()) {
+                assertEquals(5, buffer.getBuffer().get());
+            }
 
         }finally{
             context.release();

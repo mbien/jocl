@@ -609,6 +609,15 @@ public class CLKernel extends CLObjectResource implements Cloneable {
     }
 
     /**
+     * Returns the preferred multiple of workgroup size for launch on the supplied device.
+     * This is a performance hint.
+     * @since OpenCL 1.1
+     */
+    public long getPreferredWorkGroupSizeMultiple(CLDevice device) {
+        return getWorkGroupInfo(device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE);
+    }
+
+    /**
      * Returns the work-group size specified by the <code>__attribute__((reqd_work_group_size(X, Y, Z)))</code> qualifier in kernel sources.
      * If the work-group size is not specified using the above attribute qualifier <code>new long[]{(0, 0, 0)}</code> is returned.
      * The returned array has always three elements.

@@ -60,7 +60,7 @@ public class CLTaskCompletionService<R> {
      * Creates an CLTaskCompletionService using the supplied pool for base
      * task execution the supplied queue as its completion queue.
      */
-    public CLTaskCompletionService(CLCommandQueuePool pool, BlockingQueue queue) {
+    public CLTaskCompletionService(CLCommandQueuePool pool, BlockingQueue<Future<R>> queue) {
         this.service = new ExecutorCompletionService<R>(pool.getExcecutor(), queue);
         this.pool = pool;
     }

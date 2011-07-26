@@ -35,6 +35,7 @@ public class CLMultiContext implements CLResource {
     /**
      * Creates a multi context with all devices of the specified platforms.
      */
+    @SuppressWarnings("unchecked")
     public static CLMultiContext create(CLPlatform... platforms) {
         return create(platforms, CLDeviceFilters.type(ALL));
     }

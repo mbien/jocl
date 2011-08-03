@@ -30,7 +30,7 @@
 package com.jogamp.opencl.util.concurrent;
 
 import com.jogamp.opencl.CLCommandQueue;
-import com.jogamp.opencl.util.concurrent.CLAbstractExecutorService.CommandQueueThread;
+import com.jogamp.opencl.util.concurrent.CLExecutorService.CommandQueueThread;
 import java.util.concurrent.RecursiveTask;
 
 /**

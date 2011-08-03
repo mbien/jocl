@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
  * </p>
  * @author Michael Bien
  */
-public class CLCommandQueuePool extends CLAbstractExecutorService {
+public class CLCommandQueuePool extends CLExecutorService {
 
 
     private CLCommandQueuePool(ExecutorService executor, List<CLCommandQueue> queues) {

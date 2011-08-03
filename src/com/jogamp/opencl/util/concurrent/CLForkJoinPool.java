@@ -50,7 +50,7 @@ import java.util.concurrent.Future;
  * @see CLRecursiveTask
  * @author Michael Bien
  */
-public class CLForkJoinPool extends CLAbstractExecutorService {
+public class CLForkJoinPool extends CLExecutorService {
 
     private CLForkJoinPool(ExecutorService executor, List<CLCommandQueue> queues) {
         super(executor, queues);

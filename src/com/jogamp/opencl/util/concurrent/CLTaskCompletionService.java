@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A {@link CompletionService} for {@link CLTask}s executed in a {@link CLAbstractExecutorService}.
+ * A {@link CompletionService} for {@link CLTask}s executed in a {@link CLExecutorService}.
  * It simplifies asynchronous execution of tasks with the same result type in a potentially shared pool.
  * @see CompletionService
  * @author Michael Bien
@@ -44,14 +44,14 @@ import java.util.concurrent.TimeUnit;
 public class CLTaskCompletionService<R> {
 
     private final ExecutorCompletionService<R> service;
-    private final CLAbstractExecutorService executor;
+    private final CLExecutorService executor;
 
     /**
      * Creates an CLTaskCompletionService using the supplied executor for base
      * task execution and a LinkedBlockingQueue with the capacity of {@link Integer#MAX_VALUE}
      * as a completion queue.
      */
-    public CLTaskCompletionService(CLAbstractExecutorService executor) {
+    public CLTaskCompletionService(CLExecutorService executor) {
         this.service = new ExecutorCompletionService<R>(executor.getExcecutor());
         this.executor = executor;
     }
@@ -60,7 +60,7 @@ public class CLTaskCompletionService<R> {
      * Creates an CLTaskCompletionService using the supplied executor for base
      * task execution the supplied queue as its completion queue.
      */
-    public CLTaskCompletionService(CLAbstractExecutorService pool, BlockingQueue<Future<R>> queue) {
+    public CLTaskCompletionService(CLExecutorService pool, BlockingQueue<Future<R>> queue) {
         this.service = new ExecutorCompletionService<R>(pool.getExcecutor(), queue);
         this.executor = pool;
     }

@@ -62,7 +62,7 @@ import java.util.concurrent.TimeoutException;
  * </p>
  * @author Michael Bien
  */
-public abstract class CLAbstractExecutorService implements CLResource {
+public abstract class CLExecutorService implements CLResource {
 
     protected final ExecutorService excecutor;
     protected final List<CLCommandQueue> queues;
@@ -70,7 +70,7 @@ public abstract class CLAbstractExecutorService implements CLResource {
     private FinishAction finishAction = FinishAction.DO_NOTHING;
     private boolean released;
 
-    protected CLAbstractExecutorService(ExecutorService executor, List<CLCommandQueue> queues) {
+    protected CLExecutorService(ExecutorService executor, List<CLCommandQueue> queues) {
         this.queues = queues;
         this.excecutor = executor;
     }

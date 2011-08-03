@@ -35,6 +35,7 @@ import java.util.concurrent.RecursiveTask;
 
 /**
  * A recursive decomposable task executed on a {@link CLCommandQueue}.
+ * The two main operations are {@link #fork()} for decomposing and {@link #join()} to wait for a forked task.
  * @see RecursiveTask
  * @author Michael Bien
  */

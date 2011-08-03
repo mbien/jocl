@@ -30,7 +30,10 @@
 package com.jogamp.opencl.util.concurrent;
 
 import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLContext;
+import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLResource;
+import com.jogamp.opencl.CLSubDevice;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +47,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Common superclass for Executor services supporting OpenCL driven tasks.
+ * A {@link ExecutorService} specialized for OpenCL driven tasks.
+ * <p>
+ * Implementations will usually use one dedicated thread for every {@link CLCommandQueue} in the pool.
+ * Every queue will usually work on a different {@link CLDevice}, which may or may not be in the same {@link CLContext}.
+ * </p>
+ * <p>
+ * For optimal performance it can be better to not use the CPU device the host application (and the OpenCL driver)
+ * is running on in the executor. Another option is to split the CPU into {@link CLSubDevice}s to control the used computing
+ * units of the device.
+ * </p>
+ * <p>
+ * A CLExecutorService must be {@link #release()}d to free up OpenCL resources if no longer needed.
+ * </p>
  * @author Michael Bien
  */
 public abstract class CLAbstractExecutorService implements CLResource {

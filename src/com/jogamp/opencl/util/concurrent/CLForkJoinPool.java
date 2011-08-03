@@ -43,7 +43,11 @@ import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.Future;
 
 /**
- * JOCL implementation of the {@link ForkJoinPool}.
+ * A multithreaded, fixed size pool of OpenCL command queues supporting fork-join tasks.
+ * <p>
+ * The usage is similar to {@link ForkJoinPool} but uses {@link CLRecursiveTask}s.
+ * </p>
+ * @see CLRecursiveTask
  * @author Michael Bien
  */
 public class CLForkJoinPool extends CLAbstractExecutorService {
@@ -101,6 +105,7 @@ public class CLForkJoinPool extends CLAbstractExecutorService {
     /**
      * Returns an estimate of the total number of tasks stolen from
      * one thread's work queue by another.
+     * @see ForkJoinPool#getStealCount()
      */
     public long getStealCount() {
         return getExcecutor().getStealCount();
@@ -110,6 +115,7 @@ public class CLForkJoinPool extends CLAbstractExecutorService {
      * Returns an estimate of the number of tasks submitted to this
      * pool that have not yet begun executing. This method may take
      * time proportional to the number of submissions.
+     * @see ForkJoinPool#getQueuedSubmissionCount()
      */
     public int getQueuedSubmissionCount() {
         return getExcecutor().getQueuedSubmissionCount();
@@ -122,6 +128,7 @@ public class CLForkJoinPool extends CLAbstractExecutorService {
      * an approximation, obtained by iterating across all threads in
      * the pool. This method may be useful for tuning task
      * granularities.
+     * @see ForkJoinPool#getQueuedTaskCount()
      */
     public long getQueuedTaskCount() {
         return getExcecutor().getQueuedTaskCount();
@@ -130,6 +137,7 @@ public class CLForkJoinPool extends CLAbstractExecutorService {
     /**
      * Returns {@code true} if there are any tasks submitted to this
      * pool that have not yet begun executing.
+     * @see ForkJoinPool#hasQueuedSubmissions()
      */
     public boolean hasQueuedSubmissions() {
         return getExcecutor().hasQueuedSubmissions();
@@ -143,6 +151,7 @@ public class CLForkJoinPool extends CLAbstractExecutorService {
      * conservative; it might not return {@code true} immediately upon
      * idleness of all threads, but will eventually become true if
      * threads remain inactive.
+     * @see ForkJoinPool#isQuiescent()
      */
     public boolean isQuiescent() {
         return getExcecutor().isQuiescent();

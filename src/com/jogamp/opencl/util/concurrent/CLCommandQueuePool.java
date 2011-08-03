@@ -49,9 +49,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A multithreaded, fixed size pool of OpenCL command queues.
+ * <p>
  * CLCommandQueuePool serves as a multiplexer distributing tasks over N queues usually connected to N devices.
  * The usage of this pool is similar to {@link ExecutorService} but it uses {@link CLTask}s
  * instead of {@link Callable}s and provides a per-queue context for resource sharing across all tasks of one queue.
+ * </p>
  * @author Michael Bien
  */
 public class CLCommandQueuePool extends CLAbstractExecutorService {

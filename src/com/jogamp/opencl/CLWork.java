@@ -44,8 +44,8 @@ import com.jogamp.common.nio.NativeSizeBuffer;
  */
 public class CLWork {
 
-    protected final int dimension;
-    protected final CLKernel kernel;
+    public final int dimension;
+    public final CLKernel kernel;
 
     protected final NativeSizeBuffer groupSize;
     protected final NativeSizeBuffer workSize;

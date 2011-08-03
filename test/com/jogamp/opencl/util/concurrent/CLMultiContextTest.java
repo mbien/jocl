@@ -223,7 +223,7 @@ public class CLMultiContextTest {
             data = Buffers.newDirectIntBuffer(slice*taskCount);
             tasks = createTasks(decrementProgramSource, data, taskCount, slice);
 
-            CLTaskCompletionService<IntBuffer> service = new CLTaskCompletionService(pool);
+            CLTaskCompletionService<IntBuffer> service = new CLTaskCompletionService<IntBuffer>(pool);
             for (CLTestTask task : tasks) {
                 service.submit(task);
             }

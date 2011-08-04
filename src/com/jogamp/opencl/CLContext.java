@@ -548,7 +548,7 @@ public class CLContext extends CLObjectResource {
             release(memoryObjects);
             release(samplers);
 
-            for (List<CLCommandQueue> queues : queuesMap.values()) {
+            for (List<CLCommandQueue> queues : new ArrayList<List<CLCommandQueue>>(queuesMap.values())) {
                 release(queues);
             }
 

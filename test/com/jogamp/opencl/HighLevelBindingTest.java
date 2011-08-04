@@ -228,6 +228,11 @@ public class HighLevelBindingTest {
 
         CLPlatform platform = CLPlatform.getDefault(version(CL_1_1), type(CPU));
 
+        if(platform == null) {
+            out.println("test aborted, no CPU for device fission found");
+            return;
+        }
+
         CLDevice[] devices = platform.listCLDevices();
 
         for (CLDevice device : devices) {

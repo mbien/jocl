@@ -28,12 +28,14 @@
     <!-- Pull in GlueGen cpptasks build file -->
     <import file="${gluegen.root}/make/gluegen-cpptasks.xml" />
     <import file="${gluegen.root}/make/jogamp-env.xml" />
+    <!--
     <import file="${gluegen.root}/make/jogamp-archivetasks.xml" />
     
     <condition property="build.archiveon" value="true">
         <isset property="c.dont.compile"/>
     </condition>
-    
+    -->
+
     <!-- -post-init is after all properties are imported -->
     <target name="-post-init" depends="jogamp.env.init,gluegen.cpptasks.detect.os">
         <property name="jocl.version" value="${jocl_base_version}-b${jocl.build.number}-${version.timestamp}" />
@@ -51,27 +53,27 @@
         </condition>
     </target>
     
-    <target name="prepare-jdk5-build" if="${enable.jdk7.features}">
-        
+    <target name="prepare-jdk5-build" unless="${enable.jdk7.features}">
+
+        <echo message="JDK7 features disabled"/>
+
+        <copy file="${basedir}/src/com/jogamp/common/AutoCloseable.jtemplate"
+            tofile="${basedir}/gensrc/java/com/jogamp/common/AutoCloseable.java" overwrite="true">
+        </copy>
+
+    </target>
+    
+    <target name="prepare-jdk7-build" if="${enable.jdk7.features}">
+
         <echo message="JDK7 features enabled"/>
-        
+
         <copy file="${basedir}/src/com/jogamp/common/AutoCloseable.jtemplate"
             tofile="${basedir}/gensrc/java/com/jogamp/common/AutoCloseable.java" overwrite="true">
             <filterchain>
                 <replaceregex pattern="/\*extends java.lang.AutoCloseable\*/" replace="extends java.lang.AutoCloseable"/>
             </filterchain>
         </copy>
-        
-    </target>
-    
-    <target name="prepare-jdk7-build" unless="${enable.jdk7.features}">
-        
-        <echo message="JDK7 features dissabled"/>
-        
-        <copy file="${basedir}/src/com/jogamp/common/AutoCloseable.jtemplate"
-            tofile="${basedir}/gensrc/java/com/jogamp/common/AutoCloseable.java" overwrite="true">
-        </copy>
-        
+
     </target>
         
     <target name="generate-binding" depends="prepare-build,preprocess-headers" unless="dont.generate">
@@ -317,7 +319,7 @@
         
         <!-- zip/7z it -->
         <zip        basedir="${dist.dir}/tmp" destfile="${dist.dir}/${dist.zip.name}.zip"/>
-        <archive.7z basedir="${dist.dir}/tmp" destfile="${dist.dir}/${dist.zip.name}.7z"  includes="*"/>
+        <!--archive.7z basedir="${dist.dir}/tmp" destfile="${dist.dir}/${dist.zip.name}.7z"  includes="*"/-->
         
         <delete dir="${dist.dir}/tmp"/>
     </target>
@@ -569,7 +571,7 @@
         <zip destfile="${dist.dir}/jocl-javadoc.zip">
             <zipfileset dir="${dist.javadoc.dir}" prefix="jocl/javadoc"/>
         </zip>
-        <archive.7z basedir="${dist.dir}/javadoc" destfile="${dist.dir}/jocl-javadoc.7z" includes="jocl/*"/>
+        <!--archive.7z basedir="${dist.dir}/javadoc" destfile="${dist.dir}/jocl-javadoc.7z" includes="jocl/*"/-->
     </target>
 
     <target name="test-file">
@@ -583,7 +585,7 @@
         <zip destfile="${dist.dir}/${dist.zip.name}-test-results-${build.node.name}.zip">
             <zipfileset dir="${build.test.results.dir}" prefix="${dist.zip.name}/test-results"/>
         </zip>
-        <archive.7z basedir="${build.test.results.dir}" destfile="${dist.dir}/${dist.zip.name}-test-results-${build.node.name}.7z" includes="*"/>
+        <!--archive.7z basedir="${build.test.results.dir}" destfile="${dist.dir}/${dist.zip.name}-test-results-${build.node.name}.7z" includes="*"/-->
         <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
     </target>
     

@@ -311,12 +311,6 @@
             <fileset dir="${dist.dir}" includes="*.properties"/>
         </copy>
         
-        <!-- native files, TODO: remove when no longer needed -->
-        <copy todir="${dist.dir}/tmp/${dist.zip.name}/lib" failonerror="false">
-            <fileset dir="${basedir}/${rootrel.build}/natives/jocl" excludes="*.xml"/>
-            <fileset dir="${jogl.root}/${rootrel.build}/lib" excludes="*.xml"/>
-        </copy>
-        
         <!-- zip/7z it -->
         <zip        basedir="${dist.dir}/tmp" destfile="${dist.dir}/${dist.zip.name}.zip"/>
         <!--archive.7z basedir="${dist.dir}/tmp" destfile="${dist.dir}/${dist.zip.name}.7z"  includes="*"/-->
@@ -334,11 +328,13 @@
     </target>
 
     <target name="jar.natives" unless="c.dont.compile">
-
-        <jar basedir="${natives.jocl.dir}/${namespace}" excludes="*.xml"
+        <mkdir dir="${natives.jocl.dir}/${namespace}/${os.and.arch}"/>
+        <copy todir="${natives.jocl.dir}/${namespace}/${os.and.arch}">
+            <fileset dir="${natives.jocl.dir}/${namespace}" includes="*jocl*" excludes="*.xml"/>
+        </copy>
+        <jar basedir="${natives.jocl.dir}/${namespace}" includes="${os.and.arch}/*" excludes="*.xml"
              destfile="${dist.jar.dir}/jocl-natives-${os.and.arch}.jar"
              manifest="${rootrel.build}/manifest.mf" />
-
     </target>
 
 

@@ -436,7 +436,11 @@ public class CLProgramTest {
 
             CLWork1D work = CLWork.create1D(program.createCLKernel("add"));
             work.getKernel().setArgs(buffer, 5, buffer.getNIOCapacity());
+
+            //optimal values
             work.setWorkSize(20, 1).optimizeFor(device);
+            assertEquals(work.workSize.get(0), 20);
+            assertNotSame(work.groupSize.get(0), 0);
 
             queue.putWriteBuffer(buffer, false)
                  .putWork(work)
@@ -445,6 +449,21 @@ public class CLProgramTest {
             while(buffer.getBuffer().hasRemaining()) {
                 assertEquals(5, buffer.getBuffer().get());
             }
+            buffer.getBuffer().rewind();
+
+            // driver choice
+            work.setWorkSize(20);
+            assertEquals(work.workSize.get(0), 20);
+            assertEquals(work.groupSize.get(0), 0);
+
+            queue.putWriteBuffer(buffer, false)
+                 .putWork(work)
+                 .putReadBuffer(buffer, true);
+
+            while(buffer.getBuffer().hasRemaining()) {
+                assertEquals(10, buffer.getBuffer().get());
+            }
+            buffer.getBuffer().rewind();
 
         }finally{
             context.release();

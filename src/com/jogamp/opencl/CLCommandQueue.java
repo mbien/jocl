@@ -1631,7 +1631,7 @@ public class CLCommandQueue extends CLObjectResource {
      * Calls {@native clEnqueueNDRangeKernel}.
      */
     public CLCommandQueue putWork(CLWork work) {
-        this.putNDRangeKernel(work.getKernel(), work.getDimension(), work.getWorkOffset(), work.getWorkSize(), work.getGroupSize(), null, null);
+        this.putWork(work, null, null);
         return this;
     }
 
@@ -1639,7 +1639,7 @@ public class CLCommandQueue extends CLObjectResource {
      * Calls {@native clEnqueueNDRangeKernel}.
      */
     public CLCommandQueue putWork(CLWork work, CLEventList events) {
-        this.putNDRangeKernel(work.getKernel(), work.getDimension(), work.getWorkOffset(), work.getWorkSize(), work.getGroupSize(), null, events);
+        this.putWork(work, null, events);
         return this;
     }
 
@@ -1647,7 +1647,14 @@ public class CLCommandQueue extends CLObjectResource {
      * Calls {@native clEnqueueNDRangeKernel}.
      */
     public CLCommandQueue putWork(CLWork work, CLEventList condition, CLEventList events) {
-        this.putNDRangeKernel(work.getKernel(), work.getDimension(), work.getWorkOffset(), work.getWorkSize(), work.getGroupSize(), condition, events);
+        NativeSizeBuffer groupSize = null;
+        if(                        work.getGroupSize().get(0) != 0
+         || work.dimension >= 2 && work.getGroupSize().get(1) != 0
+         || work.dimension == 3 && work.getGroupSize().get(2) != 0) {
+            groupSize = work.getGroupSize();
+        }
+
+        this.putNDRangeKernel(work.getKernel(), work.dimension, work.getWorkOffset(), work.getWorkSize(), groupSize, condition, events);
         return this;
     }
 

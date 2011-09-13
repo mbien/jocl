@@ -36,7 +36,6 @@ import com.jogamp.opencl.CLSampler.FilteringMode;
 import com.jogamp.common.nio.NativeSizeBuffer;
 import com.jogamp.opencl.llb.CLContextBinding;
 import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -282,12 +281,14 @@ public class CLContext extends CLObjectResource {
             throw new IllegalArgumentException("input stream array was empty");
 
         StringBuilder sb = new StringBuilder(2048*sources.length);
+        char[] buffer = new char[1024];
+        
         for (InputStream source : sources) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(source));
+            InputStreamReader reader = new InputStreamReader(source);
             try {
-                String line;
-                while ((line = reader.readLine()) != null)
-                    sb.append(line).append("\n");
+                int len = 0;
+                while ((len = reader.read(buffer)) != -1)
+                    sb.append(buffer, 0, len);
             } finally {
                 reader.close();
             }

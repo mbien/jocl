@@ -96,7 +96,7 @@ public class CLWork {
 
     protected void checkSize(long worksize, long groupsize) {
         if(groupsize != 0 && worksize%groupsize != 0) {
-            throw new IllegalArgumentException("worksize must be a multiple of groupsize");
+            throw new IllegalArgumentException("worksize must be a multiple of groupsize: {ws: "+worksize+", gs:"+groupsize+"}");
         }
     }
 
@@ -146,6 +146,27 @@ public class CLWork {
     public NativeSizeBuffer getWorkSize() {
         return workSize;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()+ " [" +kernel+toStr(workOffset)+toStr(workSize)+toStr(groupSize)+"]";
+    }
+
+    private String toStr(NativeSizeBuffer buffer) {
+        if(buffer == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        for (int i = buffer.position(); i < buffer.capacity(); i++) {
+            sb.append(buffer.get(i));
+            if(i != buffer.capacity()-1) {
+                sb.append(", ");
+            }
+        }
+        return sb.append('}').toString();
+    }
+
 
     /**
      * 1 dimensional {@link CLWork}.

@@ -28,6 +28,7 @@
 
 package com.jogamp.opencl;
 
+import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.llb.CL;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.CLDevice.Type;
@@ -38,7 +39,6 @@ import com.jogamp.opencl.llb.CLContextBinding;
 import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -284,14 +284,7 @@ public class CLContext extends CLObjectResource {
         char[] buffer = new char[1024];
         
         for (InputStream source : sources) {
-            InputStreamReader reader = new InputStreamReader(source);
-            try {
-                int len = 0;
-                while ((len = reader.read(buffer)) != -1)
-                    sb.append(buffer, 0, len);
-            } finally {
-                reader.close();
-            }
+            CLUtil.readStream(source, sb, buffer);
         }
 
         return createProgram(sb);

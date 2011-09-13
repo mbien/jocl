@@ -33,6 +33,9 @@ import com.jogamp.opencl.llb.CL;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
 import com.jogamp.opencl.CLProperty;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -79,6 +82,30 @@ public class CLUtil {
      */
     public static int clBoolean(boolean b) {
         return b ? CL.CL_TRUE : CL.CL_FALSE;
+    }
+
+    /**
+     * Reads chars from input stream and puts them into the supplied StringBuilder.
+     * The stream is closed after successful or unsuccessful read.
+     */
+    public static StringBuilder readStream(InputStream source, StringBuilder dest) throws IOException {
+        return readStream(source, dest, new char[1024]);
+    }
+
+    /**
+     * Reads chars from input stream and puts them into the supplied StringBuilder using the supplied buffer.
+     * The stream is closed after successful or unsuccessful read.
+     */
+    public static StringBuilder readStream(InputStream source, StringBuilder dest, char[] buffer) throws IOException {
+        InputStreamReader reader = new InputStreamReader(source);
+        try {
+            int len = 0;
+            while ((len = reader.read(buffer)) != -1)
+                dest.append(buffer, 0, len);
+        } finally {
+            reader.close();
+        }
+        return dest;
     }
 
     /**

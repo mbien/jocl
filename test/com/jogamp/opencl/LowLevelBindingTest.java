@@ -267,7 +267,7 @@ public class LowLevelBindingTest {
         checkError("on clCreateCommandQueue", intBuffer.get(0));
 
         int localWorkSize = Math.min(128, maxWGS);      // set and log Global and Local work size dimensions
-        int globalWorkSize = roundUp(localWorkSize, ELEMENT_COUNT);  // rounded up to the nearest multiple of the LocalWorkSize
+        int globalWorkSize = roundUp(ELEMENT_COUNT, localWorkSize);  // rounded up to the nearest multiple of the LocalWorkSize
 
         out.println("allocateing buffers of size: "+globalWorkSize);
 

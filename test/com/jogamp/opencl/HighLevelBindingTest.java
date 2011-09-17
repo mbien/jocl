@@ -58,6 +58,7 @@ import static com.jogamp.opencl.util.CLPlatformFilters.*;
 import static com.jogamp.opencl.CLVersion.*;
 import static com.jogamp.opencl.CLDevice.Type.*;
 import static com.jogamp.common.nio.Buffers.*;
+import static com.jogamp.opencl.util.CLUtil.*;
 
 /**
  * Test testing the high level bindings.
@@ -376,7 +377,7 @@ public class HighLevelBindingTest {
 
         int elementCount = 11444777;	// Length of float arrays to process (odd # for illustration)
         int localWorkSize = device.getMaxWorkItemSizes()[0];      // set and log Global and Local work size dimensions
-        int globalWorkSize = roundUp(localWorkSize, elementCount);  // rounded up to the nearest multiple of the LocalWorkSize
+        int globalWorkSize = roundUp(elementCount, localWorkSize);  // rounded up to the nearest multiple of the LocalWorkSize
 
         out.println("allocateing buffers of size: "+globalWorkSize);
 

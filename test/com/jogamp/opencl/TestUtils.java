@@ -69,15 +69,6 @@ public class TestUtils {
         return buffer;
     }
 
-    public static int roundUp(int groupSize, int globalSize) {
-        int r = globalSize % groupSize;
-        if (r == 0) {
-            return globalSize;
-        } else {
-            return globalSize + groupSize - r;
-        }
-    }
-
     public static void checkIfEqual(ByteBuffer a, ByteBuffer b, int elements) {
         for(int i = 0; i < elements; i++) {
             int aVal = a.getInt();

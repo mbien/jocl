@@ -51,6 +51,7 @@ import static com.jogamp.opencl.TestUtils.*;
 import static com.jogamp.opencl.CLEvent.*;
 import static com.jogamp.opencl.CLVersion.*;
 import static com.jogamp.common.nio.Buffers.*;
+import static com.jogamp.opencl.util.CLUtil.*;
 import static com.jogamp.opencl.CLCommandQueue.Mode.*;
 
 /**
@@ -102,7 +103,7 @@ public class CLCommandQueueTest {
             CLDevice device = context.getDevices()[0];
             int groupSize = device.getMaxWorkItemSizes()[0];
             
-            final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
+            final int elements = roundUp(ONE_MB / SIZEOF_INT * 5, groupSize); // 5MB per buffer
 
             CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
             CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
@@ -232,7 +233,7 @@ public class CLCommandQueueTest {
             CLDevice device = context.getDevices()[0];
             int groupSize = device.getMaxWorkItemSizes()[0];
 
-            final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
+            final int elements = roundUp(ONE_MB / SIZEOF_INT * 5, groupSize); // 5MB per buffer
 
             CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
             CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
@@ -301,7 +302,7 @@ public class CLCommandQueueTest {
             CLDevice device = context.getDevices()[0];
             int groupSize = device.getMaxWorkItemSizes()[0];
 
-            final int elements = roundUp(groupSize, ONE_MB / SIZEOF_INT * 5); // 5MB per buffer
+            final int elements = roundUp(ONE_MB / SIZEOF_INT * 5, groupSize); // 5MB per buffer
 
             CLBuffer<ByteBuffer> clBufferA = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);
             CLBuffer<ByteBuffer> clBufferB = context.createByteBuffer(elements * SIZEOF_INT, Mem.READ_ONLY);

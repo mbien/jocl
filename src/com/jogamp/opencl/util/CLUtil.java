@@ -85,6 +85,18 @@ public class CLUtil {
     }
 
     /**
+     * Rounds the value up to the nearest multiple.
+     */
+    public static int roundUp(int value, int requiredMultiple) {
+        int r = value % requiredMultiple;
+        if (r == 0) {
+            return value;
+        } else {
+            return value + requiredMultiple - r;
+        }
+    }
+
+    /**
      * Reads chars from input stream and puts them into the supplied StringBuilder.
      * The stream is closed after successful or unsuccessful read.
      */

@@ -41,6 +41,8 @@ import com.jogamp.opencl.CLProgram;
 import com.jogamp.opencl.CLResource;
 import com.jogamp.opencl.CLWork.CLWork1D;
 import com.jogamp.opencl.util.CLUtil;
+import com.jogamp.opencl.util.concurrent.CLQueueContext;
+import com.jogamp.opencl.util.concurrent.CLTask;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -98,6 +100,14 @@ public class Reduction<B extends Buffer> implements CLResource {
         return new Reduction<B>(context, op, elementType);
     }
 
+    public static <B extends Buffer> Reduction<B> create(CLCommandQueue queue, OP op, Class<B> elementType) {
+        return create(queue.getContext(), op, elementType);
+    }
+
+    public static <B extends Buffer> CLTask<CLReductionQueueContext<B>, B> createTask(B input, B output, OP op, Class<B> elementType) {
+        return new CLReductionTask<B>(input, output, op, elementType);
+    }
+
     public B reduce(CLCommandQueue queue, B input, B output) {
 
         int length = input.capacity();
@@ -109,7 +119,7 @@ public class Reduction<B extends Buffer> implements CLResource {
         
         int groupSize = (int)reduction.getKernel().getWorkGroupSize(queue.getDevice());
         int realSize  = length / VECTOR_SIZE;
-        int workItems = roundUp(realSize, groupSize*2) / 2;
+        int workItems = CLUtil.roundUp(realSize, groupSize*2) / 2;
 
         int groups = workItems / groupSize;
         int sharedBufferSize = groupSize / 2 * ELEMENT.SIZE*VECTOR_SIZE;
@@ -147,15 +157,6 @@ public class Reduction<B extends Buffer> implements CLResource {
         }
         
         return output;  
-    }
-
-    private static int roundUp(int globalSize, int groupSize) {
-        int r = globalSize % groupSize;
-        if (r == 0) {
-            return globalSize;
-        } else {
-            return globalSize + groupSize - r;
-        }
     }
     
     private <B extends Buffer> void finishMax(B output, ByteBuffer buffer) {
@@ -333,8 +334,13 @@ public class Reduction<B extends Buffer> implements CLResource {
         return program == null || program.isReleased();
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()+"["+OPERATION+", "+ELEMENT+VECTOR_SIZE+"]";
+    }
 
-    public enum OP {ADD, MUL, MIN,MAX}
+
+    public enum OP {ADD, MUL, MIN, MAX}
 
     private enum TYPE {
 
@@ -377,15 +383,71 @@ public class Reduction<B extends Buffer> implements CLResource {
             }
         }
     }
+    
+    private static class CLReductionTask<B extends Buffer> extends CLTask<CLReductionQueueContext<B>, B> {
+        
+        private final B input;
+        private final B output;
+        private final OP op;
+        private final Class<B> elementType;
+        private final Integer KEY;
 
-    public static void main(String[] args) {
-        int groupSize = 1024;
-        int localID = 0;
-        for(int i = groupSize >> 1; i > 0; i >>= 1) {
-            if(localID < i) {
-                System.out.println("op("+localID+", "+(localID+i)+")");
-            }
-            System.out.println("sync "+i);
+        private CLReductionTask(B input, B output, OP op, Class<B> elementType) {
+            this.input = input;
+            this.output = output;
+            this.op = op;
+            this.elementType = elementType;
+            this.KEY = op.ordinal() + 100*TYPE.valueOf(elementType).ordinal();
+        }
+
+        @Override
+        public CLReductionQueueContext<B> createQueueContext(CLCommandQueue queue) {
+            Reduction<B> reduction = Reduction.create(queue, op, elementType);
+            return new CLReductionQueueContext<B>(queue, reduction);
+        }
+
+        @Override
+        public B execute(CLReductionQueueContext<B> context) {
+            return context.reduction.reduce(context.queue, input, output);
+        }
+
+        @Override
+        public Object getContextKey() {
+            return KEY;
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName()+"["+op+", "+elementType+", "+KEY+"]";
+        }
+    }
+
+    /**
+     * Context required for executing {@link Reduction} {@link CLTask}s.
+     * @author Michael Bien
+     */
+    public static class CLReductionQueueContext<B extends Buffer> extends CLQueueContext {
+
+        private final Reduction<B> reduction;
+
+        private CLReductionQueueContext(CLCommandQueue queue, Reduction<B> reduction) {
+            super(queue);
+            this.reduction = reduction;
+        }
+
+        @Override
+        public void release() {
+            reduction.release();
+        }
+
+        @Override
+        public boolean isReleased() {
+            return reduction.isReleased();
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName()+"["+reduction+"]";
         }
     }
     

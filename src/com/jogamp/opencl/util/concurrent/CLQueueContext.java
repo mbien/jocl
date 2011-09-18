@@ -66,14 +66,12 @@ public abstract class CLQueueContext implements CLResource {
      * A simple queue context holding a precompiled program and its kernels.
      * @author Michael Bien
      */
-    public static class CLSingleProgramQueueContext extends CLQueueContext {
+    public static class CLSingleProgramQueueContext extends CLResourceQueueContext<CLProgram> {
 
-        public final CLProgram program;
         public final Map<String, CLKernel> kernels;
 
         public CLSingleProgramQueueContext(CLCommandQueue queue, CLProgram program) {
-            super(queue);
-            this.program = program;
+            super(queue, program);
             this.kernels = program.createCLKernels();
         }
 
@@ -90,23 +88,47 @@ public abstract class CLQueueContext implements CLResource {
         }
 
         public CLProgram getProgram() {
-            return program;
+            return getResource();
         }
 
+    }
+    
+    /**
+     * {@link CLQueueContext} serving a single {@link CLResource}.
+     */
+    public static class CLResourceQueueContext<R extends CLResource> extends CLQueueContext {
+        
+        public final R resource;
+
+        public CLResourceQueueContext(CLCommandQueue queue, R resource) {
+            super(queue);
+            this.resource = resource;
+        }
+        
         @Override
         public void release() {
-            synchronized(program) {
-                if(!program.isReleased()) {
-                    program.release();
+            synchronized(resource) {
+                if(!resource.isReleased()) {
+                    resource.release();
                 }
             }
         }
 
         @Override
         public boolean isReleased() {
-            return program.isReleased();
+            return resource.isReleased();
         }
 
+        public R getResource() {
+            return resource;
+        }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName()+"["+resource+"]";
+        }
+        
     }
+    
 
 }

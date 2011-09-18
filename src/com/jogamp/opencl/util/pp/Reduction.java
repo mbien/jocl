@@ -29,7 +29,6 @@
  */
 package com.jogamp.opencl.util.pp;
 
-import com.jogamp.opencl.util.CLProgramConfiguration;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.LongBuffer;
@@ -43,6 +42,8 @@ import com.jogamp.opencl.CLWork.CLWork1D;
 import com.jogamp.opencl.util.CLUtil;
 import com.jogamp.opencl.util.concurrent.CLQueueContext;
 import com.jogamp.opencl.util.concurrent.CLTask;
+import com.jogamp.opencl.util.concurrent.CLQueueContext.CLResourceQueueContext;
+import com.jogamp.opencl.util.CLProgramConfiguration;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -104,7 +105,7 @@ public class Reduction<B extends Buffer> implements CLResource {
         return create(queue.getContext(), op, elementType);
     }
 
-    public static <B extends Buffer> CLTask<CLReductionQueueContext<B>, B> createTask(B input, B output, OP op, Class<B> elementType) {
+    public static <B extends Buffer> CLTask<CLResourceQueueContext<Reduction<B>>, B> createTask(B input, B output, OP op, Class<B> elementType) {
         return new CLReductionTask<B>(input, output, op, elementType);
     }
 
@@ -384,7 +385,9 @@ public class Reduction<B extends Buffer> implements CLResource {
         }
     }
     
-    private static class CLReductionTask<B extends Buffer> extends CLTask<CLReductionQueueContext<B>, B> {
+    private static class CLReductionTask<B extends Buffer> extends CLTask<CLResourceQueueContext<Reduction<B>>, B> {
+        
+        private final static int TYPE_ID = 1;
         
         private final B input;
         private final B output;
@@ -397,18 +400,18 @@ public class Reduction<B extends Buffer> implements CLResource {
             this.output = output;
             this.op = op;
             this.elementType = elementType;
-            this.KEY = op.ordinal() + 100*TYPE.valueOf(elementType).ordinal();
+            this.KEY = TYPE_ID + op.ordinal()*10 + 1000*TYPE.valueOf(elementType).ordinal();
         }
 
         @Override
-        public CLReductionQueueContext<B> createQueueContext(CLCommandQueue queue) {
+        public CLResourceQueueContext<Reduction<B>> createQueueContext(CLCommandQueue queue) {
             Reduction<B> reduction = Reduction.create(queue, op, elementType);
-            return new CLReductionQueueContext<B>(queue, reduction);
+            return new CLQueueContext.CLResourceQueueContext<Reduction<B>>(queue, reduction);
         }
 
         @Override
-        public B execute(CLReductionQueueContext<B> context) {
-            return context.reduction.reduce(context.queue, input, output);
+        public B execute(CLResourceQueueContext<Reduction<B>> context) {
+            return context.resource.reduce(context.queue, input, output);
         }
 
         @Override
@@ -422,33 +425,4 @@ public class Reduction<B extends Buffer> implements CLResource {
         }
     }
 
-    /**
-     * Context required for executing {@link Reduction} {@link CLTask}s.
-     * @author Michael Bien
-     */
-    public static class CLReductionQueueContext<B extends Buffer> extends CLQueueContext {
-
-        private final Reduction<B> reduction;
-
-        private CLReductionQueueContext(CLCommandQueue queue, Reduction<B> reduction) {
-            super(queue);
-            this.reduction = reduction;
-        }
-
-        @Override
-        public void release() {
-            reduction.release();
-        }
-
-        @Override
-        public boolean isReleased() {
-            return reduction.isReleased();
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName()+"["+reduction+"]";
-        }
-    }
-    
 }

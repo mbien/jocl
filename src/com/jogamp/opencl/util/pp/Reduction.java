@@ -50,7 +50,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static com.jogamp.opencl.CLMemory.Mem.*;
-import static com.jogamp.common.nio.Buffers.*;
 import static java.lang.Math.*;
 
 /**
@@ -60,9 +59,9 @@ import static java.lang.Math.*;
 public class Reduction<B extends Buffer> implements CLResource {
 
     private static final String SOURCES;
-    
-    private final OP OPERATION;
-    private final TYPE ELEMENT;
+
+    private final Op OPERATION;
+    private final ArgType ELEMENT;
 
     private final int VECTOR_SIZE;
     private final CLProgram program;
@@ -77,10 +76,10 @@ public class Reduction<B extends Buffer> implements CLResource {
             throw new RuntimeException("can not initialize Reduction.", ex);
         }
     }
-    
-    private <B extends Buffer> Reduction(CLContext context, OP op, Class<B> elementType) {
 
-        this.ELEMENT = TYPE.valueOf(elementType);
+    private <B extends Buffer> Reduction(CLContext context, Op op, Class<B> elementType) {
+
+        this.ELEMENT = ArgType.valueOf(elementType);
         this.OPERATION = op;
         this.VECTOR_SIZE = 4;
 
@@ -89,7 +88,7 @@ public class Reduction<B extends Buffer> implements CLResource {
         CLProgramConfiguration config = program.prepare();
         config.withDefine("OP_"+op.name())
               .withDefine("TYPE", ELEMENT.vectorType(VECTOR_SIZE));
-        if(ELEMENT.equals(TYPE.DOUBLE)) {
+        if(ELEMENT.equals(ArgType.DOUBLE)) {
             config.withDefine("DOUBLE_FP");
         }
         config.build();
@@ -97,15 +96,15 @@ public class Reduction<B extends Buffer> implements CLResource {
         reduction = CLWork1D.create1D(program.createCLKernel("reduce"));
     }
 
-    public static <B extends Buffer> Reduction<B> create(CLContext context, OP op, Class<B> elementType) {
+    public static <B extends Buffer> Reduction<B> create(CLContext context, Op op, Class<B> elementType) {
         return new Reduction<B>(context, op, elementType);
     }
 
-    public static <B extends Buffer> Reduction<B> create(CLCommandQueue queue, OP op, Class<B> elementType) {
+    public static <B extends Buffer> Reduction<B> create(CLCommandQueue queue, Op op, Class<B> elementType) {
         return create(queue.getContext(), op, elementType);
     }
 
-    public static <B extends Buffer> CLTask<CLResourceQueueContext<Reduction<B>>, B> createTask(B input, B output, OP op, Class<B> elementType) {
+    public static <B extends Buffer> CLTask<CLResourceQueueContext<Reduction<B>>, B> createTask(B input, B output, Op op, Class<B> elementType) {
         return new CLReductionTask<B>(input, output, op, elementType);
     }
 
@@ -117,14 +116,14 @@ public class Reduction<B extends Buffer> implements CLResource {
         if(length%(VECTOR_SIZE*2) != 0) {
             throw new IllegalArgumentException("input buffer must be evenly devideable through "+VECTOR_SIZE*2);
         }
-        
+
         int groupSize = (int)reduction.getKernel().getWorkGroupSize(queue.getDevice());
         int realSize  = length / VECTOR_SIZE;
         int workItems = CLUtil.roundUp(realSize, groupSize*2) / 2;
 
         int groups = workItems / groupSize;
         int sharedBufferSize = groupSize / 2 * ELEMENT.SIZE*VECTOR_SIZE;
-        
+
         int outputSize = groups * ELEMENT.SIZE*VECTOR_SIZE;
 
         CLContext context = queue.getContext();
@@ -135,8 +134,8 @@ public class Reduction<B extends Buffer> implements CLResource {
         reduction.getKernel().putArgs(in, out).putArgSize(sharedBufferSize).putArg(realSize/2).rewind();
         reduction.setWorkSize(workItems, groupSize);
 
-        System.out.println(groups);
-        System.out.println(reduction);
+//        System.out.println(groups);
+//        System.out.println(reduction);
 
         queue.putWriteBuffer(in, false);
         queue.putWork(reduction);
@@ -145,21 +144,21 @@ public class Reduction<B extends Buffer> implements CLResource {
         in.release();
         out.release();
 
-        if(OPERATION.equals(OP.MAX)) {
+        if(OPERATION.equals(Op.MAX)) {
             finishMax(output, out.getBuffer());
-        }else if(OPERATION.equals(OP.MIN)) {
+        }else if(OPERATION.equals(Op.MIN)) {
             finishMin(output, out.getBuffer());
-        }else if(OPERATION.equals(OP.ADD)) {
+        }else if(OPERATION.equals(Op.ADD)) {
             finishAdd(output, out.getBuffer());
-        }else if(OPERATION.equals(OP.MUL)) {
+        }else if(OPERATION.equals(Op.MUL)) {
             finishMul(output, out.getBuffer());
         }else{
             throw new RuntimeException();
         }
-        
-        return output;  
+
+        return output;
     }
-    
+
     private <B extends Buffer> void finishMax(B output, ByteBuffer buffer) {
         if(output instanceof ByteBuffer) {
             byte max = Byte.MIN_VALUE;
@@ -241,7 +240,7 @@ public class Reduction<B extends Buffer> implements CLResource {
         }
         buffer.rewind();
     }
-    
+
 
     private <B extends Buffer> void finishAdd(B output, ByteBuffer buffer) {
         if(output instanceof ByteBuffer) {
@@ -341,66 +340,24 @@ public class Reduction<B extends Buffer> implements CLResource {
     }
 
 
-    public enum OP {ADD, MUL, MIN, MAX}
+    public enum Op {ADD, MUL, MIN, MAX}
 
-    private enum TYPE {
-
-//        BYTE(SIZEOF_BYTE),
-        SHORT(SIZEOF_SHORT),
-        INT(SIZEOF_INT),
-        LONG(SIZEOF_LONG),
-        FLOAT(SIZEOF_FLOAT),
-        DOUBLE(SIZEOF_DOUBLE);
-
-        public final int SIZE;
-
-        private TYPE(int size) {
-            this.SIZE = size;
-        }
-
-        public String type() {
-            return name().toLowerCase();
-        }
-
-        public String vectorType(int elements) {
-            return type()+(elements==0?"":elements);
-        }
-
-        public static <B extends Buffer> TYPE valueOf(Class<B> elementType) {
-            if(elementType.equals(ShortBuffer.class)) {
-                return TYPE.SHORT;
-            }else if(elementType.equals(IntBuffer.class)) {
-                return TYPE.INT;
-            }else if(elementType.equals(LongBuffer.class)) {
-                return TYPE.LONG;
-            }else if(elementType.equals(FloatBuffer.class)) {
-                return TYPE.FLOAT;
-            }else if(elementType.equals(DoubleBuffer.class)) {
-                return TYPE.DOUBLE;
-    //        }else if(elementType.equals(ByteBuffer.class)) {
-    //            ELEMENT_SIZE = SIZEOF_BYTE;
-            }else{
-                throw new IllegalArgumentException("unsupported buffer type "+elementType);
-            }
-        }
-    }
-    
     private static class CLReductionTask<B extends Buffer> extends CLTask<CLResourceQueueContext<Reduction<B>>, B> {
-        
+
         private final static int TYPE_ID = 1;
-        
+
         private final B input;
         private final B output;
-        private final OP op;
+        private final Op op;
         private final Class<B> elementType;
         private final Integer KEY;
 
-        private CLReductionTask(B input, B output, OP op, Class<B> elementType) {
+        private CLReductionTask(B input, B output, Op op, Class<B> elementType) {
             this.input = input;
             this.output = output;
             this.op = op;
             this.elementType = elementType;
-            this.KEY = TYPE_ID + op.ordinal()*10 + 1000*TYPE.valueOf(elementType).ordinal();
+            this.KEY = TYPE_ID + op.ordinal()*10 + 1000*ArgType.valueOf(elementType).ordinal();
         }
 
         @Override

@@ -29,12 +29,12 @@
  */
 package com.jogamp.opencl.util.pp;
 
+import com.jogamp.opencl.util.pp.Reduction.Op;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLDevice;
 import com.jogamp.opencl.CLPlatform;
-import com.jogamp.opencl.util.pp.Reduction.OP;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -79,7 +79,7 @@ public class ReductionTest {
 
             IntBuffer output = Buffers.newDirectIntBuffer(1);
 
-            Reduction<IntBuffer> max = Reduction.create(context, OP.MAX, IntBuffer.class);
+            Reduction<IntBuffer> max = Reduction.create(context, Op.MAX, IntBuffer.class);
             max.reduce(queue, input, output);
             output.rewind();
 
@@ -88,7 +88,7 @@ public class ReductionTest {
 
             assertEquals(expected_max, output.get(0));
 
-            Reduction<IntBuffer> min = Reduction.create(context, OP.MIN, IntBuffer.class);
+            Reduction<IntBuffer> min = Reduction.create(context, Op.MIN, IntBuffer.class);
             min.reduce(queue, input, output);
             output.rewind();
 
@@ -97,7 +97,7 @@ public class ReductionTest {
 
             assertEquals(expected_min, output.get(0));
 
-            Reduction<IntBuffer> sum = Reduction.create(context, OP.ADD, IntBuffer.class);
+            Reduction<IntBuffer> sum = Reduction.create(context, Op.ADD, IntBuffer.class);
             sum.reduce(queue, input, output);
             output.rewind();
 
@@ -136,7 +136,7 @@ public class ReductionTest {
 
             FloatBuffer output = Buffers.newDirectFloatBuffer(1);
 
-            Reduction<FloatBuffer> max = Reduction.create(context, OP.MAX, FloatBuffer.class);
+            Reduction<FloatBuffer> max = Reduction.create(context, Op.MAX, FloatBuffer.class);
             max.reduce(queue, input, output);
             output.rewind();
 
@@ -145,7 +145,7 @@ public class ReductionTest {
 
             assertEquals(expected_max, output.get(0), EPSILON);
 
-            Reduction<FloatBuffer> min = Reduction.create(context, OP.MIN, FloatBuffer.class);
+            Reduction<FloatBuffer> min = Reduction.create(context, Op.MIN, FloatBuffer.class);
             min.reduce(queue, input, output);
             output.rewind();
 
@@ -154,7 +154,7 @@ public class ReductionTest {
 
             assertEquals(expected_min, output.get(0), EPSILON);
 
-            Reduction<FloatBuffer> sum = Reduction.create(context, OP.ADD, FloatBuffer.class);
+            Reduction<FloatBuffer> sum = Reduction.create(context, Op.ADD, FloatBuffer.class);
             sum.reduce(queue, input, output);
             output.rewind();
 
@@ -193,7 +193,7 @@ public class ReductionTest {
 
             DoubleBuffer output = Buffers.newDirectDoubleBuffer(1);
 
-            Reduction<DoubleBuffer> max = Reduction.create(context, OP.MAX, DoubleBuffer.class);
+            Reduction<DoubleBuffer> max = Reduction.create(context, Op.MAX, DoubleBuffer.class);
             max.reduce(queue, input, output);
             output.rewind();
 
@@ -202,7 +202,7 @@ public class ReductionTest {
 
             assertEquals(expected_max, output.get(0), EPSILON);
 
-            Reduction<DoubleBuffer> min = Reduction.create(context, OP.MIN, DoubleBuffer.class);
+            Reduction<DoubleBuffer> min = Reduction.create(context, Op.MIN, DoubleBuffer.class);
             min.reduce(queue, input, output);
             output.rewind();
 
@@ -211,7 +211,7 @@ public class ReductionTest {
 
             assertEquals(expected_min, output.get(0), EPSILON);
 
-            Reduction<DoubleBuffer> sum = Reduction.create(context, OP.ADD, DoubleBuffer.class);
+            Reduction<DoubleBuffer> sum = Reduction.create(context, Op.ADD, DoubleBuffer.class);
             sum.reduce(queue, input, output);
             output.rewind();
 

@@ -96,15 +96,15 @@ public class Reduction<B extends Buffer> implements CLResource {
         reduction = CLWork1D.create1D(program.createCLKernel("reduce"));
     }
 
-    public static <B extends Buffer> Reduction<B> create(CLContext context, Op op, Class<B> elementType) {
+    public static <B extends Buffer> Reduction<B> create(CLContext context, Op op, Class<? extends B> elementType) {
         return new Reduction<B>(context, op, elementType);
     }
 
-    public static <B extends Buffer> Reduction<B> create(CLCommandQueue queue, Op op, Class<B> elementType) {
+    public static <B extends Buffer> Reduction<B> create(CLCommandQueue queue, Op op, Class<? extends B> elementType) {
         return create(queue.getContext(), op, elementType);
     }
 
-    public static <B extends Buffer> CLTask<CLResourceQueueContext<Reduction<B>>, B> createTask(B input, B output, Op op, Class<B> elementType) {
+    public static <B extends Buffer> CLTask<CLResourceQueueContext<Reduction<B>>, B> createTask(B input, B output, Op op, Class<? extends B> elementType) {
         return new CLReductionTask<B>(input, output, op, elementType);
     }
 
@@ -349,10 +349,10 @@ public class Reduction<B extends Buffer> implements CLResource {
         private final B input;
         private final B output;
         private final Op op;
-        private final Class<B> elementType;
+        private final Class<? extends B> elementType;
         private final Integer KEY;
 
-        private CLReductionTask(B input, B output, Op op, Class<B> elementType) {
+        private CLReductionTask(B input, B output, Op op, Class<? extends B> elementType) {
             this.input = input;
             this.output = output;
             this.op = op;

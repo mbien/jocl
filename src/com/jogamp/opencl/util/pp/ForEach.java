@@ -50,7 +50,7 @@ public class ForEach<B extends Buffer> implements CLResource {
     private final CLProgram program;
     private final CLWork1D foreach;
 
-    public ForEach(CLContext context, Class<B> elementType, String body) {
+    public ForEach(CLContext context, Class<? extends B> elementType, String body) {
         
         StringBuilder src = new StringBuilder(512+body.length());
         src.append("kernel void foreach(");
@@ -67,15 +67,15 @@ public class ForEach<B extends Buffer> implements CLResource {
         foreach = CLWork1D.create1D(program.createCLKernel("foreach"));
     }
     
-    public static <B extends Buffer> ForEach<B> create(CLContext context, String op, Class<B> elementType) {
+    public static <B extends Buffer> ForEach<B> create(CLContext context, String op, Class<? extends B> elementType) {
         return new ForEach<B>(context, elementType, op);
     }
     
-    public static <B extends Buffer> ForEach<B> create(CLCommandQueue queue, String op, Class<B> elementType) {
+    public static <B extends Buffer> ForEach<B> create(CLCommandQueue queue, String op, Class<? extends B> elementType) {
         return create(queue.getContext(), op, elementType);
     }
 
-    public static <B extends Buffer> CLTask<CLResourceQueueContext<ForEach<B>>, B> createTask(B input, B output, String body, Class<B> elementType) {
+    public static <B extends Buffer> CLTask<CLResourceQueueContext<ForEach<B>>, B> createTask(B input, B output, String body, Class<? extends B> elementType) {
         return new CLForEachTask<B>(input, output, body, elementType);
     }
     
@@ -104,7 +104,7 @@ public class ForEach<B extends Buffer> implements CLResource {
         return output;
     }
 
-    private StringBuilder arg(StringBuilder builder, Class<B> elementType, String name) {
+    private StringBuilder arg(StringBuilder builder, Class<? extends B> elementType, String name) {
         String type = ArgType.valueOf(elementType).type();
         return builder.append("global").append(' ').append(type).append("* ").append(name);
     }
@@ -123,10 +123,10 @@ public class ForEach<B extends Buffer> implements CLResource {
 
         private final B input;
         private final B output;
-        private final Class<B> elementType;
+        private final Class<? extends B> elementType;
         private final String body;
 
-        private CLForEachTask(B input, B output, String body, Class<B> elementType) {
+        private CLForEachTask(B input, B output, String body, Class<? extends B> elementType) {
             this.input = input;
             this.output = output;
             this.elementType = elementType;

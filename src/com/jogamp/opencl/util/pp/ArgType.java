@@ -62,21 +62,21 @@ import static com.jogamp.common.nio.Buffers.*;
     }
 
     public String vectorType(int elements) {
-        return type() + (elements == 0 ? "" : elements);
+        return type() + (elements == 1 ? "" : elements);
     }
 
     public static <B extends Buffer> ArgType valueOf(Class<B> elementType) {
-        if (elementType.equals(ShortBuffer.class)) {
+        if (ShortBuffer.class.isAssignableFrom(elementType)) {
             return ArgType.SHORT;
-        } else if (elementType.equals(IntBuffer.class)) {
+        } else if (IntBuffer.class.isAssignableFrom(elementType)) {
             return ArgType.INT;
-        } else if (elementType.equals(LongBuffer.class)) {
+        } else if (LongBuffer.class.isAssignableFrom(elementType)) {
             return ArgType.LONG;
-        } else if (elementType.equals(FloatBuffer.class)) {
+        } else if (FloatBuffer.class.isAssignableFrom(elementType)) {
             return ArgType.FLOAT;
-        } else if (elementType.equals(DoubleBuffer.class)) {
+        } else if (DoubleBuffer.class.isAssignableFrom(elementType)) {
             return ArgType.DOUBLE;
-//        }else if(elementType.equals(ByteBuffer.class)) {
+//        }else if(ByteBuffer.class.isAssignableFrom(elementType)) {
 //            ELEMENT_SIZE = SIZEOF_BYTE;
         } else {
             throw new IllegalArgumentException("unsupported buffer type " + elementType);

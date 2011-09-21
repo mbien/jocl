@@ -62,11 +62,19 @@ public class TestUtils {
         Random rnd = new Random(seed);
 
         while(buffer.remaining() != 0)
-            buffer.put(rnd.nextFloat());
+            buffer.put(rndFloat(rnd));
 
         buffer.rewind();
 
         return buffer;
+    }
+
+    public static float rndFloat(Random rnd) {
+        return rndFloat(rnd, 100);
+    }
+
+    public static float rndFloat(Random rnd, float range) {
+        return (rnd.nextFloat()-0.5f)*range*2;
     }
 
     public static void checkIfEqual(ByteBuffer a, ByteBuffer b, int elements) {

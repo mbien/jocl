@@ -55,6 +55,7 @@ import static java.lang.System.*;
 import static com.jogamp.opencl.CLProgram.CompilerOptions.*;
 import static com.jogamp.opencl.util.CLPlatformFilters.*;
 import static com.jogamp.opencl.CLVersion.*;
+import static com.jogamp.opencl.TestUtils.*;
 
 /**
  *
@@ -364,11 +365,11 @@ public class CLProgramTest {
             Random rnd = new Random(seed);
             
             kernel.putArg(buffer);
-            kernel.putArg(rnd.nextFloat());
-            kernel.putArg(rnd.nextFloat(), rnd.nextFloat());
-//            kernel.putArg(rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat()); // nv does not support float3
-            kernel.putArg(rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat());
-            kernel.putArg(TestUtils.fillBuffer(Buffers.newDirectFloatBuffer(8), seed));
+            kernel.putArg(rndFloat(rnd));
+            kernel.putArg(rndFloat(rnd), rndFloat(rnd));
+//            kernel.putArg(rndFloat(rnd), rndFloat(rnd), rndFloat(rnd)); // nv does not support float3
+            kernel.putArg(rndFloat(rnd), rndFloat(rnd), rndFloat(rnd), rndFloat(rnd));
+            kernel.putArg(fillBuffer(Buffers.newDirectFloatBuffer(8), seed));
 
             CLCommandQueue queue = context.getMaxFlopsDevice().createCommandQueue();
             queue.putTask(kernel).putReadBuffer(buffer, true);
@@ -377,12 +378,12 @@ public class CLProgramTest {
 
             rnd = new Random(seed);
             for(int i = 0; i < 7; i++) {
-                assertEquals(rnd.nextFloat(), out.get(), 0.01f);
+                assertEquals(rndFloat(rnd), out.get(), 0.01f);
             }
 
             rnd = new Random(seed);
             for(int i = 0; i < 8; i++) {
-                assertEquals(rnd.nextFloat(), out.get(), 0.01f);
+                assertEquals(rndFloat(rnd), out.get(), 0.01f);
             }
 
         }finally{

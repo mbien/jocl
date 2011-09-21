@@ -122,7 +122,7 @@ public class Reduction<B extends Buffer> implements CLResource {
         int workItems = CLUtil.roundUp(realSize, groupSize*2) / 2;
 
         int groups = workItems / groupSize;
-        int sharedBufferSize = groupSize / 2 * ELEMENT.SIZE*VECTOR_SIZE;
+        int sharedBufferSize = groupSize * ELEMENT.SIZE*VECTOR_SIZE;
 
         int outputSize = groups * ELEMENT.SIZE*VECTOR_SIZE;
 

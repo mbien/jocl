@@ -34,7 +34,9 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.CLCommandQueue;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLDevice;
+import com.jogamp.opencl.CLErrorHandler;
 import com.jogamp.opencl.CLPlatform;
+import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -86,7 +88,7 @@ public class ReductionTest {
             max.release();
             assertTrue(max.isReleased());
 
-            assertEquals(expected_max, output.get(0));
+            assertEquals("max", expected_max, output.get(0));
 
             Reduction<IntBuffer> min = Reduction.create(context, Op.MIN, IntBuffer.class);
             min.reduce(queue, input, output);
@@ -95,7 +97,7 @@ public class ReductionTest {
             min.release();
             assertTrue(min.isReleased());
 
-            assertEquals(expected_min, output.get(0));
+            assertEquals("min", expected_min, output.get(0));
 
             Reduction<IntBuffer> sum = Reduction.create(context, Op.ADD, IntBuffer.class);
             sum.reduce(queue, input, output);
@@ -104,7 +106,7 @@ public class ReductionTest {
             sum.release();
             assertTrue(sum.isReleased());
 
-            assertEquals(expected_sum, output.get(0));
+            assertEquals("sum", expected_sum, output.get(0));
 
         }finally{
             context.release();
@@ -143,7 +145,7 @@ public class ReductionTest {
             max.release();
             assertTrue(max.isReleased());
 
-            assertEquals(expected_max, output.get(0), EPSILON);
+            assertEquals("max", expected_max, output.get(0), EPSILON);
 
             Reduction<FloatBuffer> min = Reduction.create(context, Op.MIN, FloatBuffer.class);
             min.reduce(queue, input, output);
@@ -152,14 +154,14 @@ public class ReductionTest {
             min.release();
             assertTrue(min.isReleased());
 
-            assertEquals(expected_min, output.get(0), EPSILON);
+            assertEquals("min", expected_min, output.get(0), EPSILON);
 
             Reduction<FloatBuffer> sum = Reduction.create(context, Op.ADD, FloatBuffer.class);
             sum.reduce(queue, input, output);
             output.rewind();
 
             sum.release();
-            assertTrue(sum.isReleased());
+            assertTrue("sum", sum.isReleased());
 
             assertEquals(expected_sum, output.get(0), Math.ulp(expected_sum)*SUM_EPSILON);
 
@@ -200,7 +202,7 @@ public class ReductionTest {
             max.release();
             assertTrue(max.isReleased());
 
-            assertEquals(expected_max, output.get(0), EPSILON);
+            assertEquals("max", expected_max, output.get(0), EPSILON);
 
             Reduction<DoubleBuffer> min = Reduction.create(context, Op.MIN, DoubleBuffer.class);
             min.reduce(queue, input, output);
@@ -209,7 +211,7 @@ public class ReductionTest {
             min.release();
             assertTrue(min.isReleased());
 
-            assertEquals(expected_min, output.get(0), EPSILON);
+            assertEquals("min", expected_min, output.get(0), EPSILON);
 
             Reduction<DoubleBuffer> sum = Reduction.create(context, Op.ADD, DoubleBuffer.class);
             sum.reduce(queue, input, output);
@@ -218,7 +220,7 @@ public class ReductionTest {
             sum.release();
             assertTrue(sum.isReleased());
 
-            assertEquals(expected_sum, output.get(0), Math.ulp(expected_sum)*SUM_EPSILON);
+            assertEquals("sum", expected_sum, output.get(0), Math.ulp(expected_sum)*SUM_EPSILON);
 
         }finally{
             context.release();

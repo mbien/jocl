@@ -50,9 +50,9 @@ kernel void reduce(const global TYPE* input, global TYPE* output, local TYPE* sh
     #elif OP_MUL
         shared[localID] = 1;
     #elif OP_MIN
-        shared[localID] = shared[0];
+        shared[localID] = input[0];
     #elif OP_MAX
-        shared[localID] = shared[0];
+        shared[localID] = input[0];
     #endif
     }
 

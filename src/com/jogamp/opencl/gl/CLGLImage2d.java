@@ -37,6 +37,7 @@ import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 import java.nio.Buffer;
 import javax.media.opengl.GLContext;
 
+import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.opencl.llb.CL.*;
 
 /**
@@ -64,6 +65,7 @@ public class CLGLImage2d<B extends Buffer> extends CLImage2d<B> implements CLGLO
         CLGL clgli = (CLGL)cl;
 
         long id = clgli.clCreateFromGLRenderbuffer(context.ID, flags, glObject, result, 0);
+        checkForError(result[0], "can not share memory with gl renderbuffer #"+glObject+".");
 
         return createImage(context, id, directBuffer, glObject, flags);
     }

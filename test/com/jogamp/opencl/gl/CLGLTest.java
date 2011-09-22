@@ -32,8 +32,12 @@
 
 package com.jogamp.opencl.gl;
 
+import com.jogamp.opencl.CLImageFormat.ChannelType;
+import com.jogamp.opencl.CLImageFormat.ChannelOrder;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opencl.CLCommandQueue;
+import com.jogamp.opencl.CLImageFormat;
+import java.nio.ByteBuffer;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLException;
 import com.jogamp.opencl.CLDevice;
@@ -45,9 +49,11 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opencl.CLContext;
 import com.jogamp.opencl.CLMemory.Mem;
 import com.jogamp.opencl.CLPlatform;
+import com.jogamp.opencl.TestUtils;
 import com.jogamp.opencl.util.CLDeviceFilters;
 import com.jogamp.opencl.util.CLPlatformFilters;
 import java.nio.IntBuffer;
+import javax.media.opengl.DebugGL2;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.GLContext;
@@ -93,7 +99,7 @@ public class CLGLTest {
         glWindow.setVisible(true);
 
         glcontext = glWindow.getContext();
-//        glcontext.makeCurrent();
+        assertNotNull(glcontext);
 //        out.println(" - - - - glcontext - - - - ");
 //        out.println(glcontext);
 //        out.println(" - - - - - - - - - - - - - ");
@@ -145,7 +151,7 @@ public class CLGLTest {
         }finally{
             // destroy cl context, gl context still current
             context.release();
-            
+
             deinitGL();
         }
 
@@ -174,7 +180,7 @@ public class CLGLTest {
         try{
             out.println(context);
             
-            GL2 gl = glcontext.getGL().getGL2();
+            GL2 gl = getGL();
             
             int[] id = new int[1];
             gl.glGenBuffers(id.length, id, 0);
@@ -213,17 +219,105 @@ public class CLGLTest {
             out.println(clBuffer);
 
             clBuffer.release();
+            assertTrue(context.getMemoryObjects().isEmpty());
+            queue.finish();
             
             gl.glDeleteBuffers(1, id, 0);
+            gl.glFinish();
             
         }finally{
-            context.release();
+//            context.release();
             deinitGL();
         }
         
     }
 
-    private void makeGLCurrent() {
+    @Test
+    public void texture2dSharing() {
+
+        out.println(" - - - glcl; textureSharing - - - ");
+
+        initGL();
+        makeGLCurrent();
+        assertTrue(glcontext.isCurrent());
+
+        CLPlatform platform = CLPlatform.getDefault(glSharing(glcontext));
+        if(platform == null) {
+            out.println("test aborted");
+            return;
+        }
+
+        CLDevice theChosenOne = platform.getMaxFlopsDevice(CLDeviceFilters.glSharing());
+        out.println(theChosenOne);
+
+        CLGLContext context = CLGLContext.create(glcontext, theChosenOne);
+
+        try{
+            out.println(context);
+
+            int size = 64;
+            ByteBuffer reference = Buffers.newDirectByteBuffer(size*size*4);
+            TestUtils.fillBuffer(reference, 42);
+
+            GL2 gl = getGL();
+
+            int[] texID = new int[1];
+            gl.glGenTextures(1, texID, 0);
+            gl.glBindTexture(GL2.GL_TEXTURE_2D, texID[0]);
+
+                gl.glPixelStorei(GL2.GL_UNPACK_ALIGNMENT, 1);
+                gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_S, GL2.GL_REPEAT);
+                gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_T, GL2.GL_REPEAT);
+                gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+                gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
+                gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_DECAL);
+
+                gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA8, size, size, 0, GL2.GL_RGBA, GL2.GL_UNSIGNED_BYTE, reference);
+            gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
+            gl.glFinish();
+
+            CLGLTexture2d<ByteBuffer> texture = context.createFromGLTexture2d(Buffers.newDirectByteBuffer(size*size*4), GL2.GL_TEXTURE_2D, texID[0], 0);
+            out.println(texture);
+            assertEquals(4, texture.getElementSize());
+            assertEquals(size*4, texture.getRowPitch());
+            assertEquals(size, texture.getWidth());
+            assertEquals(size, texture.getHeight());
+            assertEquals(GL2.GL_TEXTURE_2D, texture.getTextureTarget());
+
+            CLImageFormat format = texture.getFormat();
+            assertNotNull(format);
+            out.println(format);
+            assertEquals(ChannelOrder.RGBA, format.getImageChannelOrder());
+            assertEquals(ChannelType.UNORM_INT8, format.getImageChannelDataType());
+
+            CLCommandQueue queue = theChosenOne.createCommandQueue();
+            queue.putAcquireGLObject(texture);
+            queue.putReadImage(texture, true);
+            queue.putReleaseGLObject(texture);
+
+            ByteBuffer buffer = texture.getBuffer();
+            while(reference.hasRemaining()) {
+                assertEquals(reference.get(), buffer.get());
+            }
+
+            texture.release();
+            assertTrue(texture.isReleased());
+            assertTrue(context.getMemoryObjects().isEmpty());
+
+            gl.glDeleteTextures(1, texID, 0);
+            gl.glFinish();
+        }finally{
+//            context.release();
+            deinitGL();
+        }
+
+    }
+
+    private GL2 getGL() {
+        return new DebugGL2(glcontext.getGL().getGL2());
+    }
+
+    private static void makeGLCurrent() {
         // we are patient...
         while(true) {
             try{

@@ -63,7 +63,7 @@ public class CLGLTexture2d<B extends Buffer> extends CLGLImage2d<B> implements C
         CLGL clgli = (CLGL)cl;
 
         long id = clgli.clCreateFromGLTexture2D(context.ID, flags, target, mipLevel, texture, result, 0);
-        checkForError((int)id, "can not share memory with texture #"+texture+".");
+        checkForError(result[0], "can not share memory with texture #"+texture+".");
 
         CLImageInfoAccessor accessor = new CLImageInfoAccessor(cl, id);
 

@@ -37,6 +37,7 @@ import com.jogamp.opencl.llb.impl.CLImageFormatImpl;
 import java.nio.Buffer;
 import javax.media.opengl.GLContext;
 
+import static com.jogamp.opencl.CLException.*;
 import static com.jogamp.opencl.llb.CL.*;
 
 /**
@@ -70,6 +71,7 @@ public class CLGLTexture3d<B extends Buffer> extends CLImage3d<B> implements CLG
         CLGL clgli = (CLGL)cl;
 
         long id = clgli.clCreateFromGLTexture3D(context.ID, flags, target, mipLevel, texture, result, 0);
+        checkForError(result[0], "can not share memory with texture #"+texture+".");
 
         CLImageInfoAccessor accessor = new CLImageInfoAccessor(cl, id);
 

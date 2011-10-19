@@ -130,6 +130,54 @@ public class CLImageTest {
         }
 
     }
+    
+    @Test
+    public void image2dCopyBufferTest() throws IOException {
+
+        CLDevice device = getCompatibleDevice();
+        if(device == null) {
+            out.println("WARNING: can not test image api.");
+            return;
+        }
+        CLContext context = CLContext.create(device);
+
+        CLCommandQueue queue = device.createCommandQueue();
+
+        try{
+
+            CLImageFormat format = new CLImageFormat(RGBA, UNSIGNED_INT32);
+            
+            CLImage2d<IntBuffer> imageA = context.createImage2d(newDirectIntBuffer(pixels), 128, 128, format);
+            CLImage2d<IntBuffer> imageB = context.createImage2d(newDirectIntBuffer(pixels.length), 128, 128, format);
+            CLBuffer<IntBuffer>  buffer = context.createBuffer(newDirectIntBuffer(pixels.length));
+
+            // image -> buffer
+            queue.putWriteImage(imageA, false)
+                 .putCopyImageToBuffer(imageA, buffer)
+                 .putReadBuffer(buffer, true);
+            
+            IntBuffer content = buffer.getBuffer();
+            while(content.hasRemaining()) {
+                assertEquals(pixels[content.position()], content.get());
+            }
+            content.rewind();
+            
+            // buffer -> image
+            queue.putCopyBufferToImage(buffer, imageB)
+                 .putReadImage(imageB, true);
+            
+            IntBuffer bufferA = imageA.getBuffer();
+            IntBuffer bufferB = imageB.getBuffer();
+
+            while(bufferA.hasRemaining()) {
+                assertEquals(bufferA.get(), bufferB.get());
+            }
+
+        }finally{
+            context.release();
+        }
+
+    }
 
     @Test
     public void image2dKernelCopyTest() throws IOException {

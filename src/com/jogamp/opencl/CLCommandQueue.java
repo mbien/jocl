@@ -1038,7 +1038,7 @@ public class CLCommandQueue extends CLObjectResource {
         copy2NIO(ibA, srcOriginX, srcOriginY, 0);
         copy2NIO(ibB, rangeX, rangeY, 1);
 
-        int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
+        int ret = cl.clEnqueueCopyImageToBuffer(ID, srcImage.ID, dstBuffer.ID,
                                          ibA, ibB, dstOffset,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         if(ret != CL_SUCCESS) {
@@ -1103,7 +1103,7 @@ public class CLCommandQueue extends CLObjectResource {
         copy2NIO(ibA, srcOriginX, srcOriginY, srcOriginZ);
         copy2NIO(ibB, rangeX, rangeY, rangeZ);
 
-        int ret = cl.clEnqueueCopyImageToBuffer(ID, dstBuffer.ID, srcImage.ID,
+        int ret = cl.clEnqueueCopyImageToBuffer(ID, srcImage.ID, dstBuffer.ID,
                                          ibA, ibB, dstOffset,
                                          conditions, conditionIDs, events==null ? null : events.IDs);
         if(ret != CL_SUCCESS) {

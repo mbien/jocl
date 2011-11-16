@@ -106,7 +106,7 @@
                  debug="false">
             <classpath refid="gluegen.classpath" />
         </gluegen>
-
+        
         <echo message="program..."/>
         <gluegen src="resources/opencl.h"
                  config="resources/cl-program-if.cfg"
@@ -288,9 +288,9 @@
         
         <!-- add native dependencies to lib folder -->
         <copy file="${gluegen.root}/${rootrel.build}/gluegen-rt-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
-        <copy file="${jogl.root}/${rootrel.build}/jogl/jogl-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
-        <copy file="${jogl.root}/${rootrel.build}/nativewindow/nativewindow-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
-        <copy file="${jogl.root}/${rootrel.build}/newt/newt-natives-${os.and.arch}.jar" todir="${dist.dir}/lib"/>
+        <copy file="${jogl.root}/${rootrel.build}/jogl/jogl-natives-${os.and.arch}.jar" todir="${dist.dir}/lib" failonerror="false"/>
+        <copy file="${jogl.root}/${rootrel.build}/nativewindow/nativewindow-natives-${os.and.arch}.jar" todir="${dist.dir}/lib" failonerror="false"/>
+        <copy file="${jogl.root}/${rootrel.build}/newt/newt-natives-${os.and.arch}.jar" todir="${dist.dir}/lib" failonerror="false"/>
         
     </target>
         
@@ -477,7 +477,7 @@
 
     <target name="update-headers" depends="prepare-build">
 
-        <property name="registry.url" value="http://www.khronos.org/registry/cl/api/1.1/"/>
+        <property name="registry.url" value="http://www.khronos.org/registry/cl/api/1.2/"/>
 
         <!-- download new headers from OpenCL registry if necessary -->
         <update-headers header="${headers.orig}/cl.h" url="${registry.url}cl.h"/>

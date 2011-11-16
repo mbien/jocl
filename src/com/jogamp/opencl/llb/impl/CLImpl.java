@@ -154,7 +154,16 @@ public class CLImpl extends CLAbstractImpl {
     /** Entry point to C language function: <code> int32_t clBuildProgram(cl_program, uint32_t, cl_device_id * , const char * , void * ); </code>    */
     private native int clBuildProgram0(long program, int deviceCount, Object deviceList, int deviceListOffset, String options, BuildProgramCallback cb, long address);
 
+    @Override
+    public int clCompileProgram(long program, int deviceCount, NativeSizeBuffer devices, String options, int num_imput_headers, long[] input_headers, String[] header_include_names, BuildProgramCallback cb) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
+    @Override
+    public int clLinkProgram(long context, int deviceCount, NativeSizeBuffer devices, String options, int num_imput_programs, long[] input_programs, BuildProgramCallback cb) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     @Override
     public int clSetEventCallback(long event, int trigger, CLEventCallback callback) {
         final long address = addressTable._addressof_clSetEventCallback;

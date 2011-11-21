@@ -105,21 +105,35 @@ public class CLCommandQueue extends CLObjectResource {
     /**
      * Calls {@native clEnqueueWriteBuffer}.
      */
-    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingRead) {
-        return putWriteBuffer(writeBuffer, blockingRead, null, null);
+    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blocking) {
+        return putWriteBuffer(writeBuffer, blocking, null, null);
     }
 
     /**
      * Calls {@native clEnqueueWriteBuffer}.
      */
-    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingRead, CLEventList events) {
-        return putWriteBuffer(writeBuffer, blockingRead, null, events);
+    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blocking, CLEventList events) {
+        return putWriteBuffer(writeBuffer, blocking, null, events);
     }
     
     /**
      * Calls {@native clEnqueueWriteBuffer}.
      */
-    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blockingWrite, CLEventList condition, CLEventList events) {
+    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, boolean blocking, CLEventList condition, CLEventList events) {
+        return putWriteBuffer(writeBuffer, 0, writeBuffer.getNIOSize(), blocking, null, events);
+    }
+
+    /**
+     * Calls {@native clEnqueueWriteBuffer}.
+     */
+    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, int offset, int length, boolean blocking) {
+        return putWriteBuffer(writeBuffer, offset, length, blocking, null, null);
+    }
+    
+    /**
+     * Calls {@native clEnqueueWriteBuffer}.
+     */
+    public CLCommandQueue putWriteBuffer(CLBuffer<?> writeBuffer, int offset, int length, boolean blocking, CLEventList condition, CLEventList events) {
 
         NativeSizeBuffer conditionIDs = null;
         int conditions = 0;
@@ -129,8 +143,8 @@ public class CLCommandQueue extends CLObjectResource {
         }
         
         int ret = cl.clEnqueueWriteBuffer(
-                ID, writeBuffer.ID, clBoolean(blockingWrite),
-                0, writeBuffer.getNIOSize(), writeBuffer.buffer,
+                ID, writeBuffer.ID, clBoolean(blocking),
+                offset, length, writeBuffer.buffer,
                 conditions, conditionIDs, events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS) {
@@ -147,23 +161,39 @@ public class CLCommandQueue extends CLObjectResource {
     /**
      * Calls {@native clEnqueueReadBuffer}.
      */
-    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead) {
-        putReadBuffer(readBuffer, blockingRead, null, null);
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blocking) {
+        putReadBuffer(readBuffer, blocking, null, null);
         return this;
     }
 
     /**
      * Calls {@native clEnqueueReadBuffer}.
      */
-    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead, CLEventList events) {
-        putReadBuffer(readBuffer, blockingRead, null, events);
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blocking, CLEventList events) {
+        putReadBuffer(readBuffer, blocking, null, events);
         return this;
     }
 
     /**
      * Calls {@native clEnqueueReadBuffer}.
      */
-    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blockingRead, CLEventList condition, CLEventList events) {
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, boolean blocking, CLEventList condition, CLEventList events) {
+        putReadBuffer(readBuffer, 0, readBuffer.getNIOSize(), blocking, condition, events);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueReadBuffer}.
+     */
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, int offset, int length, boolean blocking) {
+        putReadBuffer(readBuffer, offset, length, blocking, null, null);
+        return this;
+    }
+
+    /**
+     * Calls {@native clEnqueueReadBuffer}.
+     */
+    public CLCommandQueue putReadBuffer(CLBuffer<?> readBuffer, int offset, int length, boolean blocking, CLEventList condition, CLEventList events) {
 
         NativeSizeBuffer conditionIDs = null;
         int conditions = 0;
@@ -173,8 +203,8 @@ public class CLCommandQueue extends CLObjectResource {
         }
         
         int ret = cl.clEnqueueReadBuffer(
-                ID, readBuffer.ID, clBoolean(blockingRead),
-                0, readBuffer.getNIOSize(), readBuffer.buffer,
+                ID, readBuffer.ID, clBoolean(blocking),
+                offset, length, readBuffer.buffer,
                 conditions, conditionIDs, events==null ? null : events.IDs);
 
         if(ret != CL_SUCCESS) {

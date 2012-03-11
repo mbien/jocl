@@ -50,6 +50,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static java.lang.System.*;
+import java.util.Arrays;
 
 /**
  *
@@ -63,8 +64,9 @@ public class CLMultiContextTest {
     @Test
     public void createMultiContextTest() {
 
-        CLMultiContext mc = CLMultiContext.create(CLPlatform.listCLPlatforms());
-
+        // basic context creation
+        CLMultiContext mc = CLMultiContext.create();
+        
         try{
             List<CLContext> contexts = mc.getContexts();
             List<CLDevice> devices = mc.getDevices();
@@ -83,6 +85,26 @@ public class CLMultiContextTest {
             mc.release();
         }
 
+        // other constructors
+        CLMultiContext mc1 = CLMultiContext.create();
+        CLMultiContext mc2 = CLMultiContext.create(CLPlatform.listCLPlatforms());
+        
+        try{
+            assertEquals(mc1.getDevices(), mc2.getDevices());
+        }finally{
+            mc1.release();
+            mc2.release();
+        }
+        
+        final List<CLDevice> devices = Arrays.asList(CLPlatform.getDefault().listCLDevices());
+        CLMultiContext mc3 = CLMultiContext.create(devices);
+        
+        try{
+            assertEquals(devices, mc3.getDevices());
+        }finally{
+            mc3.release();
+        }
+        
     }
 
     private final static String programSource =

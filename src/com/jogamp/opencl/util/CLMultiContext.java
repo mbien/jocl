@@ -55,7 +55,7 @@ public class CLMultiContext implements CLResource {
         if(platforms == null) {
             throw new NullPointerException("platform list was null");
         }else if(platforms.isEmpty()) {
-            throw new IllegalArgumentException("platform list was empty");
+            platforms = Arrays.asList(CLPlatform.listCLPlatforms());
         }
 
         List<CLDevice> devices = new ArrayList<CLDevice>();

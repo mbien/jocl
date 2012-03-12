@@ -81,7 +81,7 @@ public class CLProgramTest {
 
         out.println(" - - - CLProgramTest; rebuild program test - - - ");
 
-        CLContext context = CLContext.create();
+        CLContext context = CLContext.create(getPlatform());
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"));
 
         try{
@@ -120,7 +120,7 @@ public class CLProgramTest {
 
         out.println(" - - - CLProgramTest; down-/upload binaries test - - - ");
 
-        CLContext context = CLContext.create();
+        CLContext context = CLContext.create(getPlatform());
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"))
                                    .build(ENABLE_MAD, WARNINGS_ARE_ERRORS);
 
@@ -197,7 +197,7 @@ public class CLProgramTest {
     public void builderTest() throws IOException, ClassNotFoundException, InterruptedException {
         out.println(" - - - CLProgramTest; program builder test - - - ");
 
-        CLContext context = CLContext.create();
+        CLContext context = CLContext.create(getPlatform());
         CLProgram program = context.createProgram(getClass().getResourceAsStream("testkernels.cl"));
 
         // same as program.build()
@@ -280,7 +280,7 @@ public class CLProgramTest {
 
         String source = "__attribute__((reqd_work_group_size(1, 1, 1))) kernel void foo(float a, int b, short c) { }\n";
 
-        CLContext context = CLContext.create();
+        CLContext context = CLContext.create(getPlatform());
 
         try{
             CLProgram program = context.createProgram(source).build();
@@ -353,7 +353,7 @@ public class CLProgramTest {
               + "    out[14] = v8.s7;\n"
               + "}\n";
 
-        CLContext context = CLContext.create();
+        CLContext context = CLContext.create(getPlatform());
 
         try{
             CLProgram program = context.createProgram(source).build();
@@ -398,7 +398,7 @@ public class CLProgramTest {
         String source = "kernel void foo(int a) { }\n"+
                         "kernel void bar(float b) { }\n";
 
-        CLContext context = CLContext.create();
+        CLContext context = CLContext.create(getPlatform());
         try{
             CLProgram program = context.createProgram(source).build();
             assertTrue(program.isExecutable());
@@ -481,4 +481,9 @@ public class CLProgramTest {
         }
     }
 
+    
+    private CLPlatform getPlatform() {
+        return CLPlatform.listCLPlatforms()[0];
+    }
+    
 }

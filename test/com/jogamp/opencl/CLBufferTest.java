@@ -254,21 +254,25 @@ public class CLBufferTest {
 
         CLContext context = CLContext.create(platform);
         try{
-            final int subelements = 5;
+            
+            final int size = 1024;
+            final int subelements = 64;
+            final int offset = 0;
+            
             // device only
             {
-                CLBuffer<?> buffer = context.createBuffer(64);
+                CLBuffer<?> buffer = context.createBuffer(size);
 
                 assertFalse(buffer.isSubBuffer());
                 assertNotNull(buffer.getSubBuffers());
                 assertTrue(buffer.getSubBuffers().isEmpty());
 
-                CLSubBuffer<?> subBuffer = buffer.createSubBuffer(10, subelements);
+                CLSubBuffer<?> subBuffer = buffer.createSubBuffer(offset, subelements);
 
                 assertTrue(subBuffer.isSubBuffer());
                 assertEquals(subelements, subBuffer.getCLSize());
-                assertEquals(10, subBuffer.getOffset());
-                assertEquals(10, subBuffer.getCLOffset());
+                assertEquals(offset, subBuffer.getOffset());
+                assertEquals(offset, subBuffer.getCLOffset());
                 assertEquals(buffer, subBuffer.getParent());
                 assertEquals(1, buffer.getSubBuffers().size());
 
@@ -278,17 +282,17 @@ public class CLBufferTest {
 
             // device + direct buffer
             {
-                CLBuffer<FloatBuffer> buffer = context.createFloatBuffer(64);
+                CLBuffer<FloatBuffer> buffer = context.createFloatBuffer(size);
                 assertFalse(buffer.isSubBuffer());
                 assertNotNull(buffer.getSubBuffers());
                 assertTrue(buffer.getSubBuffers().isEmpty());
 
-                CLSubBuffer<FloatBuffer> subBuffer = buffer.createSubBuffer(10, subelements);
+                CLSubBuffer<FloatBuffer> subBuffer = buffer.createSubBuffer(offset, subelements);
 
                 assertTrue(subBuffer.isSubBuffer());
                 assertEquals(subelements, subBuffer.getBuffer().capacity());
-                assertEquals(10, subBuffer.getOffset());
-                assertEquals(40, subBuffer.getCLOffset());
+                assertEquals(offset, subBuffer.getOffset());
+                assertEquals(offset, subBuffer.getCLOffset());
                 assertEquals(buffer, subBuffer.getParent());
                 assertEquals(1, buffer.getSubBuffers().size());
 

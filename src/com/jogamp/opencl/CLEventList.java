@@ -35,6 +35,7 @@ import java.util.Iterator;
 
 /**
  * Fixed size list for storing CLEvents.
+ * The list does not check if an individual event is released or not
  * @author Michael Bien
  */
 public final class CLEventList implements CLResource, AutoCloseable, Iterable<CLEvent> {
@@ -64,13 +65,13 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     public CLEventList(CachedBufferFactory factory, int capacity) {
         this.events = new CLEvent[capacity];
         this.IDs = initIDBuffer(factory, capacity);
-        this.IDsView = NativeSizeBuffer.wrap(IDs.getBuffer().duplicate());
+        this.IDsView = NativeSizeBuffer.wrap(IDs.getBuffer().duplicate().order(IDs.getBuffer().order()));
     }
 
     public CLEventList(CachedBufferFactory factory, CLEvent... events) {
         this.events = events;
         this.IDs = initIDBuffer(factory, events.length);
-        this.IDsView = NativeSizeBuffer.wrap(IDs.getBuffer().duplicate());
+        this.IDsView = NativeSizeBuffer.wrap(IDs.getBuffer().duplicate().order(IDs.getBuffer().order()));
         
         for (CLEvent event : events) {
             if(event == null) {
@@ -101,6 +102,36 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     
     NativeSizeBuffer getEventBuffer(int index) {
         return NativeSizeBuffer.wrap(IDs.getBuffer().duplicate()).position(index);
+    }
+
+    /**
+     * Adds the supplied event to this list.
+     */
+    public void addEvent(CLEvent event) {
+        
+        if(size >= capacity()) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+
+        if(events[size] != null)
+            events[size].release();
+
+        events[size] = event;
+        IDs.put(event.ID);
+        
+        size++;
+    }
+    
+    /**
+     * Adds the supplied events to this list.
+     */
+    public void addEvents(CLEventList events) {
+        if(capacity()-size < events.size) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        for (int i = 0; i < events.size(); i++) {
+            addEvent(events.getEvent(i));
+        }
     }
 
     /**
@@ -140,7 +171,9 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
     @Override
     public void release() {
         for (int i = 0; i < size; i++) {
-            events[i].release();
+            if(!events[i].isReleased()) {
+                events[i].release();
+            }
             events[i] = null;
         }
         size = 0;
@@ -176,6 +209,10 @@ public final class CLEventList implements CLResource, AutoCloseable, Iterable<CL
         return events.length;
     }
 
+    /**
+     * Returns true if the list is empty.
+     */
+    @Override
     public boolean isReleased() {
         return size == 0;
     }

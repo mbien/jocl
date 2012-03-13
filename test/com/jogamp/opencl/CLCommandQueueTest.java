@@ -60,8 +60,8 @@ import static com.jogamp.opencl.CLCommandQueue.Mode.*;
  */
 public class CLCommandQueueTest {
 
-//    @Rule
-//    public MethodRule methodTimeout= new Timeout(20000);
+    @Rule
+    public MethodRule methodTimeout= new Timeout(20000);
 
     @Test
     public void enumsTest() {
@@ -278,7 +278,7 @@ public class CLCommandQueueTest {
 
     }
 
-//    @Test
+    @Test
     public void customEventsTest() throws IOException, InterruptedException {
         out.println(" - - - user events test - - - ");
 

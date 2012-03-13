@@ -82,11 +82,11 @@ typedef cl_uint             cl_kernel_info;
 typedef cl_uint             cl_kernel_arg_info;
 typedef cl_uint             cl_kernel_arg_address_qualifier;
 typedef cl_uint             cl_kernel_arg_access_qualifier;
+typedef cl_bitfield         cl_kernel_arg_type_qualifier;
 typedef cl_uint             cl_kernel_work_group_info;
 typedef cl_uint             cl_event_info;
 typedef cl_uint             cl_command_type;
 typedef cl_uint             cl_profiling_info;
-
 
 
 typedef struct _cl_image_format {
@@ -481,19 +481,26 @@ typedef struct _cl_buffer_region {
 #define CL_KERNEL_ARG_ADDRESS_QUALIFIER             0x1196
 #define CL_KERNEL_ARG_ACCESS_QUALIFIER              0x1197
 #define CL_KERNEL_ARG_TYPE_NAME                     0x1198
-#define CL_KERNEL_ARG_NAME                          0x1199
+#define CL_KERNEL_ARG_TYPE_QUALIFIER                0x1199
+#define CL_KERNEL_ARG_NAME                          0x119A
 
 /* cl_kernel_arg_address_qualifier */
-#define CL_KERNEL_ARG_ADDRESS_GLOBAL                0x119A
-#define CL_KERNEL_ARG_ADDRESS_LOCAL                 0x119B
-#define CL_KERNEL_ARG_ADDRESS_CONSTANT              0x119C
-#define CL_KERNEL_ARG_ADDRESS_PRIVATE               0x119D
+#define CL_KERNEL_ARG_ADDRESS_GLOBAL                0x119B
+#define CL_KERNEL_ARG_ADDRESS_LOCAL                 0x119C
+#define CL_KERNEL_ARG_ADDRESS_CONSTANT              0x119D
+#define CL_KERNEL_ARG_ADDRESS_PRIVATE               0x119E
 
 /* cl_kernel_arg_access_qualifier */
 #define CL_KERNEL_ARG_ACCESS_READ_ONLY              0x11A0
 #define CL_KERNEL_ARG_ACCESS_WRITE_ONLY             0x11A1
 #define CL_KERNEL_ARG_ACCESS_READ_WRITE             0x11A2
 #define CL_KERNEL_ARG_ACCESS_NONE                   0x11A3
+    
+/* cl_kernel_arg_type_qualifer */
+#define CL_KERNEL_ARG_TYPE_NONE                     0
+#define CL_KERNEL_ARG_TYPE_CONST                    (1 << 0)
+#define CL_KERNEL_ARG_TYPE_RESTRICT                 (1 << 1)
+#define CL_KERNEL_ARG_TYPE_VOLATILE                 (1 << 2)
 
 /* cl_kernel_work_group_info */
 #define CL_KERNEL_WORK_GROUP_SIZE                   0x11B0
@@ -1229,4 +1236,3 @@ clGetExtensionFunctionAddressForPlatform(cl_platform_id /* platform */,
 #endif
 
 #endif  /* __OPENCL_CL_H */
-
